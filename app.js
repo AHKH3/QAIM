@@ -323,61 +323,107 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '<p>اسحب الكلمة من اليمين وضعها على معناها الصحيح في اليسار.</p><div id="meaning-game-area"><div id="words-container"></div><div id="meanings-container"></div></div><button id="reset-game-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button><div id="meaning-game-feedback"></div><div id="meaning-match-score"></div>';
         const wordsContainer = document.getElementById('words-container');
         const meaningsContainer = document.getElementById('meanings-container');
+        
         if (!surah.vocabulary || surah.vocabulary.length < 2) {
             wordsContainer.innerHTML = '<p>لا توجد بيانات معاني كافية لهذه اللعبة.</p>';
             return;
         }
+
         const pairs = [...surah.vocabulary].sort(() => 0.5 - Math.random()).slice(0, 5);
         const words = pairs.map(p => p.word);
         const meanings = pairs.map(p => p.meaning);
         const shuffledWords = [...words].sort(() => 0.5 - Math.random());
         const shuffledMeanings = [...meanings].sort(() => 0.5 - Math.random());
 
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        let selectedWordDiv = null;
+
+        const handleDropLogic = (droppedWord, meaning) => {
+            const meaningBox = Array.from(meaningsContainer.children).find(b => b.dataset.meaning === meaning);
+            if (!meaningBox || meaningBox.classList.contains('correct')) return;
+
+            const correctPair = pairs.find(p => p.word === droppedWord);
+            if (correctPair && correctPair.meaning === meaning) {
+                meaningBox.classList.add('correct');
+                meaningBox.textContent = `${droppedWord} ✔`;
+                
+                const wordItem = Array.from(wordsContainer.children).find(w => w.textContent === droppedWord);
+                if (wordItem) wordItem.style.visibility = 'hidden';
+                
+                updateScore('meaning-match', 1);
+                if (Array.from(meaningsContainer.children).every(b => b.classList.contains('correct'))) {
+                    playSound('win');
+                } else {
+                    playSound('correct');
+                }
+            } else {
+                meaningBox.classList.add('incorrect');
+                setTimeout(() => meaningBox.classList.remove('incorrect'), 700);
+                playSound('incorrect');
+            }
+        };
+
         shuffledWords.forEach(word => {
             const div = document.createElement('div');
             div.className = 'word-item';
             div.textContent = word;
-            div.draggable = true;
-            div.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text/plain', word);
-                div.classList.add('dragging');
-                playSound('drag_start');
-            });
-            div.addEventListener('dragend', () => div.classList.remove('dragging'));
             wordsContainer.appendChild(div);
+
+            if (isTouchDevice) {
+                div.addEventListener('click', e => {
+                    if (div.style.visibility === 'hidden') return;
+                    
+                    if (selectedWordDiv) {
+                        selectedWordDiv.classList.remove('dragging');
+                    }
+                    selectedWordDiv = div;
+                    div.classList.add('dragging'); // Use 'dragging' class for styling the selected word
+                    playSound('drag_start');
+                });
+            } else {
+                div.draggable = true;
+                div.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', word);
+                    e.target.classList.add('dragging');
+                    playSound('drag_start');
+                });
+                div.addEventListener('dragend', e => {
+                    e.target.classList.remove('dragging');
+                });
+            }
         });
 
         shuffledMeanings.forEach(meaning => {
             const box = document.createElement('div');
             box.className = 'meaning-box';
             box.textContent = meaning;
-            box.addEventListener('dragover', e => {
-                e.preventDefault();
-                box.classList.add('over');
-            });
-            box.addEventListener('dragleave', () => box.classList.remove('over'));
-            box.addEventListener('drop', e => {
-                e.preventDefault();
-                box.classList.remove('over');
-                const droppedWord = e.dataTransfer.getData('text/plain');
-                const correctPair = pairs.find(p => p.word === droppedWord);
-                if (correctPair && correctPair.meaning === meaning) {
-                    box.classList.add('correct');
-                    box.textContent = `${droppedWord} ✔`;
-                    document.querySelector(`.word-item.dragging`).style.visibility = 'hidden';
-                    updateScore('meaning-match', 1);
-                    if (Array.from(meaningsContainer.children).every(b => b.classList.contains('correct'))) {
-                        playSound('win');
-                    } else {
-                        playSound('correct');
-                    }
-                } else {
-                    box.classList.add('incorrect');
-                    setTimeout(() => box.classList.remove('incorrect'), 700);
-                    playSound('incorrect');
-                }
-            });
+            box.dataset.meaning = meaning;
             meaningsContainer.appendChild(box);
+
+            if (isTouchDevice) {
+                box.addEventListener('click', e => {
+                    if (selectedWordDiv && !box.classList.contains('correct')) {
+                        const wordToDrop = selectedWordDiv.textContent;
+                        handleDropLogic(wordToDrop, meaning);
+                        selectedWordDiv.classList.remove('dragging');
+                        selectedWordDiv = null;
+                    }
+                });
+            } else {
+                box.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    if (!box.classList.contains('correct')) box.classList.add('over');
+                });
+                box.addEventListener('dragleave', e => {
+                    box.classList.remove('over');
+                });
+                box.addEventListener('drop', e => {
+                    e.preventDefault();
+                    box.classList.remove('over');
+                    const droppedWord = e.dataTransfer.getData('text/plain');
+                    handleDropLogic(droppedWord, meaning);
+                });
+            }
         });
 
         document.getElementById('reset-game-btn').onclick = () => { setupMeaningMatchGame(surah, start, end); playSound('navigate'); };
