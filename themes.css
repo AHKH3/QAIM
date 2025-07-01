@@ -1,0 +1,122 @@
+/* --- Theme Variables --- */
+:root {
+    --classic-primary: #0d47a1; /* Deep Blue */
+    --classic-secondary: #d4af37; /* Gold */
+    --classic-bg: #f4f6f8;
+    --classic-text: #333333;
+    --classic-surface: #ffffff;
+    --classic-border: #ddd;
+    --classic-sidebar-bg: #e8eaf6;
+
+    --kids-primary: #29b6f6; /* Light Blue */
+    --kids-secondary: #ffca28; /* Amber */
+    --kids-bg: #e3f2fd;
+    --kids-text: #455a64;
+    --kids-surface: #ffffff;
+    --kids-border: #bbdefb;
+    --kids-sidebar-bg: #f0f9ff;
+
+    --dark-primary: #37474f; /* Blue Grey */
+    --dark-secondary: #ffab40; /* Orange Accent */
+    --dark-bg: #212121;
+    --dark-text: #eceff1;
+    --dark-surface: #303030;
+    --dark-border: #424242;
+    --dark-sidebar-bg: #262626;
+
+    --mint-primary: #43aa8b;
+    --mint-secondary: #ffd6ba;
+    --mint-bg: #f0fff4;
+    --mint-text: #2d4739;
+    --mint-surface: #fff;
+    --mint-border: #b7efc5;
+    --mint-sidebar-bg: #f0fff4;
+
+    --forest-primary: #386641;
+    --forest-secondary: #a7c957;
+    --forest-bg: #f2ffe9;
+    --forest-text: #22223b;
+    --forest-surface: #fff;
+    --forest-border: #a7c957;
+    --forest-sidebar-bg: #f2ffe9;
+}
+
+/* --- Theme Application --- */
+body.theme-classic {
+    --primary-color: var(--classic-primary);
+    --secondary-color: var(--classic-secondary);
+    --bg-color: var(--classic-bg);
+    --text-color: var(--classic-text);
+    --surface-color: var(--classic-surface);
+    --border-color: var(--classic-border);
+    --sidebar-bg: var(--classic-sidebar-bg);
+}
+body.theme-kids {
+    --primary-color: var(--kids-primary);
+    --secondary-color: var(--kids-secondary);
+    --bg-color: var(--kids-bg);
+    --text-color: var(--kids-text);
+    --surface-color: var(--kids-surface);
+    --border-color: var(--kids-border);
+    --sidebar-bg: var(--kids-sidebar-bg);
+}
+body.theme-dark {
+    --primary-color: var(--dark-primary);
+    --secondary-color: var(--dark-secondary);
+    --bg-color: var(--dark-bg);
+    --text-color: var(--dark-text);
+    --surface-color: var(--dark-surface);
+    --border-color: var(--dark-border);
+    --sidebar-bg: var(--dark-sidebar-bg);
+}
+body.theme-mint {
+    --primary-color: var(--mint-primary);
+    --secondary-color: var(--mint-secondary);
+    --bg-color: var(--mint-bg);
+    --text-color: var(--mint-text);
+    --surface-color: var(--mint-surface);
+    --border-color: var(--mint-border);
+    --sidebar-bg: var(--mint-sidebar-bg);
+}
+body.theme-forest {
+    --primary-color: var(--forest-primary);
+    --secondary-color: var(--forest-secondary);
+    --bg-color: var(--forest-bg);
+    --text-color: var(--forest-text);
+    --surface-color: var(--forest-surface);
+    --border-color: var(--forest-border);
+    --sidebar-bg: var(--forest-sidebar-bg);
+}
+
+/* --- Specific Theme Adjustments --- */
+.theme-dark header, .theme-dark #sidebar {
+    border-color: var(--border-color);
+}
+.theme-dark header h1, .theme-dark header .material-icons {
+    color: var(--text-color);
+}
+.theme-dark .nav-btn {
+    background-color: #424242;
+    color: #fff;
+}
+.theme-dark .nav-btn.active {
+    background-color: var(--secondary-color);
+    color: #212121;
+}
+.theme-dark .section-title {
+    color: var(--secondary-color);
+    border-bottom-color: var(--secondary-color);
+}
+.theme-dark .tafsir-item {
+    background-color: #37474f;
+    border-right-color: var(--secondary-color);
+}
+.theme-dark .tafsir-item h4 {
+    color: var(--secondary-color);
+}
+.theme-kids #surah-container {
+    font-size: 2.2rem;
+    line-height: 2.4;
+    background-color: #fffde7;
+    border: 2px dashed var(--secondary-color);
+}

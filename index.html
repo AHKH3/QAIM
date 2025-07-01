@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مستكشف القرآن التفاعلي</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="themes.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Noto+Naskh+Arabic:wght@400;700&family=Vazirmatn:wght@400;700;900&family=Material+Icons&display=swap" rel="stylesheet">
+    <style>
+      /* تحسين أيقونات Material */
+      .material-icons {
+        font-family: 'Material Icons';
+        font-style: normal;
+        font-weight: normal;
+        font-size: 1.3em;
+        vertical-align: middle;
+        display: inline-block;
+        direction: ltr;
+      }
+      /* تحسين الخط الافتراضي للعناوين */
+      h1, h2, h3, .section-title {
+        font-family: 'Vazirmatn', 'Cairo', sans-serif;
+        letter-spacing: 0.5px;
+      }
+    </style>
+</head>
+<body class="theme-classic">
+
+    <div id="loading-indicator"></div>
+
+    <div id="app-container">
+        <header>
+            <h1><span class="material-icons">menu_book</span> مستكشف القرآن التفاعلي</h1>
+            <div class="header-controls">
+                <div id="theme-selector">
+                    <label for="theme-dropdown">المظهر:</label>
+                    <select id="theme-dropdown">
+                        <option value="theme-classic">كلاسيكي</option>
+                        <option value="theme-kids">أطفال</option>
+                        <option value="theme-dark">ليلي</option>
+                        <option value="theme-mint">نعناع</option>
+                        <option value="theme-forest">غابة</option>
+                    </select>
+                </div>
+                <button id="mute-btn" aria-label="كتم الصوت"><span class="material-icons">volume_up</span></button>
+            </div>
+            <button id="sidebar-toggle-btn" aria-label="إظهار القائمة الجانبية"><span class="material-icons">menu</span></button>
+        </header>
+
+        <div id="sidebar-overlay"></div>
+
+        <main id="explorer-view" class="view active">
+            <aside id="sidebar">
+                <div class="sidebar-content">
+                    <h2>اختر سورة</h2>
+                    <select id="surah-select"></select>
+                    <div id="verse-range-selector">
+                        <label for="verse-start">من آية:</label>
+                        <input type="number" id="verse-start" min="1">
+                        <label for="verse-end">إلى آية:</label>
+                        <input type="number" id="verse-end" min="1">
+                    </div>
+                    <nav id="content-nav">
+                        <button class="nav-btn active" data-section="read"><span class="material-icons">menu_book</span> اقرأ السورة</button>
+                        <button class="nav-btn" data-section="tafsir"><span class="material-icons">lightbulb</span> التفسير</button>
+                            <button class="nav-btn" data-section="games"><span class="material-icons">sports_esports</span> ألعاب</button>
+                        </nav>
+                    </div>
+                </aside>
+
+                <div id="content-area">
+                    <section id="read-section" class="content-section active">
+                        <h3 id="read-title" class="section-title"></h3>
+                        <div id="surah-container"></div>
+                    </section>
+
+                    <section id="tafsir-section" class="content-section">
+                        <h3 id="tafsir-title" class="section-title"></h3>
+                        <div id="tafsir-container"></div>
+                    </section>
+
+                    <section id="games-section" class="content-section">
+                        <h3 id="games-title" class="section-title">ألعاب وتدريبات</h3>
+                        <div id="game-area">
+                            <div id="game-selector">
+                                <button class="game-select-btn active" data-game="meaning-match"><span class="material-icons">sync_alt</span> لعبة توصيل المعاني</button>
+                                <button class="game-select-btn" data-game="wheel"><span class="material-icons">rotate_right</span> العجلة الدوارة</button>
+                                <button class="game-select-btn" data-game="verse-order"><span class="material-icons">sort</span> ترتيب الآيات</button>
+                            </div>
+                            <div id="meaning-match-game" class="game-container active">
+                                <p>اسحب الكلمة من اليمين وضعها على معناها الصحيح في اليسار.</p>
+                                <div id="meaning-game-area">
+                                    <div id="words-container"></div>
+                                    <div id="meanings-container"></div>
+                                </div>
+                                <button id="reset-game-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
+                                <div id="meaning-game-feedback"></div>
+                                <div id="meaning-match-score"></div>
+                            </div>
+                            <div id="wheel-game" class="game-container"></div>
+                            <div id="verse-order-game" class="game-container">
+                                <p>قم بترتيب الآيات لتكوين المقطع الصحيح من السورة.</p>
+                                <div id="verse-order-area">
+                                    <div id="shuffled-verses-container"></div>
+                                    <div id="ordered-verses-container"></div>
+                                </div>
+                                <button id="reset-verse-order-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
+                                <div id="verse-order-feedback"></div>
+                                <div id="verse-order-score"></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+
+        
+    </div>
+
+    <script src="./quran_data/1.js"></script>
+    <script src="./quran_data/32.js"></script>
+    <script src="./quran_data/58.js"></script>
+    <script src="./quran_data/59.js"></script>
+    <script src="./quran_data/60.js"></script>
+    <script src="./quran_data/61.js"></script>
+    <script src="./quran_data/62.js"></script>
+    <script src="./quran_data/63.js"></script>
+    <script src="./quran_data/64.js"></script>
+    <script src="./quran_data/65.js"></script>
+    <script src="./quran_data/66.js"></script>
+    <script src="./quran_data/67.js"></script>
+    <script src="./quran_data/68.js"></script>
+    <script src="./quran_data/69.js"></script>
+    <script src="./quran_data/70.js"></script>
+    <script src="./quran_data/71.js"></script>
+    <script src="./quran_data/72.js"></script>
+    <script src="./quran_data/73.js"></script>
+    <script src="./quran_data/74.js"></script>
+    <script src="./quran_data/75.js"></script>
+    <script src="./quran_data/76.js"></script>
+    <script src="./quran_data/77.js"></script>
+    <script src="./quran_data/78.js"></script>
+    <script src="./quran_data/79.js"></script>
+    <script src="./quran_data/80.js"></script>
+    <script src="./quran_data/81.js"></script>
+    <script src="./quran_data/82.js"></script>
+    <script src="./quran_data/83.js"></script>
+    <script src="./quran_data/84.js"></script>
+    <script src="./quran_data/85.js"></script>
+    <script src="./quran_data/86.js"></script>
+    <script src="./quran_data/87.js"></script>
+    <script src="./quran_data/88.js"></script>
+    <script src="./quran_data/89.js"></script>
+    <script src="./quran_data/90.js"></script>
+    <script src="./quran_data/91.js"></script>
+    <script src="./quran_data/92.js"></script>
+    <script src="./quran_data/93.js"></script>
+    <script src="./quran_data/94.js"></script>
+    <script src="./quran_data/95.js"></script>
+    <script src="./quran_data/96.js"></script>
+    <script src="./quran_data/97.js"></script>
+    <script src="./quran_data/98.js"></script>
+    <script src="./quran_data/99.js"></script>
+    <script src="./quran_data/100.js"></script>
+    <script src="./quran_data/101.js"></script>
+    <script src="./quran_data/102.js"></script>
+    <script src="./quran_data/103.js"></script>
+    <script src="./quran_data/104.js"></script>
+    <script src="./quran_data/105.js"></script>
+    <script src="./quran_data/106.js"></script>
+    <script src="./quran_data/107.js"></script>
+    <script src="./quran_data/108.js"></script>
+    <script src="./quran_data/109.js"></script>
+    <script src="./quran_data/110.js"></script>
+    <script src="./quran_data/111.js"></script>
+    <script src="./quran_data/112.js"></script>
+    <script src="./quran_data/113.js"></script>
+    <script src="./quran_data/114.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
