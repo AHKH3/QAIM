@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const shuffledOrder = [...correctOrder].sort(() => Math.random() - 0.5);
 
         container.innerHTML = `
-            <p>قم بسحب وإفلات الآيات لترتيبها بالترتيب الصحيح.</p>
+            <p>قم بسحب وإفلات الآيات لترتيبها بالترتيب الصحيح. (على الهاتف: انقر على آيتين لتبديل أماكنهما)</p>
             <div id="verse-order-area"></div>
             <button id="check-order-btn" class="btn-check">تحقق من الترتيب</button>
             <button id="reset-verse-order-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
@@ -637,32 +637,75 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         const verseArea = document.getElementById('verse-order-area');
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        let selectedVerseItem = null;
+
         shuffledOrder.forEach(verseText => {
             const verseDiv = document.createElement('div');
             verseDiv.className = 'verse-order-item';
             verseDiv.textContent = verseText;
-            verseDiv.draggable = true;
-            verseDiv.addEventListener('dragstart', (e) => {
-                draggedItem = verseDiv;
-                setTimeout(() => verseDiv.classList.add('dragging'), 0);
-                playSound('drag_start');
-            });
-            verseDiv.addEventListener('dragend', () => {
-                verseDiv.classList.remove('dragging');
-            });
             verseArea.appendChild(verseDiv);
-        });
 
-        verseArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            const afterElement = getDragAfterElement(verseArea, e.clientY);
-            const dragging = document.querySelector('.dragging');
-            if (afterElement == null) {
-                verseArea.appendChild(dragging);
+            if (isTouchDevice) {
+                verseDiv.addEventListener('click', () => {
+                    if (verseDiv.classList.contains('dragging')) {
+                        // Deselect if the same item is clicked again
+                        verseDiv.classList.remove('dragging');
+                        selectedVerseItem = null;
+                        return;
+                    }
+
+                    if (!selectedVerseItem) {
+                        // Select the first item
+                        selectedVerseItem = verseDiv;
+                        verseDiv.classList.add('dragging');
+                        playSound('drag_start');
+                    } else {
+                        // Second item is clicked, so swap them
+                        const nodeA = selectedVerseItem;
+                        const nodeB = verseDiv;
+                        const parent = nodeA.parentNode;
+                        const siblingA = nodeA.nextSibling;
+                        const siblingB = nodeB.nextSibling;
+
+                        parent.insertBefore(nodeA, siblingB);
+                        parent.insertBefore(nodeB, siblingA);
+                        
+                        playSound('swoosh');
+                        
+                        // Deselect after swap
+                        nodeA.classList.remove('dragging');
+                        selectedVerseItem = null;
+                    }
+                });
             } else {
-                verseArea.insertBefore(dragging, afterElement);
+                // Desktop drag-and-drop logic
+                verseDiv.draggable = true;
+                verseDiv.addEventListener('dragstart', (e) => {
+                    draggedItem = verseDiv;
+                    setTimeout(() => verseDiv.classList.add('dragging'), 0);
+                    playSound('drag_start');
+                });
+                verseDiv.addEventListener('dragend', () => {
+                    verseDiv.classList.remove('dragging');
+                });
             }
         });
+
+        if (!isTouchDevice) {
+            verseArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(verseArea, e.clientY);
+                const dragging = document.querySelector('.dragging');
+                if (dragging) {
+                    if (afterElement == null) {
+                        verseArea.appendChild(dragging);
+                    } else {
+                        verseArea.insertBefore(dragging, afterElement);
+                    }
+                }
+            });
+        }
 
         document.getElementById('check-order-btn').addEventListener('click', () => {
             playSound('click');
