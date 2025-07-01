@@ -486,6 +486,10 @@ select:focus, input[type="number"]:focus {
     font-size: 1.2rem;
     line-height: 1.8;
     border-right: 4px solid var(--secondary-color, #d4af37);
+    user-select: none; /* Prevent text selection */
+    -webkit-user-select: none; /* For Safari */
+    -moz-user-select: none; /* For Firefox */
+    -ms-user-select: none; /* For IE */
 }
 
 .verse-order-item.dragging {
