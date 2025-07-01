@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const surah = surahList[surahIndex];
         const gameArea = document.getElementById('game-area');
         const gameTitle = document.getElementById('games-title');
-        gameTitle.textContent = `ألعاب على سورة ${surah.name}`;
+        gameTitle.textContent = `أنشطة على سورة ${surah.name}`;
         const games = [
             { key: 'meaning-match', label: 'لعبة توصيل المعاني', icon: 'sync_alt' },
             { key: 'wheel', label: 'العجلة الدوارة', icon: 'rotate_right' },
