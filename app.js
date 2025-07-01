@@ -13,20 +13,138 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Theme
     const themeDropdown = document.getElementById('theme-dropdown');
+    const themeDropdownMobile = document.getElementById('theme-dropdown-mobile');
     const body = document.body;
     let lastSelectedTheme = body.className || 'theme-classic';
 
     let surahList = [];
+
+    // Sound Functionality
+    const muteBtn = document.getElementById('mute-btn');
+    const muteBtnMobile = document.getElementById('mute-btn-mobile');
+    let isMuted = false;
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.error("Web Audio API is not supported in this browser");
+            }
+        }
+    }
+
+    function playSound(type) {
+        if (isMuted || !audioCtx) return;
+
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        let freq = 440;
+        let duration = 0.1;
+        let waveType = 'sine';
+
+        switch (type) {
+            case 'correct':
+                freq = 600;
+                duration = 0.15;
+                break;
+            case 'incorrect':
+                freq = 200;
+                waveType = 'square';
+                duration = 0.2;
+                break;
+            case 'win':
+                freq = 800;
+                duration = 0.5;
+                break;
+            case 'spin_start':
+                freq = 300;
+                duration = 0.1;
+                waveType = 'sawtooth';
+                break;
+            case 'spin_stop':
+                freq = 700;
+                duration = 0.2;
+                break;
+            case 'click':
+                freq = 880;
+                duration = 0.05;
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                break;
+            case 'navigate':
+                freq = 520;
+                duration = 0.1;
+                waveType = 'triangle';
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                break;
+            case 'swoosh':
+                freq = 220;
+                duration = 0.15;
+                waveType = 'sawtooth';
+                gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                break;
+            case 'drag_start':
+                freq = 1000;
+                duration = 0.08;
+                waveType = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                break;
+            case 'wheel_start_spin':
+                freq = 150;
+                duration = 0.3;
+                waveType = 'triangle';
+                gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.25);
+                break;
+        }
+
+        oscillator.type = waveType;
+        oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + duration);
+    }
+
+    function toggleMute() {
+        isMuted = !isMuted;
+        updateMuteButtonIcon(); // Call the new function
+        if (!isMuted && !audioCtx) {
+            initAudio();
+        }
+    }
+
+    function updateMuteButtonIcon() {
+        const muteBtn = document.getElementById('mute-btn');
+        const muteBtnMobile = document.getElementById('mute-btn-mobile');
+
+        if (muteBtn) {
+            muteBtn.innerHTML = `<span class="material-icons">${isMuted ? 'volume_off' : 'volume_up'}</span>`;
+        }
+        if (muteBtnMobile) {
+            muteBtnMobile.innerHTML = `<span class="material-icons">${isMuted ? 'volume_off' : 'volume_up'}</span>`;
+        }
+    }
 
     // --- Initialization ---
     function initializeApp() {
         loadSurahList();
         populateSurahSelect();
         setupEventListeners();
+        updateMuteButtonIcon(); // Set initial mute button icon
         if (surahList.length > 0) {
             displayFullSurah(0);
         }
-        themeDropdown.value = lastSelectedTheme;
+        if (themeDropdown) {
+            themeDropdown.value = lastSelectedTheme;
+        }
+        if (themeDropdownMobile) {
+            themeDropdownMobile.value = lastSelectedTheme;
+        }
     }
 
     function loadSurahList() {
@@ -63,55 +181,87 @@ document.addEventListener('DOMContentLoaded', () => {
         displayGames(surahIndex, startVerse, endVerse);
     }
 
-    // --- Event Listeners ---
-    function setupEventListeners() {
-        themeDropdown.addEventListener('change', (e) => {
-            setTheme(e.target.value);
-        });
-
-        contentNavButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const currentActive = document.querySelector('.content-section.active');
-                const newSectionId = `${btn.dataset.section}-section`;
-                const newActive = document.getElementById(newSectionId);
-                if (currentActive === newActive) return;
-                contentNavButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                if (currentActive) {
-                    currentActive.classList.add('fade-out');
-                    currentActive.addEventListener('animationend', () => {
-                        currentActive.classList.remove('active', 'fade-out');
-                        newActive.classList.add('active', 'fade-in');
-                    }, { once: true });
-                } else {
-                    newActive.classList.add('active', 'fade-in');
-                }
-            });
-        });
-
-        verseStartInput.addEventListener('change', () => loadSurahRange());
-        verseEndInput.addEventListener('change', () => loadSurahRange());
-
-        surahSelect.addEventListener('change', () => {
-            const surahIndex = surahSelect.value;
-            displayFullSurah(surahIndex);
-        });
-    }
-
     function setTheme(theme) {
         body.className = '';
         body.classList.add(theme);
         lastSelectedTheme = theme;
-        themeDropdown.value = theme;
+        if (themeDropdown) {
+            themeDropdown.value = theme;
+        }
+        if (themeDropdownMobile) {
+            themeDropdownMobile.value = theme;
+        }
     }
 
     function loadSurahRange() {
         const surahIndex = surahSelect.value;
+        if (!surahList[surahIndex]) return;
         const startVerse = parseInt(verseStartInput.value) || 1;
         const endVerse = parseInt(verseEndInput.value) || surahList[surahIndex].verses.length;
         displaySurah(surahIndex, startVerse, endVerse);
         displayTafsir(surahIndex, startVerse, endVerse);
         displayGames(surahIndex, startVerse, endVerse);
+    }
+
+    // --- Event Listeners ---
+    function setupEventListeners() {
+        // Initialize audio on the first user interaction
+        document.body.addEventListener('click', initAudio, { once: true });
+        document.body.addEventListener('keydown', initAudio, { once: true });
+
+        // Surah and Verse Selection
+        surahSelect.addEventListener('change', () => {
+            playSound('navigate');
+            displayFullSurah(surahSelect.value);
+        });
+        verseStartInput.addEventListener('change', () => {
+            playSound('click');
+            loadSurahRange();
+        });
+        verseEndInput.addEventListener('change', () => {
+            playSound('click');
+            loadSurahRange();
+        });
+
+        // Theme Dropdowns
+        if (themeDropdown) {
+            themeDropdown.addEventListener('change', (e) => {
+                setTheme(e.target.value);
+                playSound('navigate');
+            });
+        }
+        if (themeDropdownMobile) {
+            themeDropdownMobile.addEventListener('change', (e) => {
+                setTheme(e.target.value);
+                playSound('navigate');
+            });
+        }
+
+        // Mute Buttons
+        if (muteBtn) {
+            muteBtn.addEventListener('click', toggleMute);
+        }
+        if (muteBtnMobile) {
+            muteBtnMobile.addEventListener('click', toggleMute);
+        }
+
+        // Content Navigation
+        contentNavButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                playSound('navigate');
+                
+                contentNavButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                contentSections.forEach(s => s.classList.remove('active'));
+                
+                const sectionId = btn.dataset.section + '-section';
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
+            });
+        });
     }
 
     // --- Display Functions ---
@@ -191,6 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
             div.addEventListener('dragstart', e => {
                 e.dataTransfer.setData('text/plain', word);
                 div.classList.add('dragging');
+                playSound('drag_start');
             });
             div.addEventListener('dragend', () => div.classList.remove('dragging'));
             wordsContainer.appendChild(div);
@@ -216,20 +367,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.querySelector(`.word-item.dragging`).style.visibility = 'hidden';
                     updateScore('meaning-match', 1);
                     if (Array.from(meaningsContainer.children).every(b => b.classList.contains('correct'))) {
-                        // playSound('win'); // Temporarily disabled for testing
+                        playSound('win');
                     } else {
-                        // playSound('correct'); // Temporarily disabled for testing
+                        playSound('correct');
                     }
                 } else {
                     box.classList.add('incorrect');
                     setTimeout(() => box.classList.remove('incorrect'), 700);
-                    // playSound('incorrect'); // Temporarily disabled for testing
+                    playSound('incorrect');
                 }
             });
             meaningsContainer.appendChild(box);
         });
 
-        document.getElementById('reset-game-btn').onclick = () => setupMeaningMatchGame(surah, start, end);
+        document.getElementById('reset-game-btn').onclick = () => { setupMeaningMatchGame(surah, start, end); playSound('navigate'); };
     }
 
     function displayGames(surahIndex, start, end) {
@@ -250,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.dataset.game = g.key;
             btn.innerHTML = `<span class="material-icons">${g.icon}</span> ${g.label}`;
             btn.onclick = function() {
+                playSound('click');
                 selector.querySelectorAll('.game-select-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 showGame(g.key);
@@ -368,6 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('spin-wheel-btn').onclick = function() {
             if (spinning) return;
             spinning = true;
+            playSound('wheel_start_spin');
             const svg = document.getElementById('wheel-svg');
             
             const currentRotationMatch = svg.style.transform.match(/rotate\(([-]?\d*\.?\d*)deg\)/);
@@ -383,6 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setTimeout(() => {
                 spinning = false;
+                playSound('spin_stop');
                 showWheelQuestion(questions[selectedIdx]);
             }, 5100);
         };
@@ -400,17 +554,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     optsDiv.querySelectorAll('button').forEach(b => b.disabled = true);
                     if (opt === q.answer) {
                         btn.classList.add('correct');
-                        // playSound('correct'); // Temporarily disabled for testing
+                        playSound('correct');
                     } else {
                         btn.classList.add('incorrect');
-                        // playSound('incorrect'); // Temporarily disabled for testing
+                        playSound('incorrect');
                     }
                     setTimeout(() => { qDiv.innerHTML = ''; }, 1500);
                 };
                 optsDiv.appendChild(btn);
             });
         }
-        document.getElementById('reset-wheel-btn').onclick = () => setupWheelGame(surah, start, end);
+        document.getElementById('reset-wheel-btn').onclick = () => { setupWheelGame(surah, start, end); playSound('navigate'); };
     }
 
     function setupVerseOrderGame(surah, start, end) {
@@ -445,6 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
             verseDiv.addEventListener('dragstart', (e) => {
                 draggedItem = verseDiv;
                 setTimeout(() => verseDiv.classList.add('dragging'), 0);
+                playSound('drag_start');
             });
             verseDiv.addEventListener('dragend', () => {
                 verseDiv.classList.remove('dragging');
@@ -464,6 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         document.getElementById('check-order-btn').addEventListener('click', () => {
+            playSound('click');
             const userOrder = Array.from(verseArea.children).map(child => child.textContent);
             const feedbackDiv = document.getElementById('verse-order-feedback');
             let isCorrect = true;
@@ -478,13 +634,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 feedbackDiv.textContent = 'أحسنت! الترتيب صحيح.';
                 feedbackDiv.className = 'feedback-correct';
                 updateScore('verse-order', 1);
+                playSound('win');
             } else {
                 feedbackDiv.textContent = 'حاول مرة أخرى، الترتيب غير صحيح.';
                 feedbackDiv.className = 'feedback-incorrect';
+                playSound('incorrect');
             }
         });
 
-        document.getElementById('reset-verse-order-btn').onclick = () => setupVerseOrderGame(surah, start, end);
+        document.getElementById('reset-verse-order-btn').onclick = () => { setupVerseOrderGame(surah, start, end); playSound('navigate'); };
     }
 
     function getDragAfterElement(container, y) {
