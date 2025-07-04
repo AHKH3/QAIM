@@ -26,6 +26,7 @@
         letter-spacing: 0.5px;
       }
     </style>
+    <link rel="icon" href="data:;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
 </head>
 <body class="theme-classic">
 
@@ -35,6 +36,7 @@
         <header>
             <h1><span class="material-icons">menu_book</span> مستكشف القرآن التفاعلي</h1>
             <div class="header-controls">
+                <button id="print-btn" aria-label="طباعة المحتوى"><span class="material-icons">print</span></button>
                 <div id="theme-selector">
                     <label for="theme-dropdown">المظهر:</label>
                     <select id="theme-dropdown">
@@ -56,6 +58,7 @@
             <aside id="sidebar">
                 <div class="sidebar-content">
                     <div class="sidebar-header-controls">
+                        <button id="print-btn-mobile" aria-label="طباعة المحتوى"><span class="material-icons">print</span></button>
                         <div id="theme-selector-mobile">
                             <label for="theme-dropdown-mobile">المظهر:</label>
                             <select id="theme-dropdown-mobile">
@@ -102,6 +105,7 @@
                                 <button class="game-select-btn active" data-game="meaning-match"><span class="material-icons">sync_alt</span> لعبة توصيل المعاني</button>
                                 <button class="game-select-btn" data-game="wheel"><span class="material-icons">rotate_right</span> العجلة الدوارة</button>
                                 <button class="game-select-btn" data-game="verse-order"><span class="material-icons">sort</span> ترتيب الآيات</button>
+                                <button class="game-select-btn" data-game="verse-cascade"><span class="material-icons">waterfall_chart</span> شلال الآيات</button>
                             </div>
                             <div id="meaning-match-game" class="game-container active">
                                 <p>اسحب الكلمة من اليمين وضعها على معناها الصحيح في اليسار.</p>
@@ -113,7 +117,6 @@
                                 <div id="meaning-game-feedback"></div>
                                 <div id="meaning-match-score"></div>
                             </div>
-                            <div id="wheel-game" class="game-container"></div>
                             <div id="verse-order-game" class="game-container">
                                 <p>قم بترتيب الآيات لتكوين المقطع الصحيح من السورة.</p>
                                 <div id="verse-order-area">
@@ -124,73 +127,15 @@
                                 <div id="verse-order-feedback"></div>
                                 <div id="verse-order-score"></div>
                             </div>
-                        </div>
+                            <div id="verse-cascade-game" class="game-container"></div>
                     </section>
                 </div>
             </main>
 
-        
+        <button id="scroll-top-btn" class="btn-scroll-top" aria-label="العودة للأعلى"><span class="material-icons">arrow_upward</span></button>
     </div>
 
-    <script src="./quran_data/1.js"></script>
-    <script src="./quran_data/32.js"></script>
-    <script src="./quran_data/58.js"></script>
-    <script src="./quran_data/59.js"></script>
-    <script src="./quran_data/60.js"></script>
-    <script src="./quran_data/61.js"></script>
-    <script src="./quran_data/62.js"></script>
-    <script src="./quran_data/63.js"></script>
-    <script src="./quran_data/64.js"></script>
-    <script src="./quran_data/65.js"></script>
-    <script src="./quran_data/66.js"></script>
-    <script src="./quran_data/67.js"></script>
-    <script src="./quran_data/68.js"></script>
-    <script src="./quran_data/69.js"></script>
-    <script src="./quran_data/70.js"></script>
-    <script src="./quran_data/71.js"></script>
-    <script src="./quran_data/72.js"></script>
-    <script src="./quran_data/73.js"></script>
-    <script src="./quran_data/74.js"></script>
-    <script src="./quran_data/75.js"></script>
-    <script src="./quran_data/76.js"></script>
-    <script src="./quran_data/77.js"></script>
-    <script src="./quran_data/78.js"></script>
-    <script src="./quran_data/79.js"></script>
-    <script src="./quran_data/80.js"></script>
-    <script src="./quran_data/81.js"></script>
-    <script src="./quran_data/82.js"></script>
-    <script src="./quran_data/83.js"></script>
-    <script src="./quran_data/84.js"></script>
-    <script src="./quran_data/85.js"></script>
-    <script src="./quran_data/86.js"></script>
-    <script src="./quran_data/87.js"></script>
-    <script src="./quran_data/88.js"></script>
-    <script src="./quran_data/89.js"></script>
-    <script src="./quran_data/90.js"></script>
-    <script src="./quran_data/91.js"></script>
-    <script src="./quran_data/92.js"></script>
-    <script src="./quran_data/93.js"></script>
-    <script src="./quran_data/94.js"></script>
-    <script src="./quran_data/95.js"></script>
-    <script src="./quran_data/96.js"></script>
-    <script src="./quran_data/97.js"></script>
-    <script src="./quran_data/98.js"></script>
-    <script src="./quran_data/99.js"></script>
-    <script src="./quran_data/100.js"></script>
-    <script src="./quran_data/101.js"></script>
-    <script src="./quran_data/102.js"></script>
-    <script src="./quran_data/103.js"></script>
-    <script src="./quran_data/104.js"></script>
-    <script src="./quran_data/105.js"></script>
-    <script src="./quran_data/106.js"></script>
-    <script src="./quran_data/107.js"></script>
-    <script src="./quran_data/108.js"></script>
-    <script src="./quran_data/109.js"></script>
-    <script src="./quran_data/110.js"></script>
-    <script src="./quran_data/111.js"></script>
-    <script src="./quran_data/112.js"></script>
-    <script src="./quran_data/113.js"></script>
-    <script src="./quran_data/114.js"></script>
+    <script src="./quran_data/surah_index.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
