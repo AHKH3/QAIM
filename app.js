@@ -1,29 +1,34 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let draggedItem = null;
+    let currentSurahData = null; // To store the currently loaded surah data
 
-    // Main Views
-    const explorerView = document.getElementById('explorer-view');
-
-    // Surah Explorer Elements
+    // DOM Elements
     const surahSelect = document.getElementById('surah-select');
     const verseStartInput = document.getElementById('verse-start');
     const verseEndInput = document.getElementById('verse-end');
-    const contentNavButtons = document.querySelectorAll('#content-nav .nav-btn');
-    const contentSections = document.querySelectorAll('.content-section');
-    
-    // Theme
     const themeDropdown = document.getElementById('theme-dropdown');
     const themeDropdownMobile = document.getElementById('theme-dropdown-mobile');
     const body = document.body;
-    let lastSelectedTheme = body.className || 'theme-classic';
-
-    let surahList = [];
-
-    // Sound Functionality
+    const contentNavButtons = document.querySelectorAll('#content-nav .nav-btn');
+    const contentSections = document.querySelectorAll('.content-section');
     const muteBtn = document.getElementById('mute-btn');
     const muteBtnMobile = document.getElementById('mute-btn-mobile');
+    const loadingIndicator = document.getElementById('loading-indicator');
+
+    // Theme handling
+    let lastSelectedTheme = localStorage.getItem('selectedTheme') || 'theme-classic';
+    body.classList.add(lastSelectedTheme); // Apply initial theme
+
+    // Sound Functionality
     let isMuted = false;
     let audioCtx = null;
+
+    function showLoading() {
+        loadingIndicator.style.display = 'block';
+    }
+
+    function hideLoading() {
+        loadingIndicator.style.display = 'none';
+    }
 
     function initAudio() {
         if (!audioCtx) {
@@ -131,44 +136,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Initialization ---
-    function initializeApp() {
-        loadSurahList();
-        populateSurahSelect();
+    async function initializeApp() {
+        populateSurahSelect(surahSelect);
         setupEventListeners();
         updateMuteButtonIcon(); // Set initial mute button icon
-        if (surahList.length > 0) {
-            displayFullSurah(0);
-        }
         if (themeDropdown) {
             themeDropdown.value = lastSelectedTheme;
         }
         if (themeDropdownMobile) {
             themeDropdownMobile.value = lastSelectedTheme;
         }
-    }
-
-    function loadSurahList() {
-        const loadedSurahs = [];
-        for (let i = 1; i <= 114; i++) {
-            const surahVar = window[`surah_${i}`];
-            if (typeof surahVar !== 'undefined') {
-                loadedSurahs.push(surahVar);
-            }
+        // Load the first surah by default
+        if (surahSelect.options.length > 0) {
+            await loadAndDisplaySurah(surahSelect.value);
         }
-        surahList = loadedSurahs.sort((a, b) => a.id - b.id);
     }
 
-    function populateSurahSelect() {
-        surahList.forEach((surah, index) => {
+    function populateSurahSelect(selectElement) {
+        if (typeof surahIndex === 'undefined' || !Array.isArray(surahIndex)) {
+            console.error('surahIndex is not loaded!');
+            return;
+        }
+        surahIndex.forEach((surah, index) => {
             const option = document.createElement('option');
-            option.value = index;
+            option.value = surah.id; // Use surah ID as value
             option.textContent = `${surah.id}. ${surah.name}`;
-            surahSelect.appendChild(option);
+            selectElement.appendChild(option);
         });
     }
 
-    function displayFullSurah(surahIndex) {
-        const surah = surahList[surahIndex];
+    async function loadAndDisplaySurah(surahId) {
+        showLoading();
+        try {
+            const response = await fetch(`./quran_data/${surahId}.js`);
+            const text = await response.text();
+            // بدل محاولة استخراج JSON، ننفذ الكود ونعيد المتغير مباشرة
+            const surahVarName = `surah_${surahId}`;
+            let surahData = null;
+            try {
+                // ننفذ الكود ونعيد المتغير مباشرة
+                surahData = new Function(text + `; return ${surahVarName};`)();
+            } catch (e) {
+                console.error('Error evaluating surah JS file:', e);
+            }
+            if (surahData && typeof surahData === 'object') {
+                currentSurahData = surahData;
+                displayFullSurah(currentSurahData);
+            } else {
+                console.error('Could not parse surah data from file:', surahId);
+                currentSurahData = null;
+            }
+        } catch (error) {
+            console.error('Error loading surah data:', error);
+            currentSurahData = null;
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function displayFullSurah(surah) {
         if (!surah) return;
         const startVerse = 1;
         const endVerse = surah.verses.length;
@@ -176,9 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
         verseStartInput.max = endVerse;
         verseEndInput.value = endVerse;
         verseEndInput.max = endVerse;
-        displaySurah(surahIndex, startVerse, endVerse);
-        displayTafsir(surahIndex, startVerse, endVerse);
-        displayGames(surahIndex, startVerse, endVerse);
+        displaySurah(surah, startVerse, endVerse);
+        displayTafsir(surah, startVerse, endVerse);
+        displayGames(surah, startVerse, endVerse);
     }
 
     function setTheme(theme) {
@@ -193,14 +219,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function loadSurahRange() {
-        const surahIndex = surahSelect.value;
-        if (!surahList[surahIndex]) return;
+    async function loadSurahRange() {
+        if (!currentSurahData) return;
+        const surah = currentSurahData;
         const startVerse = parseInt(verseStartInput.value) || 1;
-        const endVerse = parseInt(verseEndInput.value) || surahList[surahIndex].verses.length;
-        displaySurah(surahIndex, startVerse, endVerse);
-        displayTafsir(surahIndex, startVerse, endVerse);
-        displayGames(surahIndex, startVerse, endVerse);
+        const endVerse = parseInt(verseEndInput.value) || surah.verses.length;
+        displaySurah(surah, startVerse, endVerse);
+        displayTafsir(surah, startVerse, endVerse);
+        displayGames(surah, startVerse, endVerse);
+    }
+
+    let verseCascadeGameLoopId = null;
+
+    function cleanupActiveGame() {
+        if (verseCascadeGameLoopId) {
+            cancelAnimationFrame(verseCascadeGameLoopId);
+            verseCascadeGameLoopId = null;
+            const cascadeArea = document.getElementById('cascade-area');
+            if (cascadeArea) cascadeArea.innerHTML = '';
+        }
     }
 
     // --- Event Listeners ---
@@ -210,16 +247,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.addEventListener('keydown', initAudio, { once: true });
 
         // Surah and Verse Selection
-        surahSelect.addEventListener('change', () => {
+        surahSelect.addEventListener('change', async () => {
             playSound('navigate');
-            displayFullSurah(surahSelect.value);
+            cleanupActiveGame();
+            await loadAndDisplaySurah(surahSelect.value);
         });
         verseStartInput.addEventListener('change', () => {
             playSound('click');
+            cleanupActiveGame();
             loadSurahRange();
         });
         verseEndInput.addEventListener('change', () => {
             playSound('click');
+            cleanupActiveGame();
             loadSurahRange();
         });
 
@@ -249,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contentNavButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 playSound('navigate');
+                cleanupActiveGame();
                 
                 contentNavButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
@@ -262,11 +303,88 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+
+        // Scroll to Top Button
+        const scrollTopBtn = document.getElementById('scroll-top-btn');
+        if (scrollTopBtn) {
+            scrollTopBtn.addEventListener('click', () => {
+                document.getElementById('content-area').scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            document.getElementById('content-area').addEventListener('scroll', () => {
+                if (document.getElementById('content-area').scrollTop > 200) {
+                    scrollTopBtn.style.display = 'block';
+                } else {
+                    scrollTopBtn.style.display = 'none';
+                }
+            });
+        }
+
+        // Print Button
+        const printBtn = document.getElementById('print-btn');
+        if (printBtn) {
+            printBtn.addEventListener('click', () => {
+                playSound('click');
+                printContent();
+            });
+        }
+    }
+
+    // --- Print Functionality ---
+    function printContent() {
+        const contentToPrint = document.getElementById('content-area').cloneNode(true);
+        // Remove elements not needed for print
+        contentToPrint.querySelector('#game-area').remove();
+        contentToPrint.querySelector('#game-selector').remove();
+        contentToPrint.querySelectorAll('.btn-reset, .btn-check, .option-btn, .game-select-btn').forEach(el => el.remove());
+
+        const printWindow = window.open('', '', 'height=800,width=800');
+        printWindow.document.write('<html><head><title>طباعة</title>');
+        // Copy styles
+        Array.from(document.querySelectorAll('link[rel="stylesheet"]')).forEach(link => {
+            printWindow.document.write('<link rel="stylesheet" href="' + link.href + '">');
+        });
+        printWindow.document.write('<style>');
+        printWindow.document.write(`
+            body { font-family: 'Cairo', sans-serif; direction: rtl; text-align: right; }
+            .content-section { display: block !important; }
+            #surah-container, .tafsir-item {
+                box-shadow: none;
+                border: 1px solid #eee;
+                margin-bottom: 1rem;
+                padding: 1rem;
+            }
+            .section-title { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+            .verse-block { display: block; margin-bottom: 0.5rem; }
+            .verse-number { font-size: 0.9em; color: #666; }
+            @page { size: auto;  margin: 15mm; }
+            @media print {
+                header, #sidebar, #scroll-top-btn, #print-btn, .header-controls, .sidebar-header-controls, #game-area, #game-selector, .btn-reset, .btn-check, .option-btn, .game-select-btn {
+                    display: none !important;
+                }
+                #app-container, main#explorer-view, #content-area {
+                    display: block;
+                    width: 100%;
+                    height: auto;
+                    overflow: visible;
+                    padding: 0;
+                    margin: 0;
+                }
+                body { margin: 0; }
+            }
+        `);
+        printWindow.document.write('</style></head><body>');
+        printWindow.document.write(contentToPrint.innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
     }
 
     // --- Display Functions ---
-    function displaySurah(surahIndex, start, end) {
-        const surah = surahList[surahIndex];
+    function displaySurah(surah, start, end) {
         const container = document.getElementById('surah-container');
         const title = document.getElementById('read-title');
         title.textContent = `سورة ${surah.name} (الآيات ${start}-${end})`;
@@ -277,8 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function displayTafsir(surahIndex, start, end) {
-        const surah = surahList[surahIndex];
+    function displayTafsir(surah, start, end) {
         const container = document.getElementById('tafsir-container');
         const title = document.getElementById('tafsir-title');
         title.textContent = `تفسير سورة ${surah.name} (الآيات ${start}-${end})`;
@@ -311,6 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'wheel': 0,
         'verse-order': 0
     };
+    let lastWheelQuestionIndex = -1; // To prevent repeating the same question twice in a row
     function updateScore(game, delta) {
         gameScores[game] += delta;
         const el = document.getElementById(`${game}-score`);
@@ -429,15 +547,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('reset-game-btn').onclick = () => { setupMeaningMatchGame(surah, start, end); playSound('navigate'); };
     }
 
-    function displayGames(surahIndex, start, end) {
-        const surah = surahList[surahIndex];
+    function displayGames(surah, start, end) {
         const gameArea = document.getElementById('game-area');
         const gameTitle = document.getElementById('games-title');
         gameTitle.textContent = `أنشطة على سورة ${surah.name}`;
         const games = [
             { key: 'meaning-match', label: 'لعبة توصيل المعاني', icon: 'sync_alt' },
             { key: 'wheel', label: 'العجلة الدوارة', icon: 'rotate_right' },
-            { key: 'verse-order', label: 'ترتيب الآيات', icon: 'sort' }
+            { key: 'verse-order', label: 'ترتيب الآيات', icon: 'sort' },
+            { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart' }
         ];
         const selector = document.getElementById('game-selector');
         selector.innerHTML = '';
@@ -450,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 playSound('click');
                 selector.querySelectorAll('.game-select-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                showGame(g.key);
+                showGame(g.key, surah, start, end);
             };
             selector.appendChild(btn);
         });
@@ -465,16 +583,265 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             div.style.display = (i === 0 ? 'block' : 'none');
         });
-        showGame(games[0].key);
+        showGame(games[0].key, surah, start, end);
         setupMeaningMatchGame(surah, start, end);
         setupWheelGame(surah, start, end);
         setupVerseOrderGame(surah, start, end);
+        setupVerseCascadeGame(surah, start, end);
     }
 
-    function showGame(game) {
+    function showGame(game, surah, start, end) {
+        cleanupActiveGame(); // Ensure any active game is cleaned up before showing a new one
         document.querySelectorAll('.game-container').forEach(g => g.style.display = 'none');
+        // عند تغيير اللعبة، امسح سؤال العجلة إذا كان ظاهرًا
+        const wheelQuestionArea = document.getElementById('wheel-question-area');
+        if (wheelQuestionArea) wheelQuestionArea.innerHTML = '';
         const el = document.getElementById(`${game}-game`);
         if (el) el.style.display = 'block';
+
+        // Re-initialize the selected game
+        switch (game) {
+            case 'meaning-match':
+                setupMeaningMatchGame(surah, start, end);
+                break;
+            case 'wheel':
+                setupWheelGame(surah, start, end);
+                break;
+            case 'verse-order':
+                setupVerseOrderGame(surah, start, end);
+                break;
+            case 'verse-cascade':
+                setupVerseCascadeGame(surah, start, end);
+                break;
+        }
+    }
+
+    function setupVerseCascadeGame(surah, start, end) {
+        const container = document.getElementById('verse-cascade-game');
+        if (!container) return;
+
+        let score, lives, currentVerseIndex, wordsToCatch, nextWordIndex, fallingWords, lastSpawnTime = 0;
+
+        const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end && v.text.split(' ').length >= 2);
+
+        if (versesToShow.length === 0) {
+            container.innerHTML = '<p>لا توجد آيات مناسبة لهذه اللعبة في النطاق المحدد.</p>';
+            return;
+        }
+
+        const difficultySettings = {
+            easy: { speed: 6, interval: 1400 },
+            medium: { speed: 5, interval: 1100 },
+            hard: { speed: 4, interval: 800 }
+        };
+
+        function renderDifficultySelection() {
+            cleanupGame();
+            container.innerHTML = `
+                <div class="difficulty-selector">
+                    <h3>اختر مستوى الصعوبة</h3>
+                    <button class="btn-difficulty" data-difficulty="easy">سهل</button>
+                    <button class="btn-difficulty" data-difficulty="medium">متوسط</button>
+                    <button class="btn-difficulty" data-difficulty="hard">صعب</button>
+                </div>
+            `;
+            document.querySelectorAll('.btn-difficulty').forEach(btn => {
+                btn.onclick = (e) => {
+                    difficulty = e.target.dataset.difficulty;
+                    renderGameUI();
+                    startGame();
+                };
+            });
+        }
+
+        function renderGameUI() {
+            container.innerHTML = `
+                <div id="cascade-header">
+                    <div id="cascade-info">
+                        <span>النتيجة: <span id="cascade-score">0</span></span>
+                        <span>المحاولات: <span id="cascade-lives"></span></span>
+                    </div>
+                    <button id="reset-cascade-btn" class="btn-reset"><span class="material-icons">refresh</span></button>
+                </div>
+                <div id="cascade-area"></div>
+                <div id="cascade-verse-display"></div>
+            `;
+            document.getElementById('reset-cascade-btn').onclick = renderDifficultySelection;
+        }
+
+        function startGame() {
+            cleanupGame(); // Ensure any previous game state is fully cleared
+            score = 0;
+            lives = 3;
+            currentVerseIndex = 0;
+            fallingWords = []; // Re-initialize for good measure
+            updateScoreDisplay();
+            updateLivesDisplay();
+            loadVerse();
+            // Start the game loop only after all setup is done
+            verseCascadeGameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        function cleanupGame() {
+            if (verseCascadeGameLoopId) {
+                cancelAnimationFrame(verseCascadeGameLoopId);
+                verseCascadeGameLoopId = null;
+            }
+            const cascadeArea = document.getElementById('cascade-area');
+            if (cascadeArea) cascadeArea.innerHTML = ''; // Clear all word elements from DOM
+            fallingWords = []; // Clear the array of falling word objects
+        }
+
+        function gameLoop(timestamp) {
+            if (lives <= 0 || verseCascadeGameLoopId === null) { // Added check for null gameLoopId
+                return; // Stop the loop if game is over or explicitly stopped
+            }
+
+            if (timestamp - lastSpawnTime > difficultySettings[difficulty].interval) {
+                lastSpawnTime = timestamp;
+                spawnWord();
+            }
+
+            verseCascadeGameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        function loadVerse() {
+            // Clear all existing falling words before loading a new verse
+            const cascadeArea = document.getElementById('cascade-area');
+            if (cascadeArea) cascadeArea.innerHTML = '';
+            fallingWords = [];
+
+            if (lives <= 0) {
+                endGame("حاول مرة أخرى يا بطل!");
+                return;
+            }
+            if (currentVerseIndex >= versesToShow.length) {
+                endGame("أحسنت! أنت بطل القرآن!");
+                return;
+            }
+
+            wordsToCatch = versesToShow[currentVerseIndex].text.split(' ').filter(w => w.trim() !== '');
+            nextWordIndex = 0;
+            updateVerseDisplay();
+        }
+
+        function spawnWord() {
+            if (lives <= 0 || verseCascadeGameLoopId === null) return; // Do not spawn if game is not active
+            const cascadeArea = document.getElementById('cascade-area');
+            if (!cascadeArea) return;
+
+            const nextWord = wordsToCatch[nextWordIndex];
+            const isNextWordFalling = fallingWords.some(fw => fw.text === nextWord);
+
+            let wordToSpawn;
+            // Always prioritize spawning the next required word if it's not already falling
+            if (!isNextWordFalling && nextWordIndex < wordsToCatch.length) {
+                wordToSpawn = nextWord;
+            } else {
+                // Otherwise, spawn a random word from the current verse
+                wordToSpawn = wordsToCatch[Math.floor(Math.random() * wordsToCatch.length)];
+            }
+            createWordElement(wordToSpawn);
+        }
+
+        function createWordElement(word) {
+            const cascadeArea = document.getElementById('cascade-area');
+            if (!cascadeArea || verseCascadeGameLoopId === null) return; // Do not create if game is not active
+
+            const wordEl = document.createElement('div');
+            wordEl.className = 'cascade-word';
+            wordEl.textContent = word;
+            
+            // Append first to measure width accurately
+            cascadeArea.appendChild(wordEl);
+
+            const wordWidth = wordEl.offsetWidth;
+            const maxRight = cascadeArea.offsetWidth - wordWidth - 10; // 10px padding from edge
+            wordEl.style.right = `${Math.max(0, Math.floor(Math.random() * maxRight))}px`;
+            
+            wordEl.style.animationDuration = `${(Math.random() * 2) + difficultySettings[difficulty].speed}s`;
+
+            const wordObj = { el: wordEl, text: word, missed: true };
+            fallingWords.push(wordObj);
+
+            wordEl.addEventListener('click', () => handleWordClick(wordObj));
+            wordEl.addEventListener('animationend', () => handleWordMiss(wordObj));
+        }
+
+        function handleWordClick(wordObj) {
+            if (wordObj.text === wordsToCatch[nextWordIndex]) {
+                wordObj.missed = false;
+                nextWordIndex++;
+                score += 10;
+                playSound('correct');
+                wordObj.el.remove();
+                fallingWords = fallingWords.filter(w => w !== wordObj);
+                updateVerseDisplay();
+                updateScoreDisplay();
+
+                if (nextWordIndex === wordsToCatch.length) {
+                    score += 25; // Bonus
+                    updateScoreDisplay();
+                    currentVerseIndex++;
+                    setTimeout(loadVerse, 500);
+                }
+            } else {
+                wordObj.el.classList.add('incorrect');
+                playSound('incorrect');
+                setTimeout(() => wordObj.el.classList.remove('incorrect'), 300);
+            }
+        }
+
+        function handleWordMiss(wordObj) {
+            if (wordObj.missed && wordObj.text === wordsToCatch[nextWordIndex]) {
+                lives--;
+                updateLivesDisplay();
+                playSound('incorrect');
+                currentVerseIndex++;
+                setTimeout(loadVerse, 500);
+            }
+            wordObj.el.remove();
+            fallingWords = fallingWords.filter(w => w !== wordObj);
+        }
+        
+        function updateVerseDisplay() {
+            const display = document.getElementById('cascade-verse-display');
+            if(display) {
+                const verseText = versesToShow[currentVerseIndex] ? `الآية: ${versesToShow[currentVerseIndex].text}` : "";
+                const caughtText = wordsToCatch.slice(0, nextWordIndex).join(' ');
+                display.innerHTML = `<small>${verseText}</small><br>${caughtText} ...`;
+            }
+        }
+
+        function updateScoreDisplay() {
+            const scoreEl = document.getElementById('cascade-score');
+            if(scoreEl) scoreEl.textContent = score;
+        }
+
+        function updateLivesDisplay() {
+            const livesEl = document.getElementById('cascade-lives');
+            if(livesEl) livesEl.textContent = lives > 0 ? '❤️'.repeat(lives) : '💔';
+        }
+
+        function endGame(message) {
+            cleanupGame();
+            const cascadeArea = document.getElementById('cascade-area');
+            if(cascadeArea) {
+                cascadeArea.innerHTML = `
+                    <div class="cascade-end-message">
+                        <h2>${message}</h2>
+                        <p>نتيجتك النهائية: ${score}</p>
+                        <button id="play-again-cascade-btn" class="btn-check">العب مرة أخرى</button>
+                    </div>`;
+                document.getElementById('play-again-cascade-btn').onclick = renderDifficultySelection;
+            }
+            const header = document.getElementById('cascade-header');
+            if (header) header.style.display = 'none';
+            const verseDisplay = document.getElementById('cascade-verse-display');
+            if(verseDisplay) verseDisplay.style.display = 'none';
+        }
+
+        renderDifficultySelection();
     }
 
     function setupWheelGame(surah, start, end) {
@@ -504,11 +871,12 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = '<p>لا توجد أسئلة كافية لهذه اللعبة.</p>';
             return;
         }
+        // ترتيب العناصر: العجلة، ثم صندوق السؤال، ثم زر العجلة
         container.innerHTML = `
             <p>اضغط زر "أدر العجلة" لتحديد السؤال!</p>
             <div id="wheel-area"></div>
-            <button id="spin-wheel-btn">أدر العجلة</button>
             <div id="wheel-question-area"></div>
+            <button id="spin-wheel-btn">أدر العجلة</button>
             <div id="wheel-score"></div>
             <button id="reset-wheel-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
         `;
