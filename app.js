@@ -421,15 +421,15 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Starts with basmallah?', normalizedFirstVerse.startsWith(normalizedBasmallah)); // للتصحيح
             console.log('Equals basmallah?', normalizedFirstVerse === normalizedBasmallah); // للتصحيح
 
-            // إذا كانت أول آية هي البسملة فقط
+            // إذا كانت أول آية هي البسملة فقط (سورة الفاتحة)
             if (normalizedFirstVerse === normalizedBasmallah) {
-                console.log('First verse is basmallah only'); // للتصحيح
+                console.log('First verse is basmallah only (Al-Fatiha)'); // للتصحيح
                 container.innerHTML += `<div class="basmallah">${firstVerse.text.trim()}</div>`;
                 basmallahFound = true;
                 skipFirstVerse = true; // لا نعرض الآية الأولى
             }
-            // إذا كانت أول آية تبدأ بالبسملة ثم نص آخر
-            else if (normalizedFirstVerse.startsWith(normalizedBasmallah)) {
+            // إذا كانت أول آية تبدأ بالبسملة ثم نص آخر (السور الأخرى)
+            else if (normalizedFirstVerse.startsWith(normalizedBasmallah) && surah.id !== 1) {
                 console.log('Found basmallah at start of verse'); // للتصحيح
                 // إيجاد موضع نهاية البسملة في النص الأصلي
                 let original = firstVerse.text.trim();
@@ -506,6 +506,40 @@ document.addEventListener('DOMContentLoaded', () => {
             tafsirItem.innerHTML = `<h4>الآيات (${item.verses})</h4><p>${item.explanation}</p>`;
             container.appendChild(tafsirItem);
         });
+    }
+
+    // دالة إزالة البسملة من نص الآية
+    function removeBasmallahFromVerse(verseText, surahId = null) {
+        const basmallahStandard = 'بسم الله الرحمن الرحيم';
+        const normalizedVerse = normalizeBasmallah(verseText.trim());
+        const normalizedBasmallah = normalizeBasmallah(basmallahStandard);
+        
+        // إذا كانت الآية هي البسملة فقط (وليس في سورة الفاتحة)، نعيد نص فارغ
+        if (normalizedVerse === normalizedBasmallah && surahId !== 1) {
+            return '';
+        }
+        
+        // إذا كانت الآية تبدأ بالبسملة (وليس في سورة الفاتحة)، نزيلها
+        if (normalizedVerse.startsWith(normalizedBasmallah) && surahId !== 1) {
+            let original = verseText.trim();
+            let basmallahEndIndex = 0;
+            let normCount = 0;
+            for (let i = 0; i < original.length; i++) {
+                let char = original[i];
+                let normChar = normalizeBasmallah(char);
+                if (normChar.length > 0) {
+                    normCount += normChar.length;
+                    if (normCount > normalizedBasmallah.length) {
+                        break;
+                    }
+                }
+                basmallahEndIndex = i + 1;
+            }
+            return original.slice(basmallahEndIndex).trim();
+        }
+        
+        // إذا لم توجد بسملة أو كانت سورة الفاتحة، نعيد النص كما هو
+        return verseText;
     }
 
     // --- Game Logic ---
@@ -806,7 +840,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            wordsToCatch = versesToShow[currentVerseIndex].text.split(' ').filter(w => w.trim() !== '');
+            const verseTextWithoutBasmallah = removeBasmallahFromVerse(versesToShow[currentVerseIndex].text, surah.id);
+            wordsToCatch = verseTextWithoutBasmallah.split(' ').filter(w => w.trim() !== '');
             nextWordIndex = 0;
             updateVerseDisplay();
         }
@@ -893,7 +928,8 @@ document.addEventListener('DOMContentLoaded', () => {
         function updateVerseDisplay() {
             const display = document.getElementById('cascade-verse-display');
             if(display) {
-                const verseText = versesToShow[currentVerseIndex] ? `الآية: ${versesToShow[currentVerseIndex].text}` : "";
+                const verseTextWithoutBasmallah = versesToShow[currentVerseIndex] ? removeBasmallahFromVerse(versesToShow[currentVerseIndex].text, surah.id) : "";
+                const verseText = versesToShow[currentVerseIndex] ? `الآية: ${verseTextWithoutBasmallah}` : "";
                 const caughtText = wordsToCatch.slice(0, nextWordIndex).join(' ');
                 display.innerHTML = `<small>${verseText}</small><br>${caughtText} ...`;
             }
@@ -940,16 +976,23 @@ document.addEventListener('DOMContentLoaded', () => {
         let questions = [];
         for (let i = 0; i < 8; i++) {
             const verse = surah.verses[Math.floor(Math.random() * surah.verses.length)];
-            const words = verse.text.split(' ');
+            const verseTextWithoutBasmallah = removeBasmallahFromVerse(verse.text, surah.id);
+            if (!verseTextWithoutBasmallah) continue; // تخطى الآيات التي هي بسملة فقط
+            
+            const words = verseTextWithoutBasmallah.split(' ');
             if (words.length > 3) {
                 const blankIndex = Math.floor(Math.random() * (words.length - 2)) + 1;
                 const answer = words[blankIndex];
                 let options = [answer];
                 while (options.length < 4) {
-                    const randomWord = surah.verses[Math.floor(Math.random() * surah.verses.length)].text.split(' ')[0];
-                    if (!options.includes(randomWord)) options.push(randomWord);
+                    const randomVerse = surah.verses[Math.floor(Math.random() * surah.verses.length)];
+                    const randomVerseText = removeBasmallahFromVerse(randomVerse.text, surah.id);
+                    if (randomVerseText) {
+                        const randomWord = randomVerseText.split(' ')[0];
+                        if (!options.includes(randomWord)) options.push(randomWord);
+                    }
                 }
-                questions.push({ type: 'fill-blank', verse: verse.text, blankIndex, answer, options: [...options].sort(() => 0.5 - Math.random()) });
+                questions.push({ type: 'fill-blank', verse: verseTextWithoutBasmallah, blankIndex, answer, options: [...options].sort(() => 0.5 - Math.random()) });
             }
         }
         if (questions.length < 5) questions = questions.concat(questions).slice(0, 5);
@@ -1078,7 +1121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const gameVerses = versesToShow.slice(0, 5); // Take up to 5 verses
-        const correctOrder = gameVerses.map(v => v.text);
+        const correctOrder = gameVerses.map(v => removeBasmallahFromVerse(v.text, surah.id)).filter(text => text); // إزالة البسملة وتخطى النصوص الفارغة
         const shuffledOrder = [...correctOrder].sort(() => Math.random() - 0.5);
 
         container.innerHTML = `
