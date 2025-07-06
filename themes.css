@@ -120,3 +120,28 @@ body.theme-forest {
     background-color: #fffde7;
     border: 2px dashed var(--secondary-color);
 }
+
+/* تنسيق بسم الله الرحمن الرحيم للسمات المختلفة */
+.theme-kids .basmallah {
+    background: linear-gradient(135deg, #fff3e0, #fffde7);
+    border: 2px dashed var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.theme-dark .basmallah {
+    background: linear-gradient(135deg, #424242, #37474f);
+    color: var(--secondary-color);
+    border-bottom-color: var(--secondary-color);
+}
+
+.theme-mint .basmallah {
+    background: linear-gradient(135deg, #e8f5e8, #f0fff4);
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.theme-forest .basmallah {
+    background: linear-gradient(135deg, #e8f5e8, #f2ffe9);
+    color: var(--primary-color);
+    border-bottom-color: var(--secondary-color);
+}

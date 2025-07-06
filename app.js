@@ -359,6 +359,17 @@ document.addEventListener('DOMContentLoaded', () => {
             .section-title { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1rem; }
             .verse-block { display: block; margin-bottom: 0.5rem; }
             .verse-number { font-size: 0.9em; color: #666; }
+            .basmallah { 
+                text-align: center; 
+                font-size: 2rem; 
+                font-weight: bold; 
+                color: #333; 
+                margin-bottom: 1.5rem; 
+                padding: 0.8rem; 
+                border-bottom: 2px solid #ccc; 
+                background: #f9f9f9; 
+                border-radius: 8px; 
+            }
             @page { size: auto;  margin: 15mm; }
             @media print {
                 header, #sidebar, #scroll-top-btn, #print-btn, .header-controls, .sidebar-header-controls, #game-area, #game-selector, .btn-reset, .btn-check, .option-btn, .game-select-btn {
@@ -389,10 +400,84 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = document.getElementById('read-title');
         title.textContent = `سورة ${surah.name} (الآيات ${start}-${end})`;
         container.innerHTML = '';
+        
+        console.log('Displaying surah:', surah.name, 'ID:', surah.id); // للتصحيح
+        
         const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end);
-        versesToShow.forEach(verse => {
+        
+        // البحث عن بسم الله الرحمن الرحيم في الآية الأولى
+        let basmallahFound = false;
+        let skipFirstVerse = false;
+        if (versesToShow.length > 0 && surah.id !== 9) {
+            const firstVerse = versesToShow[0];
+            console.log('First verse text:', firstVerse.text); // للتصحيح
+            
+            const basmallahStandard = 'بسم الله الرحمن الرحيم';
+            const normalizedFirstVerse = normalizeBasmallah(firstVerse.text.trim());
+            const normalizedBasmallah = normalizeBasmallah(basmallahStandard);
+
+            console.log('Normalized first verse:', normalizedFirstVerse); // للتصحيح
+            console.log('Normalized basmallah:', normalizedBasmallah); // للتصحيح
+            console.log('Starts with basmallah?', normalizedFirstVerse.startsWith(normalizedBasmallah)); // للتصحيح
+            console.log('Equals basmallah?', normalizedFirstVerse === normalizedBasmallah); // للتصحيح
+
+            // إذا كانت أول آية هي البسملة فقط
+            if (normalizedFirstVerse === normalizedBasmallah) {
+                console.log('First verse is basmallah only'); // للتصحيح
+                container.innerHTML += `<div class="basmallah">${firstVerse.text.trim()}</div>`;
+                basmallahFound = true;
+                skipFirstVerse = true; // لا نعرض الآية الأولى
+            }
+            // إذا كانت أول آية تبدأ بالبسملة ثم نص آخر
+            else if (normalizedFirstVerse.startsWith(normalizedBasmallah)) {
+                console.log('Found basmallah at start of verse'); // للتصحيح
+                // إيجاد موضع نهاية البسملة في النص الأصلي
+                let original = firstVerse.text.trim();
+                let normOriginal = normalizeBasmallah(original);
+                console.log('Original text:', original); // للتصحيح
+                console.log('Normalized text:', normOriginal); // للتصحيح
+                console.log('Normalized basmallah:', normalizedBasmallah); // للتصحيح
+                
+                // استخدام طريقة مختلفة لحساب موضع نهاية البسملة
+                let basmallahEndIndex = 0;
+                let normCount = 0;
+                for (let i = 0; i < original.length; i++) {
+                    let char = original[i];
+                    let normChar = normalizeBasmallah(char);
+                    if (normChar.length > 0) {
+                        normCount += normChar.length;
+                        if (normCount > normalizedBasmallah.length) {
+                            break;
+                        }
+                    }
+                    basmallahEndIndex = i + 1;
+                }
+                console.log('Basmallah end index:', basmallahEndIndex); // للتصحيح
+                
+                // عرض البسملة منفصلة مع الحفاظ على التشكيل الأصلي
+                let basmallahText = original.slice(0, basmallahEndIndex);
+                console.log('Basmallah text to display:', basmallahText); // للتصحيح
+                container.innerHTML += `<div class="basmallah">${basmallahText}</div>`;
+                basmallahFound = true;
+                
+                // إزالة البسملة من نص الآية الأولى
+                let remainingText = original.slice(basmallahEndIndex).trim();
+                console.log('Remaining text after basmallah:', remainingText); // للتصحيح
+                if (remainingText) {
+                    container.innerHTML += `<span class="verse-block">${remainingText} <span class="verse-number">﴿${firstVerse.id}﴾</span></span>`;
+                }
+                skipFirstVerse = true;
+            }
+            // إذا لم توجد بسملة، لا نعرض شيء خاص بها
+        } else {
+            console.log('Surah ID is 9 or no verses to show'); // للتصحيح
+        }
+        
+        // عرض باقي الآيات
+        for (let i = skipFirstVerse ? 1 : 0; i < versesToShow.length; i++) {
+            const verse = versesToShow[i];
             container.innerHTML += `<span class="verse-block">${verse.text} <span class="verse-number">﴿${verse.id}﴾</span></span>`;
-        });
+        }
     }
 
     function displayTafsir(surah, start, end) {
@@ -405,6 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const tafsirToShow = surah.tafsir.filter(t => {
+            if (!t.verses) return false;
             const verseRange = t.verses.split('-').map(Number);
             const startRange = verseRange[0];
             const endRange = verseRange[1] || startRange;
@@ -670,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function startGame() {
-            cleanupGame(); // Ensure any previous game state is fully cleared
+            cleanupGame();
             score = 0;
             lives = 3;
             currentVerseIndex = 0;
@@ -1124,6 +1210,19 @@ document.addEventListener('DOMContentLoaded', () => {
             hideSidebar();
         }
     });
+
+    // دالة توحيد نص البسملة (إزالة التشكيل وتوحيد الرموز)
+    function normalizeBasmallah(text) {
+        // إزالة التشكيل والرموز الخاصة
+        let normalized = text
+            .normalize("NFD")
+            .replace(/[\u064B-\u0652\u0670\u06D6-\u06ED]/g, "") // إزالة كل أنواع التشكيل
+            .replace(/ـ/g, "") // إزالة الكشيدة
+            .replace(/ٱ/g, "ا") // توحيد الألف الصغيرة
+            .replace(/ٰ/g, "ا") // توحيد الألف الممدودة
+            .replace(/\s+/g, ""); // إزالة المسافات
+        return normalized;
+    }
 
     initializeApp();
 });

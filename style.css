@@ -160,6 +160,16 @@ main#explorer-view {
     direction: rtl;
     box-shadow: var(--shadow-medium);
 }
+
+.basmallah {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--primary-color, #0d47a1);
+    margin-bottom: 2rem;
+    margin-top: 1rem;
+    font-family: var(--font-quran);
+}
 .verse-number {
     color: var(--secondary-color, #d4af37);
     font-size: 1.1rem;
@@ -893,6 +903,11 @@ button.option-btn:disabled {
         font-size: 1.6rem;
         line-height: 2.4;
         padding: 1rem;
+    }
+    
+    .basmallah {
+        font-size: 1.6rem;
+        margin-bottom: 1.5rem;
     }
     #theme-selector-mobile {
         display: flex;
