@@ -1326,23 +1326,28 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
       const btn = document.querySelector(`.sidebar-btn[data-section="${section}"]`);
       if (btn) btn.classList.add('active');
-      // إظهار/إخفاء الأقسام
+      // إظهار/إخفاء الأقسام مع التأكد من وجود العناصر
+      const mainTabs = document.querySelector('.main-tabs');
+      const tabControls = document.querySelector('.tab-controls');
+      const tabQuran = document.getElementById('tab-quran');
+      const tabTafsir = document.getElementById('tab-tafsir');
+      const tabActivities = document.getElementById('tab-activities');
+      const generalGames = document.getElementById('general-games-section');
       if (section === 'home') {
-        document.querySelector('.main-tabs').style.display = '';
-        document.querySelector('.tab-controls').style.display = '';
-        document.getElementById('tab-quran').style.display = '';
-        document.getElementById('tab-tafsir').style.display = '';
-        document.getElementById('tab-activities').style.display = '';
-        document.getElementById('general-games-section').style.display = 'none';
-        // افتراضيًا أظهر تبويب المصحف
+        if (mainTabs) mainTabs.style.display = '';
+        if (tabControls) tabControls.style.display = '';
+        if (tabQuran) tabQuran.style.display = '';
+        if (tabTafsir) tabTafsir.style.display = '';
+        if (tabActivities) tabActivities.style.display = '';
+        if (generalGames) generalGames.style.display = 'none';
         activateTab('quran');
       } else if (section === 'games') {
-        document.querySelector('.main-tabs').style.display = 'none';
-        document.querySelector('.tab-controls').style.display = 'none';
-        document.getElementById('tab-quran').style.display = 'none';
-        document.getElementById('tab-tafsir').style.display = 'none';
-        document.getElementById('tab-activities').style.display = 'none';
-        document.getElementById('general-games-section').style.display = '';
+        if (mainTabs) mainTabs.style.display = 'none';
+        if (tabControls) tabControls.style.display = 'none';
+        if (tabQuran) tabQuran.style.display = 'none';
+        if (tabTafsir) tabTafsir.style.display = 'none';
+        if (tabActivities) tabActivities.style.display = 'none';
+        if (generalGames) generalGames.style.display = '';
         // TODO: تطوير واجهة الأنشطة العامة لاحقًا
       }
     }
