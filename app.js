@@ -715,10 +715,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayGames(surah, start, end) {
+        console.log('Setting up games for surah:', surah.name); // للتصحيح
+        
         const gameArea = document.getElementById('game-area');
         const gameTitle = document.getElementById('games-title');
+        
         if (gameTitle) {
             gameTitle.textContent = `أنشطة على سورة ${surah.name}`;
+        }
+        
+        if (!gameArea) {
+            console.error('Game area not found!'); // للتصحيح
+            return;
         }
         const games = [
             { key: 'meaning-match', label: 'لعبة توصيل المعاني', icon: 'sync_alt' },
@@ -758,9 +766,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 div.className = 'game-container';
                 if (gameArea) {
                     gameArea.appendChild(div);
+                    console.log(`Created game container: ${g.key}-game`); // للتصحيح
                 }
             }
             div.style.display = (i === 0 ? 'block' : 'none');
+            console.log(`Game ${g.key} display: ${div.style.display}`); // للتصحيح
         });
         showGame(games[0].key, surah, start, end);
         setupMeaningMatchGame(surah, start, end);
@@ -771,14 +781,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showGame(game, surah, start, end) {
         cleanupActiveGame(); // Ensure any active game is cleaned up before showing a new one
-        document.querySelectorAll('.game-container').forEach(g => g.style.display = 'none');
+        
+        // إخفاء جميع الألعاب
+        const gameContainers = document.querySelectorAll('.game-container');
+        gameContainers.forEach(g => g.style.display = 'none');
+        
         // عند تغيير اللعبة، امسح سؤال العجلة إذا كان ظاهرًا
         const wheelQuestionArea = document.getElementById('wheel-question-area');
         if (wheelQuestionArea) wheelQuestionArea.innerHTML = '';
+        
+        // إظهار اللعبة المختارة
         const el = document.getElementById(`${game}-game`);
-        if (el) el.style.display = 'block';
+        if (el) {
+            el.style.display = 'block';
+            console.log(`Showing game: ${game}`); // للتصحيح
+        } else {
+            console.error(`Game container not found: ${game}-game`); // للتصحيح
+        }
 
-        // Re-initialize the selected game
+        // إعادة تهيئة اللعبة المختارة
         switch (game) {
             case 'meaning-match':
                 setupMeaningMatchGame(surah, start, end);

@@ -280,6 +280,20 @@ select:focus, input[type="number"]:focus {
     transform: scale(1.1);
 }
 
+/* --- Activities Header --- */
+.activities-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+}
+
+.activities-header h2 {
+    color: var(--primary-color, #0d47a1);
+    font-size: 2rem;
+    margin: 0;
+    font-family: var(--font-quran);
+}
+
 /* --- Game Styles --- */
 #game-area {
     background: var(--surface-color, #fff);
@@ -1119,5 +1133,20 @@ button.option-btn:disabled {
 
     .back-to-games-btn {
         align-self: center;
+    }
+
+    /* Activities Header Mobile */
+    .activities-header h2 {
+        font-size: 1.5rem;
+    }
+
+    #game-selector {
+        gap: 0.5rem;
+        padding: 0 0.5rem;
+    }
+
+    .game-select-btn {
+        padding: 0.8rem 1.2rem;
+        font-size: 0.9rem;
     }
 }
