@@ -26,15 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let audioCtx = null;
 
     function showLoading() {
-        if (loadingIndicator) {
-            loadingIndicator.style.display = 'block';
-        }
+        loadingIndicator.style.display = 'block';
     }
 
     function hideLoading() {
-        if (loadingIndicator) {
-            loadingIndicator.style.display = 'none';
-        }
+        loadingIndicator.style.display = 'none';
     }
 
     function initAudio() {
