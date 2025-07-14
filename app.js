@@ -1543,11 +1543,163 @@ document.addEventListener('DOMContentLoaded', () => {
       const content = document.getElementById('activities-content');
       if (content) {
         if (tab === 'games') {
-          content.innerHTML = '<div id="game-area">(سيتم عرض الألعاب هنا بناءً على السور المختارة)</div>';
-          // TODO: ربط منطق الألعاب مع السور المختارة لاحقًا
+          displayGeneralGames();
         } else if (tab === 'tafsir') {
           content.innerHTML = '<div id="activities-tafsir-area">(تفسير الأنشطة العامة)</div>';
         }
+      }
+    }
+
+    // دالة عرض الألعاب العامة
+    function displayGeneralGames() {
+      const content = document.getElementById('activities-content');
+      if (!content) return;
+
+      content.innerHTML = `
+        <div class="general-games-container">
+          <h2>ألعاب القرآن العامة</h2>
+          <p class="games-description">اختر لعبة من الألعاب التالية للاستمتاع بتعلم القرآن الكريم</p>
+          
+          <div class="games-grid">
+            <div class="game-card" data-game="wheel">
+              <div class="game-icon">🎯</div>
+              <h3>العجلة الدوارة</h3>
+              <p>أدر العجلة واجب على الأسئلة المتعلقة بالقرآن الكريم</p>
+              <button class="play-game-btn" onclick="startGeneralGame('wheel')">العب الآن</button>
+            </div>
+            
+            <div class="game-card" data-game="verse-order">
+              <div class="game-icon">📝</div>
+              <h3>ترتيب الآيات</h3>
+              <p>رتب الآيات بالترتيب الصحيح لتحسين حفظك</p>
+              <button class="play-game-btn" onclick="startGeneralGame('verse-order')">العب الآن</button>
+            </div>
+            
+            <div class="game-card" data-game="verse-cascade">
+              <div class="game-icon">🌊</div>
+              <h3>شلال الآيات</h3>
+              <p>التقط الكلمات المتساقطة لتكوين الآيات بشكل صحيح</p>
+              <button class="play-game-btn" onclick="startGeneralGame('verse-cascade')">العب الآن</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // دالة بدء اللعبة العامة
+    function startGeneralGame(gameType) {
+      // الحصول على السور المختارة
+      const selectedSurahs = getSelectedSurahs();
+      
+      if (selectedSurahs.length === 0) {
+        alert('يرجى اختيار سورة واحدة على الأقل من القائمة');
+        return;
+      }
+
+      // اختيار سورة عشوائية من السور المختارة
+      const randomSurah = selectedSurahs[Math.floor(Math.random() * selectedSurahs.length)];
+      
+      // تحميل السورة وعرض اللعبة
+      loadAndDisplaySurah(randomSurah.id).then(() => {
+        if (currentSurahData) {
+          const start = 1;
+          const end = currentSurahData.verses.length;
+          
+          // عرض اللعبة المختارة
+          const content = document.getElementById('activities-content');
+          if (content) {
+            content.innerHTML = `
+              <div class="game-container-wrapper">
+                <div class="game-header">
+                  <h3>${getGameTitle(gameType)} - سورة ${currentSurahData.name}</h3>
+                  <button class="back-to-games-btn" onclick="displayGeneralGames()">
+                    <span class="material-icons">arrow_back</span>
+                    العودة للألعاب
+                  </button>
+                </div>
+                <div id="general-game-area"></div>
+              </div>
+            `;
+            
+            // إعداد اللعبة المختارة
+            setupGeneralGame(gameType, currentSurahData, start, end);
+          }
+        }
+      });
+    }
+
+    // دالة الحصول على السور المختارة
+    function getSelectedSurahs() {
+      const selectedSurahs = [];
+      
+      // من القائمة المتعددة
+      if (activitiesSurahSelect) {
+        Array.from(activitiesSurahSelect.selectedOptions).forEach(option => {
+          const surah = surahIndex.find(s => s.id === parseInt(option.value));
+          if (surah) selectedSurahs.push(surah);
+        });
+      }
+      
+      // من نطاق من-إلى
+      if (activitiesSurahFrom && activitiesSurahTo) {
+        const fromId = parseInt(activitiesSurahFrom.value);
+        const toId = parseInt(activitiesSurahTo.value);
+        
+        if (fromId && toId) {
+          for (let i = fromId; i <= toId; i++) {
+            const surah = surahIndex.find(s => s.id === i);
+            if (surah && !selectedSurahs.find(s => s.id === i)) {
+              selectedSurahs.push(surah);
+            }
+          }
+        }
+      }
+      
+      return selectedSurahs;
+    }
+
+    // دالة الحصول على عنوان اللعبة
+    function getGameTitle(gameType) {
+      const titles = {
+        'wheel': 'العجلة الدوارة',
+        'verse-order': 'ترتيب الآيات',
+        'verse-cascade': 'شلال الآيات'
+      };
+      return titles[gameType] || 'لعبة';
+    }
+
+    // دالة إعداد اللعبة العامة
+    function setupGeneralGame(gameType, surah, start, end) {
+      const gameArea = document.getElementById('general-game-area');
+      if (!gameArea) return;
+
+      switch (gameType) {
+        case 'wheel':
+          setupWheelGame(surah, start, end);
+          // نقل محتوى العجلة إلى المنطقة العامة
+          const wheelGame = document.getElementById('wheel-game');
+          if (wheelGame) {
+            gameArea.innerHTML = wheelGame.innerHTML;
+          }
+          break;
+          
+        case 'verse-order':
+          setupVerseOrderGame(surah, start, end);
+          // نقل محتوى ترتيب الآيات إلى المنطقة العامة
+          const verseOrderGame = document.getElementById('verse-order-game');
+          if (verseOrderGame) {
+            gameArea.innerHTML = verseOrderGame.innerHTML;
+          }
+          break;
+          
+        case 'verse-cascade':
+          setupVerseCascadeGame(surah, start, end);
+          // نقل محتوى شلال الآيات إلى المنطقة العامة
+          const verseCascadeGame = document.getElementById('verse-cascade-game');
+          if (verseCascadeGame) {
+            gameArea.innerHTML = verseCascadeGame.innerHTML;
+          }
+          break;
       }
     }
     // عند تحميل الصفحة: حمّل السورة الافتراضية
@@ -1613,6 +1765,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ملاحظات للتوسعة:
     // - يمكن تطوير واجهة الأنشطة العامة لاحقًا
     // - يمكن إضافة دعم لتغيير الثيمات أو تخصيص الألوان
+
+    // إضافة الدوال إلى النطاق العام للوصول إليها من HTML
+    window.startGeneralGame = startGeneralGame;
+    window.displayGeneralGames = displayGeneralGames;
 
     initializeApp();
 });
