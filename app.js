@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     let currentSurahData = null; // To store the currently loaded surah data
 
-    // DOM Elements
-    const surahSelect = document.getElementById('surah-select');
-    const verseStartInput = document.getElementById('verse-start');
-    const verseEndInput = document.getElementById('verse-end');
-    const themeDropdown = document.getElementById('theme-dropdown');
-    const themeDropdownMobile = document.getElementById('theme-dropdown-mobile');
+    // عناصر الـ DOM
+    var surahSelect = document.getElementById('surah-select');
+    var verseStartInput = document.getElementById('verse-start');
+    var verseEndInput = document.getElementById('verse-end');
+    var themeDropdown = document.getElementById('theme-dropdown');
+    var themeDropdownMobile = document.getElementById('theme-dropdown-mobile');
     const body = document.body;
     const contentNavButtons = document.querySelectorAll('#content-nav .nav-btn');
     const contentSections = document.querySelectorAll('.content-section');
@@ -1330,8 +1330,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const content = document.getElementById('activities-content');
       if (content) {
         if (tab === 'games') {
-          content.innerHTML = '<div id="game-area"></div>';
-          // يمكن لاحقًا نقل منطق الألعاب هنا
+          content.innerHTML = '<div id="game-area">(سيتم عرض الألعاب هنا بناءً على السور المختارة)</div>';
+          // TODO: ربط منطق الألعاب مع السور المختارة لاحقًا
         } else if (tab === 'tafsir') {
           content.innerHTML = '<div id="activities-tafsir-area">(تفسير الأنشطة العامة)</div>';
         }
@@ -1407,6 +1407,128 @@ document.addEventListener('DOMContentLoaded', () => {
       verseEndInput.addEventListener('change', () => {
         cleanupActiveGame && cleanupActiveGame();
         loadSurahRange && loadSurahRange();
+      });
+    }
+
+    if (activitiesSurahSelect && typeof surahIndex !== 'undefined') {
+      activitiesSurahSelect.innerHTML = '';
+      surahIndex.forEach(surah => {
+        const option = document.createElement('option');
+        option.value = surah.id;
+        option.textContent = `${surah.id}. ${surah.name}`;
+        activitiesSurahSelect.appendChild(option);
+      });
+    }
+    if (activitiesSurahFrom && activitiesSurahTo && typeof surahIndex !== 'undefined') {
+      activitiesSurahFrom.innerHTML = '';
+      activitiesSurahTo.innerHTML = '';
+      surahIndex.forEach(surah => {
+        const optionFrom = document.createElement('option');
+        optionFrom.value = surah.id;
+        optionFrom.textContent = `${surah.id}. ${surah.name}`;
+        activitiesSurahFrom.appendChild(optionFrom);
+        const optionTo = document.createElement('option');
+        optionTo.value = surah.id;
+        optionTo.textContent = `${surah.id}. ${surah.name}`;
+        activitiesSurahTo.appendChild(optionTo);
+      });
+    }
+    // ملاحظات للتوسعة:
+    // - يمكن تطوير واجهة الأنشطة العامة لاحقًا
+    // - يمكن إضافة دعم لتغيير الثيمات أو تخصيص الألوان
+    // دالة توحيد نص البسملة (إزالة التشكيل وتوحيد الرموز)
+    function normalizeBasmallah(text) {
+        // إزالة التشكيل والرموز الخاصة
+        let normalized = text
+            .normalize("NFD")
+            .replace(/[\u064B-\u0652\u0670\u06D6-\u06ED]/g, "") // إزالة كل أنواع التشكيل
+            .replace(/ـ/g, "") // إزالة الكشيدة
+            .replace(/ٱ/g, "ا") // توحيد الألف الصغيرة
+            .replace(/ٰ/g, "ا") // توحيد الألف الممدودة
+            .replace(/\s+/g, ""); // إزالة المسافات
+        return normalized;
+    }
+
+    // تحميل السورة وعرضها في جميع التبويبات
+    async function loadAndDisplayAll(surahId, start, end) {
+      currentSurahId = surahId;
+      currentStart = start;
+      currentEnd = end;
+      await loadAndDisplaySurah(surahId);
+      if (currentSurahData) {
+        displaySurah(currentSurahData, start, end);
+        displayTafsir(currentSurahData, start, end);
+        displayGames(currentSurahData, start, end);
+      }
+    }
+    // تحديث التبويبات عند التغيير
+    function updateTabs() {
+      if (currentSurahData) {
+        displaySurah(currentSurahData, currentStart, currentEnd);
+        displayTafsir(currentSurahData, currentStart, currentEnd);
+        displayGames(currentSurahData, currentStart, currentEnd);
+      }
+    }
+    // تفعيل التبويبات الرئيسية
+    function activateTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+      const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+      const sec = document.getElementById(`tab-${tab}`);
+      if (btn) btn.classList.add('active');
+      if (sec) sec.classList.add('active');
+      // عرض المحتوى المناسب
+      if (tab === 'quran' && currentSurahData) {
+        displaySurah(currentSurahData, currentStart, currentEnd);
+      } else if (tab === 'tafsir' && currentSurahData) {
+        displayTafsir(currentSurahData, currentStart, currentEnd);
+      } else if (tab === 'activities' && currentSurahData) {
+        displayGames(currentSurahData, currentStart, currentEnd);
+      }
+    }
+    // تفعيل تبويبات الأنشطة العامة
+    function activateActivitiesTab(tab) {
+      document.querySelectorAll('.activities-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const btn = document.querySelector(`.activities-tab-btn[data-tab="${tab}"]`);
+      if (btn) btn.classList.add('active');
+      const content = document.getElementById('activities-content');
+      if (content) {
+        if (tab === 'games') {
+          content.innerHTML = '<div id="game-area">(سيتم عرض الألعاب هنا بناءً على السور المختارة)</div>';
+          // TODO: ربط منطق الألعاب مع السور المختارة لاحقًا
+        } else if (tab === 'tafsir') {
+          content.innerHTML = '<div id="activities-tafsir-area">(تفسير الأنشطة العامة)</div>';
+        }
+      }
+    }
+    // عند تحميل الصفحة: حمّل السورة الافتراضية
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (surahSelect && surahSelect.options.length > 0) {
+        const surahId = surahSelect.value;
+        const start = parseInt(verseStartInput.value) || 1;
+        const end = parseInt(verseEndInput.value) || 1;
+        await loadAndDisplayAll(surahId, start, end);
+      }
+    });
+    // عند تغيير السورة أو النطاق
+    if (surahSelect && verseStartInput && verseEndInput) {
+      surahSelect.addEventListener('change', async () => {
+        const surahId = surahSelect.value;
+        const start = parseInt(verseStartInput.value) || 1;
+        const end = parseInt(verseEndInput.value) || 1;
+        await loadAndDisplayAll(surahId, start, end);
+      });
+      verseStartInput.addEventListener('change', async () => {
+        const surahId = surahSelect.value;
+        const start = parseInt(verseStartInput.value) || 1;
+        const end = parseInt(verseEndInput.value) || 1;
+        await loadAndDisplayAll(surahId, start, end);
+      });
+      verseEndInput.addEventListener('change', async () => {
+        const surahId = surahSelect.value;
+        const start = parseInt(verseStartInput.value) || 1;
+        const end = parseInt(verseEndInput.value) || 1;
+        await loadAndDisplayAll(surahId, start, end);
       });
     }
     // تفعيل نظام اختيار السور في الأنشطة العامة (قائمة متعددة أو من-إلى)
