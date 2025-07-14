@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSurahData = null; // To store the currently loaded surah data
 
     // عناصر الـ DOM
-    var surahSelect = document.getElementById('surah-select');
-    var verseStartInput = document.getElementById('verse-start');
-    var verseEndInput = document.getElementById('verse-end');
+    let surahSelect = document.getElementById('surah-select');
+    let verseStartInput = document.getElementById('verse-start');
+    let verseEndInput = document.getElementById('verse-end');
     var themeDropdown = document.getElementById('theme-dropdown');
     var themeDropdownMobile = document.getElementById('theme-dropdown-mobile');
     const body = document.body;
