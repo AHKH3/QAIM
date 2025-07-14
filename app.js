@@ -1321,34 +1321,47 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btn) btn.classList.add('active');
       if (sec) sec.classList.add('active');
     }
+    // تفعيل تبويبات الأنشطة العامة
+    function activateActivitiesTab(tab) {
+      document.querySelectorAll('.activities-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const btn = document.querySelector(`.activities-tab-btn[data-tab="${tab}"]`);
+      if (btn) btn.classList.add('active');
+      // إظهار محتوى التبويب المناسب (يمكن التوسعة لاحقًا)
+      const content = document.getElementById('activities-content');
+      if (content) {
+        if (tab === 'games') {
+          content.innerHTML = '<div id="game-area"></div>';
+          // يمكن لاحقًا نقل منطق الألعاب هنا
+        } else if (tab === 'tafsir') {
+          content.innerHTML = '<div id="activities-tafsir-area">(تفسير الأنشطة العامة)</div>';
+        }
+      }
+    }
     // تفعيل القائمة الجانبية
     function activateSidebar(section) {
       document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
       const btn = document.querySelector(`.sidebar-btn[data-section="${section}"]`);
       if (btn) btn.classList.add('active');
       // إظهار/إخفاء الأقسام مع التأكد من وجود العناصر
-      const mainTabs = document.querySelector('.main-tabs');
-      const tabControls = document.querySelector('.tab-controls');
+      const mainBar = document.getElementById('main-bar');
       const tabQuran = document.getElementById('tab-quran');
       const tabTafsir = document.getElementById('tab-tafsir');
       const tabActivities = document.getElementById('tab-activities');
-      const generalGames = document.getElementById('general-games-section');
+      const generalActivities = document.getElementById('general-activities-section');
       if (section === 'home') {
-        if (mainTabs) mainTabs.style.display = '';
-        if (tabControls) tabControls.style.display = '';
+        if (mainBar) mainBar.style.display = '';
         if (tabQuran) tabQuran.style.display = '';
         if (tabTafsir) tabTafsir.style.display = '';
         if (tabActivities) tabActivities.style.display = '';
-        if (generalGames) generalGames.style.display = 'none';
+        if (generalActivities) generalActivities.style.display = 'none';
         activateTab('quran');
-      } else if (section === 'games') {
-        if (mainTabs) mainTabs.style.display = 'none';
-        if (tabControls) tabControls.style.display = 'none';
+      } else if (section === 'general-activities') {
+        if (mainBar) mainBar.style.display = 'none';
         if (tabQuran) tabQuran.style.display = 'none';
         if (tabTafsir) tabTafsir.style.display = 'none';
         if (tabActivities) tabActivities.style.display = 'none';
-        if (generalGames) generalGames.style.display = '';
-        // TODO: تطوير واجهة الأنشطة العامة لاحقًا
+        if (generalActivities) generalActivities.style.display = '';
+        activateActivitiesTab('games');
       }
     }
     // تفعيل التبويبات عند الضغط
@@ -1356,6 +1369,14 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           activateTab(this.dataset.tab);
+        });
+      });
+    }
+    // تفعيل تبويبات الأنشطة العامة عند الضغط
+    if (document.querySelector('.activities-tabs')) {
+      document.querySelectorAll('.activities-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          activateActivitiesTab(this.dataset.tab);
         });
       });
     }
