@@ -1391,6 +1391,54 @@ document.addEventListener('DOMContentLoaded', () => {
     // عند تحميل الصفحة، افتراضيًا الرئيسية
     activateSidebar('home');
 
+    // تفعيل اختيار السورة ونطاق الآيات
+    const surahSelect = document.getElementById('surah-select');
+    const verseStartInput = document.getElementById('verse-start');
+    const verseEndInput = document.getElementById('verse-end');
+    if (surahSelect && verseStartInput && verseEndInput) {
+      surahSelect.addEventListener('change', () => {
+        cleanupActiveGame && cleanupActiveGame();
+        loadAndDisplaySurah && loadAndDisplaySurah(surahSelect.value);
+      });
+      verseStartInput.addEventListener('change', () => {
+        cleanupActiveGame && cleanupActiveGame();
+        loadSurahRange && loadSurahRange();
+      });
+      verseEndInput.addEventListener('change', () => {
+        cleanupActiveGame && cleanupActiveGame();
+        loadSurahRange && loadSurahRange();
+      });
+    }
+    // تفعيل نظام اختيار السور في الأنشطة العامة (قائمة متعددة أو من-إلى)
+    const activitiesSurahSelect = document.getElementById('activities-surah-select');
+    const activitiesSurahFrom = document.getElementById('activities-surah-from');
+    const activitiesSurahTo = document.getElementById('activities-surah-to');
+    if (activitiesSurahSelect && typeof surahIndex !== 'undefined') {
+      activitiesSurahSelect.innerHTML = '';
+      surahIndex.forEach(surah => {
+        const option = document.createElement('option');
+        option.value = surah.id;
+        option.textContent = `${surah.id}. ${surah.name}`;
+        activitiesSurahSelect.appendChild(option);
+      });
+    }
+    if (activitiesSurahFrom && activitiesSurahTo && typeof surahIndex !== 'undefined') {
+      activitiesSurahFrom.innerHTML = '';
+      activitiesSurahTo.innerHTML = '';
+      surahIndex.forEach(surah => {
+        const optionFrom = document.createElement('option');
+        optionFrom.value = surah.id;
+        optionFrom.textContent = `${surah.id}. ${surah.name}`;
+        activitiesSurahFrom.appendChild(optionFrom);
+        const optionTo = document.createElement('option');
+        optionTo.value = surah.id;
+        optionTo.textContent = `${surah.id}. ${surah.name}`;
+        activitiesSurahTo.appendChild(optionTo);
+      });
+    }
+    // ملاحظات للتوسعة:
+    // - يمكن تطوير واجهة الأنشطة العامة لاحقًا
+    // - يمكن إضافة دعم لتغيير الثيمات أو تخصيص الألوان
     // دالة توحيد نص البسملة (إزالة التشكيل وتوحيد الرموز)
     function normalizeBasmallah(text) {
         // إزالة التشكيل والرموز الخاصة
