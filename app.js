@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let verseEndInput = document.getElementById('verse-end');
     var themeDropdown = document.getElementById('theme-dropdown');
     var themeDropdownMobile = document.getElementById('theme-dropdown-mobile');
+    let activitiesSurahSelect = document.getElementById('activities-surah-select');
+    let activitiesSurahFrom = document.getElementById('activities-surah-from');
+    let activitiesSurahTo = document.getElementById('activities-surah-to');
     const body = document.body;
     const contentNavButtons = document.querySelectorAll('#content-nav .nav-btn');
     const contentSections = document.querySelectorAll('.content-section');
@@ -1506,9 +1509,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
     // تفعيل نظام اختيار السور في الأنشطة العامة (قائمة متعددة أو من-إلى)
-    const activitiesSurahSelect = document.getElementById('activities-surah-select');
-    const activitiesSurahFrom = document.getElementById('activities-surah-from');
-    const activitiesSurahTo = document.getElementById('activities-surah-to');
     if (activitiesSurahSelect && typeof surahIndex !== 'undefined') {
       activitiesSurahSelect.innerHTML = '';
       surahIndex.forEach(surah => {
