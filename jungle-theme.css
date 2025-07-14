@@ -90,32 +90,100 @@ body {
 }
 
 .main-tabs {
-  display: flex;
-  justify-content: center;
-  background: #e0ffe6;
-  border-radius: 0 0 24px 24px;
-  box-shadow: 0 2px 8px #388e3c22;
-  margin-bottom: 8px;
-  padding: 0 0 8px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
-.tab-btn {
+.tab-card {
   background: #fffbe6;
-  border: none;
+  border: 2px solid #a5d6a7;
   border-radius: 18px;
-  margin: 0 8px;
-  padding: 12px 32px;
-  font-size: 1.3rem;
-  color: #388e3c;
-  font-family: 'Scheherazade New', serif;
-  box-shadow: 0 2px 8px #388e3c22;
+  padding: 1.5rem;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, transform 0.2s;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px #388e3c22;
+  position: relative;
+  overflow: hidden;
 }
-.tab-btn.active, .tab-btn:hover {
-  background: #a5d6a7;
+
+.tab-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #388e3c, #a5d6a7);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.tab-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 16px #388e3c44;
+  border-color: #388e3c;
+}
+
+.tab-card:hover::before {
+  transform: scaleX(1);
+}
+
+.tab-card.active {
+  border-color: #388e3c;
+  background: linear-gradient(135deg, #fffbe6 0%, #e0ffe6 100%);
+  box-shadow: 0 4px 16px #388e3c44;
+}
+
+.tab-card.active::before {
+  transform: scaleX(1);
+}
+
+.tab-icon {
+  background: linear-gradient(135deg, #388e3c, #a5d6a7);
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px #388e3c22;
+}
+
+.tab-card:hover .tab-icon {
+  transform: scale(1.1);
+  transition: transform 0.3s ease;
+}
+
+.tab-content {
+  flex: 1;
+}
+
+.tab-content h3 {
+  color: #388e3c;
+  font-size: 1.4rem;
+  margin: 0 0 0.5rem 0;
+  font-family: 'Scheherazade New', serif;
+  font-weight: 700;
+}
+
+.tab-content p {
   color: #1b5e20;
-  transform: scale(1.08);
+  font-size: 1.1rem;
+  margin: 0;
+  line-height: 1.4;
 }
+
 
 .tab-controls {
   display: flex;
@@ -209,3 +277,49 @@ body {
 - يمكن إضافة أنماط خاصة لأقسام الحديث/القرائية هنا لاحقًا
 - يمكن إضافة رسومات SVG كخلفية أو زخرفة
 */ 
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .main-header h1 {
+    font-size: 1.2rem;
+  }
+  .tab-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tab-controls label {
+    font-size: 0.9rem;
+  }
+  .tab-controls select, .tab-controls input {
+    font-size: 0.9rem;
+    padding: 4px 8px;
+  }
+  
+  /* Mobile Tab Cards for Jungle Theme */
+  .main-tabs {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0.5rem;
+  }
+  
+  .tab-card {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.8rem;
+  }
+  
+  .tab-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+  
+  .tab-content h3 {
+    font-size: 1.2rem;
+  }
+  
+  .tab-content p {
+    font-size: 1rem;
+  }
+}

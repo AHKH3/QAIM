@@ -1444,6 +1444,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const tabTafsir = document.getElementById('tab-tafsir');
       const tabActivities = document.getElementById('tab-activities');
       const generalActivities = document.getElementById('general-activities-section');
+      const settingsSection = document.getElementById('settings-section');
+      // إخفاء جميع الأقسام أولاً
+      if (mainBar) mainBar.style.display = 'none';
+      if (tabQuran) tabQuran.style.display = 'none';
+      if (tabTafsir) tabTafsir.style.display = 'none';
+      if (tabActivities) tabActivities.style.display = 'none';
+      if (generalActivities) generalActivities.style.display = 'none';
+      if (settingsSection) settingsSection.style.display = 'none';
+      
       if (section === 'home') {
         if (mainBar) mainBar.style.display = '';
         if (tabQuran) tabQuran.style.display = '';
@@ -1455,16 +1464,18 @@ document.addEventListener('DOMContentLoaded', () => {
         activateActivitiesTab('games');
       } else if (section === 'settings') {
         const settingsSection = document.getElementById('settings-section');
-        if (settingsSection) settingsSection.style.display = '';
-        // تحميل وتطبيق الإعدادات عند فتح صفحة الإعدادات
-        loadSettings();
-        setupSettingsEventListeners();
+        if (settingsSection) {
+          settingsSection.style.display = '';
+          // تحميل وتطبيق الإعدادات عند فتح صفحة الإعدادات
+          loadSettings();
+          setupSettingsEventListeners();
+        }
       }
     }
     // تفعيل التبويبات عند الضغط
     if (document.getElementById('main-tabs')) {
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-card').forEach(card => {
+        card.addEventListener('click', function() {
           activateTab(this.dataset.tab);
         });
       });
@@ -1650,11 +1661,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // تفعيل التبويبات الرئيسية
     function activateTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-card').forEach(card => card.classList.remove('active'));
       document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
-      const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+      const card = document.querySelector(`.tab-card[data-tab="${tab}"]`);
       const sec = document.getElementById(`tab-${tab}`);
-      if (btn) btn.classList.add('active');
+      if (card) card.classList.add('active');
       if (sec) sec.classList.add('active');
       // عرض المحتوى المناسب
       if (tab === 'quran' && currentSurahData) {
