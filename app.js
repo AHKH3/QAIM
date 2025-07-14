@@ -984,6 +984,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
     }
 
+    function getRandomConsecutiveVerses(verses, count) {
+        if (verses.length <= count) return verses.slice();
+        const maxStart = verses.length - count;
+        const startIdx = Math.floor(Math.random() * (maxStart + 1));
+        return verses.slice(startIdx, startIdx + count);
+    }
+
     function setupWheelGame(surah, start, end) {
         const container = document.getElementById('wheel-game');
         container.innerHTML = '';
@@ -1165,29 +1172,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // إذا انتهت الآيات المتاحة، أعد تعيين القائمة
-        if (usedOrderVerseIndexes.length >= versesToShow.length) usedOrderVerseIndexes = [];
-        // استبعد الآيات المستخدمة
-        const availableIndexes = [];
-        for (let i = 0; i < versesToShow.length; i++) {
-            if (!usedOrderVerseIndexes.includes(i)) availableIndexes.push(i);
-        }
-        // اختر حتى 5 آيات فريدة
-        let verseIndexes = [];
-        while (verseIndexes.length < Math.min(5, versesToShow.length) && availableIndexes.length > 0) {
-            const idx = Math.floor(Math.random() * availableIndexes.length);
-            verseIndexes.push(availableIndexes[idx]);
-            usedOrderVerseIndexes.push(availableIndexes[idx]);
-            availableIndexes.splice(idx, 1);
-        }
-        if (verseIndexes.length < Math.min(5, versesToShow.length)) {
-            // إذا لم نجد العدد الكافي، أعد تعيين القائمة واختر من جديد
-            usedOrderVerseIndexes = [];
-            for (let i = 0; i < versesToShow.length && verseIndexes.length < Math.min(5, versesToShow.length); i++) {
-                if (!verseIndexes.includes(i)) verseIndexes.push(i);
-            }
-        }
-        const gameVerses = verseIndexes.map(i => versesToShow[i]);
+        // اختيار آيات متتالية عشوائية
+        const count = Math.min(5, versesToShow.length);
+        const gameVerses = getRandomConsecutiveVerses(versesToShow, count);
         const correctOrder = gameVerses.map(v => removeBasmallahFromVerse(v.text, surah.id)).filter(text => text);
         const shuffledOrder = [...correctOrder].sort(() => Math.random() - 0.5);
 
