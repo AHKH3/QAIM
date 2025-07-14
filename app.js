@@ -1392,9 +1392,6 @@ document.addEventListener('DOMContentLoaded', () => {
     activateSidebar('home');
 
     // تفعيل اختيار السورة ونطاق الآيات
-    const surahSelect = document.getElementById('surah-select');
-    const verseStartInput = document.getElementById('verse-start');
-    const verseEndInput = document.getElementById('verse-end');
     if (surahSelect && verseStartInput && verseEndInput) {
       surahSelect.addEventListener('change', () => {
         cleanupActiveGame && cleanupActiveGame();
