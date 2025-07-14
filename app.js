@@ -1449,15 +1449,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tabQuran) tabQuran.style.display = '';
         if (tabTafsir) tabTafsir.style.display = '';
         if (tabActivities) tabActivities.style.display = '';
-        if (generalActivities) generalActivities.style.display = 'none';
         activateTab('quran');
       } else if (section === 'general-activities') {
-        if (mainBar) mainBar.style.display = 'none';
-        if (tabQuran) tabQuran.style.display = 'none';
-        if (tabTafsir) tabTafsir.style.display = 'none';
-        if (tabActivities) tabActivities.style.display = 'none';
         if (generalActivities) generalActivities.style.display = '';
         activateActivitiesTab('games');
+      } else if (section === 'settings') {
+        const settingsSection = document.getElementById('settings-section');
+        if (settingsSection) settingsSection.style.display = '';
+        // تحميل وتطبيق الإعدادات عند فتح صفحة الإعدادات
+        loadSettings();
+        setupSettingsEventListeners();
       }
     }
     // تفعيل التبويبات عند الضغط
@@ -1484,6 +1485,114 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
     }
+    
+    // إعدادات التطبيق
+    let appSettings = {
+        theme: 'classic',
+        isMuted: false,
+        textSize: 'medium',
+        gameDifficulty: 'medium'
+    };
+
+    // تحميل الإعدادات من localStorage
+    function loadSettings() {
+        const saved = localStorage.getItem('quranExplorerSettings');
+        if (saved) {
+            appSettings = { ...appSettings, ...JSON.parse(saved) };
+        }
+        applySettings();
+    }
+
+    // حفظ الإعدادات
+    function saveSettings() {
+        localStorage.setItem('quranExplorerSettings', JSON.stringify(appSettings));
+    }
+
+    // تطبيق الإعدادات
+    function applySettings() {
+        // تطبيق الثيم
+        document.body.className = `theme-${appSettings.theme}`;
+        
+        // تطبيق حجم النص
+        document.documentElement.style.setProperty('--text-size-base', 
+            appSettings.textSize === 'small' ? '0.9rem' :
+            appSettings.textSize === 'medium' ? '1.1rem' :
+            appSettings.textSize === 'large' ? '1.3rem' : '1.5rem'
+        );
+        
+        // تطبيق كتم الصوت
+        if (appSettings.isMuted) {
+            document.body.classList.add('muted');
+        } else {
+            document.body.classList.remove('muted');
+        }
+        
+        // تحديث واجهة الإعدادات
+        updateSettingsUI();
+    }
+
+    // تحديث واجهة الإعدادات
+    function updateSettingsUI() {
+        const themeDropdown = document.getElementById('settings-theme-dropdown');
+        const muteBtn = document.getElementById('settings-mute-btn');
+        const textSizeDropdown = document.getElementById('text-size-dropdown');
+        const difficultyDropdown = document.getElementById('game-difficulty-dropdown');
+        
+        if (themeDropdown) themeDropdown.value = appSettings.theme;
+        if (textSizeDropdown) textSizeDropdown.value = appSettings.textSize;
+        if (difficultyDropdown) difficultyDropdown.value = appSettings.gameDifficulty;
+        
+        if (muteBtn) {
+            const icon = muteBtn.querySelector('.material-icons');
+            if (appSettings.isMuted) {
+                icon.textContent = 'volume_off';
+                muteBtn.classList.add('muted');
+            } else {
+                icon.textContent = 'volume_up';
+                muteBtn.classList.remove('muted');
+            }
+        }
+    }
+
+    // إعداد مستمعي أحداث الإعدادات
+    function setupSettingsEventListeners() {
+        const themeDropdown = document.getElementById('settings-theme-dropdown');
+        const muteBtn = document.getElementById('settings-mute-btn');
+        const textSizeDropdown = document.getElementById('text-size-dropdown');
+        const difficultyDropdown = document.getElementById('game-difficulty-dropdown');
+        
+        if (themeDropdown) {
+            themeDropdown.addEventListener('change', function() {
+                appSettings.theme = this.value;
+                applySettings();
+                saveSettings();
+            });
+        }
+        
+        if (muteBtn) {
+            muteBtn.addEventListener('click', function() {
+                appSettings.isMuted = !appSettings.isMuted;
+                applySettings();
+                saveSettings();
+            });
+        }
+        
+        if (textSizeDropdown) {
+            textSizeDropdown.addEventListener('change', function() {
+                appSettings.textSize = this.value;
+                applySettings();
+                saveSettings();
+            });
+        }
+        
+        if (difficultyDropdown) {
+            difficultyDropdown.addEventListener('change', function() {
+                appSettings.gameDifficulty = this.value;
+                saveSettings();
+            });
+        }
+    }
+    
     // عند تحميل الصفحة، افتراضيًا الرئيسية
     activateSidebar('home');
 

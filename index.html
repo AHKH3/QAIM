@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>مستكشف القرآن للأطفال</title>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="jungle-theme.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -19,6 +19,7 @@
       <div class="sidebar-logo">🌳</div>
       <button class="sidebar-btn active" data-section="home" title="الرئيسية"><span class="material-icons">home</span></button>
       <button class="sidebar-btn" data-section="general-activities" title="الأنشطة العامة"><span class="material-icons">sports_esports</span></button>
+      <button class="sidebar-btn" data-section="settings" title="الإعدادات"><span class="material-icons">settings</span></button>
       <!-- أماكن لأقسام مستقبلية -->
       <button class="sidebar-btn disabled" title="الحديث"><span class="material-icons">menu_book</span></button>
       <button class="sidebar-btn disabled" title="القرائية"><span class="material-icons">school</span></button>
@@ -82,6 +83,61 @@
         </div>
         <div id="activities-content">
           <!-- محتوى الأنشطة العامة سيظهر هنا -->
+        </div>
+      </section>
+      
+      <!-- قسم الإعدادات -->
+      <section id="settings-section" class="tab-section">
+        <div class="settings-container">
+          <h2>الإعدادات</h2>
+          
+          <div class="settings-group">
+            <h3>المظهر</h3>
+            <div class="setting-item">
+              <label>الثيم:</label>
+              <select id="settings-theme-dropdown">
+                <option value="classic">كلاسيكي</option>
+                <option value="jungle">غابة</option>
+                <option value="ocean">محيط</option>
+                <option value="desert">صحراء</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="settings-group">
+            <h3>الصوت</h3>
+            <div class="setting-item">
+              <label>كتم الصوت:</label>
+              <button id="settings-mute-btn" class="mute-toggle-btn">
+                <span class="material-icons">volume_up</span>
+              </button>
+            </div>
+          </div>
+          
+          <div class="settings-group">
+            <h3>النصوص</h3>
+            <div class="setting-item">
+              <label>حجم النص:</label>
+              <select id="text-size-dropdown">
+                <option value="small">صغير</option>
+                <option value="medium" selected>متوسط</option>
+                <option value="large">كبير</option>
+                <option value="xlarge">كبير جداً</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="settings-group">
+            <h3>الألعاب</h3>
+            <div class="setting-item">
+              <label>صعوبة الألعاب:</label>
+              <select id="game-difficulty-dropdown">
+                <option value="easy">سهل</option>
+                <option value="medium" selected>متوسط</option>
+                <option value="hard">صعب</option>
+              </select>
+            </div>
+          </div>
         </div>
       </section>
     </div>
