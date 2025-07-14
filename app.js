@@ -966,6 +966,21 @@ document.addEventListener('DOMContentLoaded', () => {
         renderDifficultySelection();
     }
 
+    function getRandomUniqueIndexes(arrayLength, count, excludeIndexes = []) {
+        // تُعيد مصفوفة من أرقام فريدة عشوائية من 0 إلى arrayLength-1، مع استبعاد excludeIndexes
+        const available = [];
+        for (let i = 0; i < arrayLength; i++) {
+            if (!excludeIndexes.includes(i)) available.push(i);
+        }
+        const result = [];
+        while (result.length < count && available.length > 0) {
+            const idx = Math.floor(Math.random() * available.length);
+            result.push(available[idx]);
+            available.splice(idx, 1);
+        }
+        return result;
+    }
+
     function setupWheelGame(surah, start, end) {
         const container = document.getElementById('wheel-game');
         container.innerHTML = '';
@@ -973,19 +988,22 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = '<p>لا توجد آيات كافية لهذه اللعبة.</p>';
             return;
         }
+        // اختيار آيات عشوائية بدون تكرار من جميع النطاق
+        const versesInRange = surah.verses.filter(v => v.id >= start && v.id <= end);
+        let verseIndexes = getRandomUniqueIndexes(versesInRange.length, 8, lastWheelQuestionIndexes);
+        if (verseIndexes.length < 5) verseIndexes = getRandomUniqueIndexes(versesInRange.length, 5); // fallback
         let questions = [];
-        for (let i = 0; i < 8; i++) {
-            const verse = surah.verses[Math.floor(Math.random() * surah.verses.length)];
+        for (let i = 0; i < verseIndexes.length; i++) {
+            const verse = versesInRange[verseIndexes[i]];
             const verseTextWithoutBasmallah = removeBasmallahFromVerse(verse.text, surah.id);
-            if (!verseTextWithoutBasmallah) continue; // تخطى الآيات التي هي بسملة فقط
-            
+            if (!verseTextWithoutBasmallah) continue;
             const words = verseTextWithoutBasmallah.split(' ');
             if (words.length > 3) {
                 const blankIndex = Math.floor(Math.random() * (words.length - 2)) + 1;
                 const answer = words[blankIndex];
                 let options = [answer];
                 while (options.length < 4) {
-                    const randomVerse = surah.verses[Math.floor(Math.random() * surah.verses.length)];
+                    const randomVerse = versesInRange[Math.floor(Math.random() * versesInRange.length)];
                     const randomVerseText = removeBasmallahFromVerse(randomVerse.text, surah.id);
                     if (randomVerseText) {
                         const randomWord = randomVerseText.split(' ')[0];
@@ -995,6 +1013,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 questions.push({ type: 'fill-blank', verse: verseTextWithoutBasmallah, blankIndex, answer, options: [...options].sort(() => 0.5 - Math.random()) });
             }
         }
+        // حفظ آخر مجموعة أسئلة
+        lastWheelQuestionIndexes = verseIndexes;
         if (questions.length < 5) questions = questions.concat(questions).slice(0, 5);
         if (questions.length === 0) {
             container.innerHTML = '<p>لا توجد أسئلة كافية لهذه اللعبة.</p>';
@@ -1120,8 +1140,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const gameVerses = versesToShow.slice(0, 5); // Take up to 5 verses
-        const correctOrder = gameVerses.map(v => removeBasmallahFromVerse(v.text, surah.id)).filter(text => text); // إزالة البسملة وتخطى النصوص الفارغة
+        // اختيار 5 آيات عشوائية بدون تكرار
+        const verseIndexes = getRandomUniqueIndexes(versesToShow.length, Math.min(5, versesToShow.length));
+        const gameVerses = verseIndexes.map(i => versesToShow[i]);
+        const correctOrder = gameVerses.map(v => removeBasmallahFromVerse(v.text, surah.id)).filter(text => text);
         const shuffledOrder = [...correctOrder].sort(() => Math.random() - 0.5);
 
         container.innerHTML = `
