@@ -1312,6 +1312,59 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // تفعيل التبويبات الرئيسية
+    function activateTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+      const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+      const sec = document.getElementById(`tab-${tab}`);
+      if (btn) btn.classList.add('active');
+      if (sec) sec.classList.add('active');
+    }
+    // تفعيل القائمة الجانبية
+    function activateSidebar(section) {
+      document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
+      const btn = document.querySelector(`.sidebar-btn[data-section="${section}"]`);
+      if (btn) btn.classList.add('active');
+      // إظهار/إخفاء الأقسام
+      if (section === 'home') {
+        document.querySelector('.main-tabs').style.display = '';
+        document.querySelector('.tab-controls').style.display = '';
+        document.getElementById('tab-quran').style.display = '';
+        document.getElementById('tab-tafsir').style.display = '';
+        document.getElementById('tab-activities').style.display = '';
+        document.getElementById('general-games-section').style.display = 'none';
+        // افتراضيًا أظهر تبويب المصحف
+        activateTab('quran');
+      } else if (section === 'games') {
+        document.querySelector('.main-tabs').style.display = 'none';
+        document.querySelector('.tab-controls').style.display = 'none';
+        document.getElementById('tab-quran').style.display = 'none';
+        document.getElementById('tab-tafsir').style.display = 'none';
+        document.getElementById('tab-activities').style.display = 'none';
+        document.getElementById('general-games-section').style.display = '';
+        // TODO: تطوير واجهة الأنشطة العامة لاحقًا
+      }
+    }
+    // تفعيل التبويبات عند الضغط
+    if (document.getElementById('main-tabs')) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          activateTab(this.dataset.tab);
+        });
+      });
+    }
+    // تفعيل القائمة الجانبية عند الضغط
+    if (document.querySelector('.sidebar')) {
+      document.querySelectorAll('.sidebar-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          activateSidebar(this.dataset.section);
+        });
+      });
+    }
+    // عند تحميل الصفحة، افتراضيًا الرئيسية
+    activateSidebar('home');
+
     // دالة توحيد نص البسملة (إزالة التشكيل وتوحيد الرموز)
     function normalizeBasmallah(text) {
         // إزالة التشكيل والرموز الخاصة
