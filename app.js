@@ -1407,29 +1407,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    if (activitiesSurahSelect && typeof surahIndex !== 'undefined') {
-      activitiesSurahSelect.innerHTML = '';
-      surahIndex.forEach(surah => {
-        const option = document.createElement('option');
-        option.value = surah.id;
-        option.textContent = `${surah.id}. ${surah.name}`;
-        activitiesSurahSelect.appendChild(option);
-      });
-    }
-    if (activitiesSurahFrom && activitiesSurahTo && typeof surahIndex !== 'undefined') {
-      activitiesSurahFrom.innerHTML = '';
-      activitiesSurahTo.innerHTML = '';
-      surahIndex.forEach(surah => {
-        const optionFrom = document.createElement('option');
-        optionFrom.value = surah.id;
-        optionFrom.textContent = `${surah.id}. ${surah.name}`;
-        activitiesSurahFrom.appendChild(optionFrom);
-        const optionTo = document.createElement('option');
-        optionTo.value = surah.id;
-        optionTo.textContent = `${surah.id}. ${surah.name}`;
-        activitiesSurahTo.appendChild(optionTo);
-      });
-    }
     // ملاحظات للتوسعة:
     // - يمكن تطوير واجهة الأنشطة العامة لاحقًا
     // - يمكن إضافة دعم لتغيير الثيمات أو تخصيص الألوان
