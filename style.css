@@ -447,7 +447,7 @@ select:focus, input[type="number"]:focus {
 
 #spin-wheel-btn:active {
     transform: translateY(-1px);
-    box_shadow: 0 2px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 #wheel-question-area {
@@ -776,10 +776,16 @@ button.option-btn:disabled {
 #loading-indicator {
     position: fixed;
     top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--secondary-color, #d4af37);
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color, #0d47a1), var(--secondary-color, #d4af37));
     z-index: 9999;
     display: none; /* Controlled by JS */
+    animation: loading-progress 2s ease-in-out infinite;
+}
+
+@keyframes loading-progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
 }
 
 .sidebar-header-controls {
