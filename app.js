@@ -401,8 +401,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function displaySurah(surah, start, end) {
         const container = document.getElementById('surah-container');
         const title = document.getElementById('read-title');
-        title.textContent = `سورة ${surah.name} (الآيات ${start}-${end})`;
-        container.innerHTML = '';
+        if (title) {
+            title.textContent = `سورة ${surah.name} (الآيات ${start}-${end})`;
+        }
+        if (container) {
+            container.innerHTML = '';
+        } else {
+            console.error('surah-container element not found');
+            return;
+        }
         
         console.log('Displaying surah:', surah.name, 'ID:', surah.id); // للتصحيح
         
@@ -427,7 +434,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // إذا كانت أول آية هي البسملة فقط (سورة الفاتحة)
             if (normalizedFirstVerse === normalizedBasmallah) {
                 console.log('First verse is basmallah only (Al-Fatiha)'); // للتصحيح
-                container.innerHTML += `<div class="basmallah">${firstVerse.text.trim()}</div>`;
+                if (container) {
+                    container.innerHTML += `<div class="basmallah">${firstVerse.text.trim()}</div>`;
+                }
                 basmallahFound = true;
                 skipFirstVerse = true; // لا نعرض الآية الأولى
             }
@@ -460,13 +469,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 // عرض البسملة منفصلة مع الحفاظ على التشكيل الأصلي
                 let basmallahText = original.slice(0, basmallahEndIndex);
                 console.log('Basmallah text to display:', basmallahText); // للتصحيح
-                container.innerHTML += `<div class="basmallah">${basmallahText}</div>`;
+                if (container) {
+                    container.innerHTML += `<div class="basmallah">${basmallahText}</div>`;
+                }
                 basmallahFound = true;
                 
                 // إزالة البسملة من نص الآية الأولى
                 let remainingText = original.slice(basmallahEndIndex).trim();
                 console.log('Remaining text after basmallah:', remainingText); // للتصحيح
-                if (remainingText) {
+                if (remainingText && container) {
                     container.innerHTML += `<span class="verse-block">${remainingText} <span class="verse-number">﴿${firstVerse.id}﴾</span></span>`;
                 }
                 skipFirstVerse = true;
@@ -479,17 +490,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // عرض باقي الآيات
         for (let i = skipFirstVerse ? 1 : 0; i < versesToShow.length; i++) {
             const verse = versesToShow[i];
-            container.innerHTML += `<span class="verse-block">${verse.text} <span class="verse-number">﴿${verse.id}﴾</span></span>`;
+            if (container) {
+                container.innerHTML += `<span class="verse-block">${verse.text} <span class="verse-number">﴿${verse.id}﴾</span></span>`;
+            }
         }
     }
 
     function displayTafsir(surah, start, end) {
         const container = document.getElementById('tafsir-container');
         const title = document.getElementById('tafsir-title');
-        title.textContent = `تفسير سورة ${surah.name} (الآيات ${start}-${end})`;
-        container.innerHTML = '';
+        if (title) {
+            title.textContent = `تفسير سورة ${surah.name} (الآيات ${start}-${end})`;
+        }
+        if (container) {
+            container.innerHTML = '';
+        } else {
+            console.error('tafsir-container element not found');
+            return;
+        }
         if (!surah.tafsir || surah.tafsir.length === 0) {
-            container.innerHTML = '<p>لا يتوفر تفسير لهذه السورة حاليًا.</p>';
+            if (container) {
+                container.innerHTML = '<p>لا يتوفر تفسير لهذه السورة حاليًا.</p>';
+            }
             return;
         }
         const tafsirToShow = surah.tafsir.filter(t => {
@@ -500,14 +522,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return Math.max(start, startRange) <= Math.min(end, endRange);
         });
         if (tafsirToShow.length === 0) {
-            container.innerHTML = '<p>لا يتوفر تفسير للآيات المحددة حاليًا.</p>';
+            if (container) {
+                container.innerHTML = '<p>لا يتوفر تفسير للآيات المحددة حاليًا.</p>';
+            }
             return;
         }
         tafsirToShow.forEach(item => {
             const tafsirItem = document.createElement('div');
             tafsirItem.className = 'tafsir-item';
             tafsirItem.innerHTML = `<h4>الآيات (${item.verses})</h4><p>${item.explanation}</p>`;
-            container.appendChild(tafsirItem);
+            if (container) {
+                container.appendChild(tafsirItem);
+            }
         });
     }
 
@@ -569,7 +595,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const meaningsContainer = document.getElementById('meanings-container');
         
         if (!surah.vocabulary || surah.vocabulary.length < 2) {
-            wordsContainer.innerHTML = '<p>لا توجد بيانات معاني كافية لهذه اللعبة.</p>';
+            if (wordsContainer) {
+                wordsContainer.innerHTML = '<p>لا توجد بيانات معاني كافية لهذه اللعبة.</p>';
+            }
             return;
         }
 
@@ -611,7 +639,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const div = document.createElement('div');
             div.className = 'word-item';
             div.textContent = word;
-            wordsContainer.appendChild(div);
+            if (wordsContainer) {
+                wordsContainer.appendChild(div);
+            }
 
             if (isTouchDevice) {
                 div.addEventListener('click', e => {
@@ -642,7 +672,9 @@ document.addEventListener('DOMContentLoaded', () => {
             box.className = 'meaning-box';
             box.textContent = meaning;
             box.dataset.meaning = meaning;
-            meaningsContainer.appendChild(box);
+            if (meaningsContainer) {
+                meaningsContainer.appendChild(box);
+            }
 
             if (isTouchDevice) {
                 box.addEventListener('click', e => {
@@ -670,13 +702,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        document.getElementById('reset-game-btn').onclick = () => { setupMeaningMatchGame(surah, start, end); playSound('navigate'); };
+        const resetBtn = document.getElementById('reset-game-btn');
+        if (resetBtn) {
+            resetBtn.onclick = () => { setupMeaningMatchGame(surah, start, end); playSound('navigate'); };
+        }
     }
 
     function displayGames(surah, start, end) {
         const gameArea = document.getElementById('game-area');
         const gameTitle = document.getElementById('games-title');
-        gameTitle.textContent = `أنشطة على سورة ${surah.name}`;
+        if (gameTitle) {
+            gameTitle.textContent = `أنشطة على سورة ${surah.name}`;
+        }
         const games = [
             { key: 'meaning-match', label: 'لعبة توصيل المعاني', icon: 'sync_alt' },
             { key: 'wheel', label: 'العجلة الدوارة', icon: 'rotate_right' },
@@ -684,7 +721,9 @@ document.addEventListener('DOMContentLoaded', () => {
             { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart' }
         ];
         const selector = document.getElementById('game-selector');
-        selector.innerHTML = '';
+        if (selector) {
+            selector.innerHTML = '';
+        }
         games.forEach((g, i) => {
             const btn = document.createElement('button');
             btn.className = 'game-select-btn' + (i === 0 ? ' active' : '');
@@ -692,20 +731,28 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.innerHTML = `<span class="material-icons">${g.icon}</span> ${g.label}`;
             btn.onclick = function() {
                 playSound('click');
-                selector.querySelectorAll('.game-select-btn').forEach(b => b.classList.remove('active'));
+                if (selector) {
+                    selector.querySelectorAll('.game-select-btn').forEach(b => b.classList.remove('active'));
+                }
                 btn.classList.add('active');
                 showGame(g.key, surah, start, end);
             };
-            selector.appendChild(btn);
+            if (selector) {
+                selector.appendChild(btn);
+            }
         });
-        gameArea.querySelectorAll('.game-container').forEach(e => e.style.display = 'none');
+        if (gameArea) {
+            gameArea.querySelectorAll('.game-container').forEach(e => e.style.display = 'none');
+        }
         games.forEach((g, i) => {
             let div = document.getElementById(`${g.key}-game`);
             if (!div) {
                 div = document.createElement('div');
                 div.id = `${g.key}-game`;
                 div.className = 'game-container';
-                gameArea.appendChild(div);
+                if (gameArea) {
+                    gameArea.appendChild(div);
+                }
             }
             div.style.display = (i === 0 ? 'block' : 'none');
         });
@@ -751,7 +798,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end && v.text.split(' ').length >= 2);
 
         if (versesToShow.length === 0) {
-            container.innerHTML = '<p>لا توجد آيات مناسبة لهذه اللعبة في النطاق المحدد.</p>';
+            if (container) {
+                container.innerHTML = '<p>لا توجد آيات مناسبة لهذه اللعبة في النطاق المحدد.</p>';
+            }
             return;
         }
 
@@ -996,6 +1045,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupWheelGame(surah, start, end) {
         const container = document.getElementById('wheel-game');
+        if (!container) return;
         container.innerHTML = '';
         if (!surah.verses || surah.verses.length < 1) {
             container.innerHTML = '<p>لا توجد آيات كافية لهذه اللعبة.</p>';
@@ -1048,18 +1098,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (questions.length < 5) questions = questions.concat(questions).slice(0, 5);
         if (questions.length === 0) {
-            container.innerHTML = '<p>لا توجد أسئلة كافية لهذه اللعبة.</p>';
+            if (container) {
+                container.innerHTML = '<p>لا توجد أسئلة كافية لهذه اللعبة.</p>';
+            }
             return;
         }
         // ترتيب العناصر: العجلة، ثم صندوق السؤال، ثم زر العجلة
-        container.innerHTML = `
-            <p>اضغط زر "أدر العجلة" لتحديد السؤال!</p>
-            <div id="wheel-area"></div>
-            <div id="wheel-question-area"></div>
-            <button id="spin-wheel-btn">أدر العجلة</button>
-            <div id="wheel-score"></div>
-            <button id="reset-wheel-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
-        `;
+        if (container) {
+            container.innerHTML = `
+                <p>اضغط زر "أدر العجلة" لتحديد السؤال!</p>
+                <div id="wheel-area"></div>
+                <div id="wheel-question-area"></div>
+                <button id="spin-wheel-btn">أدر العجلة</button>
+                <div id="wheel-score"></div>
+                <button id="reset-wheel-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
+            `;
+        }
         const wheelArea = document.getElementById('wheel-area');
         const numOptions = questions.length;
         const angle = 360 / numOptions;
@@ -1109,64 +1163,76 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        wheelArea.innerHTML = wheelSVG;
+        if (wheelArea) {
+            wheelArea.innerHTML = wheelSVG;
+        }
         let spinning = false;
-        document.getElementById('spin-wheel-btn').onclick = function() {
-            if (spinning) return;
-            spinning = true;
-            playSound('wheel_start_spin');
-            const svg = document.getElementById('wheel-svg');
-            
-            const currentRotationMatch = svg.style.transform.match(/rotate\(([-]?\d*\.?\d*)deg\)/);
-            const currentRotation = currentRotationMatch ? parseFloat(currentRotationMatch[1]) : 0;
+        const spinBtn = document.getElementById('spin-wheel-btn');
+        if (spinBtn) {
+            spinBtn.onclick = function() {
+                if (spinning) return;
+                spinning = true;
+                playSound('wheel_start_spin');
+                const svg = document.getElementById('wheel-svg');
+                
+                const currentRotationMatch = svg.style.transform.match(/rotate\(([-]?\d*\.?\d*)deg\)/);
+                const currentRotation = currentRotationMatch ? parseFloat(currentRotationMatch[1]) : 0;
 
-            const randomSpins = Math.floor(Math.random() * 3) + 4; // 4 to 6 full spins
-            const selectedIdx = Math.floor(Math.random() * numOptions);
-            const stopAngle = selectedIdx * angle + (angle / 2);
-            const finalRotation = (360 * randomSpins) + stopAngle;
+                const randomSpins = Math.floor(Math.random() * 3) + 4; // 4 to 6 full spins
+                const selectedIdx = Math.floor(Math.random() * numOptions);
+                const stopAngle = selectedIdx * angle + (angle / 2);
+                const finalRotation = (360 * randomSpins) + stopAngle;
 
-            svg.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.3, 1)';
-            svg.style.transform = `rotate(${finalRotation}deg)`;
+                svg.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.3, 1)';
+                svg.style.transform = `rotate(${finalRotation}deg)`;
 
-            setTimeout(() => {
-                spinning = false;
-                playSound('spin_stop');
-                showWheelQuestion(questions[selectedIdx]);
-            }, 5100);
-        };
+                setTimeout(() => {
+                    spinning = false;
+                    playSound('spin_stop');
+                    showWheelQuestion(questions[selectedIdx]);
+                }, 5100);
+            };
+        }
         function showWheelQuestion(q) {
             const qDiv = document.getElementById('wheel-question-area');
+            if (!qDiv) return;
             const words = q.verse.split(' ');
             const displayWords = words.map((w, i) => i === q.blankIndex ? '<span class="blank-slot"></span>' : w);
             qDiv.innerHTML = `<div class="verse-question">${displayWords.join(' ')}</div><div id="wheel-options"></div><div id="wheel-feedback"></div>`;
             const optsDiv = document.getElementById('wheel-options');
-            q.options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.textContent = opt;
-                btn.onclick = function() {
-                    optsDiv.querySelectorAll('button').forEach(b => b.disabled = true);
-                    if (opt === q.answer) {
-                        btn.classList.add('correct');
-                        playSound('correct');
-                    } else {
-                        btn.classList.add('incorrect');
-                        playSound('incorrect');
-                    }
-                    setTimeout(() => { qDiv.innerHTML = ''; }, 1500);
-                };
-                optsDiv.appendChild(btn);
-            });
+            if (optsDiv) {
+                q.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = opt;
+                    btn.onclick = function() {
+                        optsDiv.querySelectorAll('button').forEach(b => b.disabled = true);
+                        if (opt === q.answer) {
+                            btn.classList.add('correct');
+                            playSound('correct');
+                        } else {
+                            btn.classList.add('incorrect');
+                            playSound('incorrect');
+                        }
+                        setTimeout(() => { qDiv.innerHTML = ''; }, 1500);
+                    };
+                    optsDiv.appendChild(btn);
+                });
+            }
         }
-        document.getElementById('reset-wheel-btn').onclick = () => {
-            usedWheelVerseIndexes = [];
-            setupWheelGame(surah, start, end);
-            playSound('navigate');
-        };
+        const resetWheelBtn = document.getElementById('reset-wheel-btn');
+        if (resetWheelBtn) {
+            resetWheelBtn.onclick = () => {
+                usedWheelVerseIndexes = [];
+                setupWheelGame(surah, start, end);
+                playSound('navigate');
+            };
+        }
     }
 
     function setupVerseOrderGame(surah, start, end) {
         const container = document.getElementById('verse-order-game');
+        if (!container) return;
         container.innerHTML = ''; // Clear previous game
         const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end);
 
@@ -1298,12 +1364,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarOverlay = document.getElementById('sidebar-overlay');
 
     function showSidebar() {
-        sidebar.classList.add('sidebar-open');
-        sidebarOverlay.classList.add('active');
+        if (sidebar) sidebar.classList.add('sidebar-open');
+        if (sidebarOverlay) sidebarOverlay.classList.add('active');
     }
     function hideSidebar() {
-        sidebar.classList.remove('sidebar-open');
-        sidebarOverlay.classList.remove('active');
+        if (sidebar) sidebar.classList.remove('sidebar-open');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
     }
     if (sidebarToggleBtn && sidebar && sidebarOverlay) {
         sidebarToggleBtn.addEventListener('click', showSidebar);
@@ -1515,38 +1581,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const option = document.createElement('option');
         option.value = surah.id;
         option.textContent = `${surah.id}. ${surah.name}`;
-        activitiesSurahSelect.appendChild(option);
+        if (activitiesSurahSelect) {
+          activitiesSurahSelect.appendChild(option);
+        }
       });
     }
     if (activitiesSurahFrom && activitiesSurahTo && typeof surahIndex !== 'undefined') {
-      activitiesSurahFrom.innerHTML = '';
-      activitiesSurahTo.innerHTML = '';
+      if (activitiesSurahFrom) activitiesSurahFrom.innerHTML = '';
+      if (activitiesSurahTo) activitiesSurahTo.innerHTML = '';
       surahIndex.forEach(surah => {
         const optionFrom = document.createElement('option');
         optionFrom.value = surah.id;
         optionFrom.textContent = `${surah.id}. ${surah.name}`;
-        activitiesSurahFrom.appendChild(optionFrom);
+        if (activitiesSurahFrom) {
+          activitiesSurahFrom.appendChild(optionFrom);
+        }
         const optionTo = document.createElement('option');
         optionTo.value = surah.id;
         optionTo.textContent = `${surah.id}. ${surah.name}`;
-        activitiesSurahTo.appendChild(optionTo);
+        if (activitiesSurahTo) {
+          activitiesSurahTo.appendChild(optionTo);
+        }
       });
     }
     // ملاحظات للتوسعة:
     // - يمكن تطوير واجهة الأنشطة العامة لاحقًا
     // - يمكن إضافة دعم لتغيير الثيمات أو تخصيص الألوان
-    // دالة توحيد نص البسملة (إزالة التشكيل وتوحيد الرموز)
-    function normalizeBasmallah(text) {
-        // إزالة التشكيل والرموز الخاصة
-        let normalized = text
-            .normalize("NFD")
-            .replace(/[\u064B-\u0652\u0670\u06D6-\u06ED]/g, "") // إزالة كل أنواع التشكيل
-            .replace(/ـ/g, "") // إزالة الكشيدة
-            .replace(/ٱ/g, "ا") // توحيد الألف الصغيرة
-            .replace(/ٰ/g, "ا") // توحيد الألف الممدودة
-            .replace(/\s+/g, ""); // إزالة المسافات
-        return normalized;
-    }
 
     initializeApp();
 });
