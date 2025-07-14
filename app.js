@@ -549,6 +549,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'verse-order': 0
     };
     let lastWheelQuestionIndex = -1; // To prevent repeating the same question twice in a row
+    // متغيرات لتتبع الآيات المستخدمة في كل لعبة
+    let usedWheelVerseIndexes = [];
+    let usedOrderVerseIndexes = [];
     function updateScore(game, delta) {
         gameScores[game] += delta;
         const el = document.getElementById(`${game}-score`);
@@ -988,10 +991,30 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = '<p>لا توجد آيات كافية لهذه اللعبة.</p>';
             return;
         }
-        // اختيار آيات عشوائية بدون تكرار من جميع النطاق
+        // اختيار آيات عشوائية بدون تكرار مطلق في نفس الجلسة
         const versesInRange = surah.verses.filter(v => v.id >= start && v.id <= end);
-        let verseIndexes = getRandomUniqueIndexes(versesInRange.length, 8, lastWheelQuestionIndexes);
-        if (verseIndexes.length < 5) verseIndexes = getRandomUniqueIndexes(versesInRange.length, 5); // fallback
+        // إذا انتهت الآيات المتاحة، أعد تعيين القائمة
+        if (usedWheelVerseIndexes.length >= versesInRange.length) usedWheelVerseIndexes = [];
+        // استبعد الآيات المستخدمة
+        const availableIndexes = [];
+        for (let i = 0; i < versesInRange.length; i++) {
+            if (!usedWheelVerseIndexes.includes(i)) availableIndexes.push(i);
+        }
+        // اختر حتى 8 آيات فريدة
+        let verseIndexes = [];
+        while (verseIndexes.length < 8 && availableIndexes.length > 0) {
+            const idx = Math.floor(Math.random() * availableIndexes.length);
+            verseIndexes.push(availableIndexes[idx]);
+            usedWheelVerseIndexes.push(availableIndexes[idx]);
+            availableIndexes.splice(idx, 1);
+        }
+        if (verseIndexes.length < 5) {
+            // إذا لم نجد 5 آيات، أعد تعيين القائمة واختر من جديد
+            usedWheelVerseIndexes = [];
+            for (let i = 0; i < versesInRange.length && verseIndexes.length < 5; i++) {
+                if (!verseIndexes.includes(i)) verseIndexes.push(i);
+            }
+        }
         let questions = [];
         for (let i = 0; i < verseIndexes.length; i++) {
             const verse = versesInRange[verseIndexes[i]];
@@ -1013,8 +1036,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 questions.push({ type: 'fill-blank', verse: verseTextWithoutBasmallah, blankIndex, answer, options: [...options].sort(() => 0.5 - Math.random()) });
             }
         }
-        // حفظ آخر مجموعة أسئلة
-        lastWheelQuestionIndexes = verseIndexes;
         if (questions.length < 5) questions = questions.concat(questions).slice(0, 5);
         if (questions.length === 0) {
             container.innerHTML = '<p>لا توجد أسئلة كافية لهذه اللعبة.</p>';
@@ -1127,7 +1148,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 optsDiv.appendChild(btn);
             });
         }
-        document.getElementById('reset-wheel-btn').onclick = () => { setupWheelGame(surah, start, end); playSound('navigate'); };
+        document.getElementById('reset-wheel-btn').onclick = () => {
+            usedWheelVerseIndexes = [];
+            setupWheelGame(surah, start, end);
+            playSound('navigate');
+        };
     }
 
     function setupVerseOrderGame(surah, start, end) {
@@ -1140,8 +1165,28 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // اختيار 5 آيات عشوائية بدون تكرار
-        const verseIndexes = getRandomUniqueIndexes(versesToShow.length, Math.min(5, versesToShow.length));
+        // إذا انتهت الآيات المتاحة، أعد تعيين القائمة
+        if (usedOrderVerseIndexes.length >= versesToShow.length) usedOrderVerseIndexes = [];
+        // استبعد الآيات المستخدمة
+        const availableIndexes = [];
+        for (let i = 0; i < versesToShow.length; i++) {
+            if (!usedOrderVerseIndexes.includes(i)) availableIndexes.push(i);
+        }
+        // اختر حتى 5 آيات فريدة
+        let verseIndexes = [];
+        while (verseIndexes.length < Math.min(5, versesToShow.length) && availableIndexes.length > 0) {
+            const idx = Math.floor(Math.random() * availableIndexes.length);
+            verseIndexes.push(availableIndexes[idx]);
+            usedOrderVerseIndexes.push(availableIndexes[idx]);
+            availableIndexes.splice(idx, 1);
+        }
+        if (verseIndexes.length < Math.min(5, versesToShow.length)) {
+            // إذا لم نجد العدد الكافي، أعد تعيين القائمة واختر من جديد
+            usedOrderVerseIndexes = [];
+            for (let i = 0; i < versesToShow.length && verseIndexes.length < Math.min(5, versesToShow.length); i++) {
+                if (!verseIndexes.includes(i)) verseIndexes.push(i);
+            }
+        }
         const gameVerses = verseIndexes.map(i => versesToShow[i]);
         const correctOrder = gameVerses.map(v => removeBasmallahFromVerse(v.text, surah.id)).filter(text => text);
         const shuffledOrder = [...correctOrder].sort(() => Math.random() - 0.5);
@@ -1236,7 +1281,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        document.getElementById('reset-verse-order-btn').onclick = () => { setupVerseOrderGame(surah, start, end); playSound('navigate'); };
+        document.getElementById('reset-verse-order-btn').onclick = () => {
+            usedOrderVerseIndexes = [];
+            setupVerseOrderGame(surah, start, end);
+            playSound('navigate');
+        };
     }
 
     function getDragAfterElement(container, y) {
