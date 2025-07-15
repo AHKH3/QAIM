@@ -1826,3 +1826,59 @@ button.option-btn:disabled {
     box-sizing: border-box;
   }
 }
+
+/* منطق الموبايل النهائي للقائمة الجانبية والإعدادات */
+@media (max-width: 768px) {
+  /* القائمة الجانبية مخفية افتراضياً وتظهر فقط مع sidebar-open */
+  #sidebar {
+    display: none;
+    position: fixed;
+    top: 0; right: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    border-radius: 0 0 32px 32px;
+    box-shadow: 2px 0 12px var(--primary-color, #388e3c33);
+    background: linear-gradient(180deg, var(--primary-color) 60%, var(--secondary-color) 100%);
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    transition: right 0.3s, display 0s 0.3s;
+  }
+  #sidebar.sidebar-open {
+    display: flex;
+    right: 0;
+    transition: right 0.3s, display 0s;
+  }
+  .sidebar-toggle-btn {
+    display: block !important;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1100;
+  }
+  #sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+  .main-content {
+    margin-right: 0 !important;
+  }
+  /* صفحة الإعدادات تغطي فقط main-content */
+  #settings-section {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1000;
+    background: var(--bg-color, #f8f9fa);
+    overflow-y: auto;
+  }
+}
