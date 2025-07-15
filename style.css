@@ -9,10 +9,10 @@
     --shadow-heavy: 0 12px 32px rgba(0,0,0,0.1);
     
     /* أحجام النصوص */
-    --text-size-small: 0.9rem;
-    --text-size-medium: 1.1rem;
-    --text-size-large: 1.3rem;
-    --text-size-xlarge: 1.5rem;
+    --text-size-small: 1.1rem;
+    --text-size-medium: 1.4rem;
+    --text-size-large: 1.6rem;
+    --text-size-xlarge: 1.8rem;
     
     /* المسافات الثابتة */
     --spacing-xs: 0.5rem;
@@ -160,9 +160,14 @@ main#explorer-view {
     animation: fadeIn 0.5s ease-in-out;
 }
 
-.tab-section { display: none; }
+.tab-section { 
+    display: none; 
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
 .tab-section.active { 
     display: block;
+    opacity: 1;
     animation: fadeIn 0.5s ease-in-out;
 }
 
@@ -295,98 +300,133 @@ select:focus, input[type="number"]:focus {
     transition: all 0.2s ease-in-out;
 }
 
-/* --- Tab Cards --- */
+/* --- Tab Buttons --- */
 .main-tabs {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: var(--surface-color, #fff);
+    border-radius: var(--border-radius-main);
+    box-shadow: var(--shadow-light);
 }
 
-.tab-card {
-    background: var(--surface-color, #fff);
+.tab-btn {
+    background: transparent;
     border: 2px solid var(--border-color, #e9ecef);
-    border-radius: var(--border-radius-main);
-    padding: 1.5rem;
+    border-radius: var(--border-radius-inner);
+    padding: 0.8rem 1.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    box-shadow: var(--shadow-light);
+    gap: 0.5rem;
+    font-size: var(--text-size-medium);
+    font-weight: 600;
+    color: var(--text-color, #666);
+    font-family: var(--font-quran);
     position: relative;
     overflow: hidden;
 }
 
-.tab-card::before {
+.tab-btn::before {
     content: '';
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 3px;
     background: linear-gradient(90deg, var(--primary-color, #0d47a1), var(--secondary-color, #d4af37));
     transform: scaleX(0);
     transition: transform 0.3s ease;
 }
 
-.tab-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-medium);
+.tab-btn:hover {
     border-color: var(--primary-color, #0d47a1);
-}
-
-.tab-card:hover::before {
-    transform: scaleX(1);
-}
-
-.tab-card.active {
-    border-color: var(--primary-color, #0d47a1);
-    background: linear-gradient(135deg, var(--surface-color, #fff) 0%, var(--bg-color, #f8f9fa) 100%);
-    box-shadow: var(--shadow-medium);
-}
-
-.tab-card.active::before {
-    transform: scaleX(1);
-}
-
-.tab-icon {
-    background: linear-gradient(135deg, var(--primary-color, #0d47a1), var(--secondary-color, #d4af37));
-    color: white;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    flex-shrink: 0;
+    color: var(--primary-color, #0d47a1);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-light);
 }
 
-.tab-card:hover .tab-icon {
-    transform: scale(1.1);
-    transition: transform 0.3s ease;
+.tab-btn:hover::before {
+    transform: scaleX(1);
 }
 
-.tab-content {
-    flex: 1;
+.tab-btn.active {
+    border-color: var(--primary-color, #0d47a1);
+    background: var(--primary-color, #0d47a1);
+    color: white;
+    box-shadow: var(--shadow-medium);
 }
 
-.tab-content h3 {
-    color: var(--primary-color, #0d47a1);
-    font-size: 1.4rem;
-    margin: 0 0 0.5rem 0;
-    font-family: var(--font-quran);
-    font-weight: 700;
+.tab-btn.active::before {
+    transform: scaleX(1);
 }
 
-.tab-content p {
-    color: var(--text-color, #666);
+.tab-btn .material-icons {
+    font-size: 1.2rem;
+}
+
+.tab-text {
     font-size: var(--text-size-medium);
-    margin: 0;
-    line-height: 1.4;
+    font-weight: 600;
+}
+
+/* --- Tab Controls --- */
+.tab-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5rem 0 1rem 0;
+  padding: 0.5rem;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--surface-color, #fff);
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--border-radius-main);
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--border-color, #e9ecef);
+}
+
+.surah-select {
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: var(--border-radius-inner);
+  padding: 0.5rem 1rem;
+  font-size: var(--text-size-medium);
+  font-family: var(--font-quran);
+  background: var(--surface-color, #fff);
+  color: var(--text-color, #333);
+  min-width: 200px;
+  cursor: pointer;
+}
+
+.verse-range {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.verse-range input {
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: var(--border-radius-inner);
+  padding: 0.5rem;
+  font-size: var(--text-size-medium);
+  font-family: var(--font-quran);
+  background: var(--surface-color, #fff);
+  color: var(--text-color, #333);
+  width: 80px;
+  text-align: center;
+}
+
+.verse-range span {
+  color: var(--text-color, #666);
+  font-weight: 600;
+  font-size: var(--text-size-medium);
 }
 .nav-btn:hover {
     transform: translateY(-2px);
@@ -1056,6 +1096,7 @@ button.option-btn:disabled {
     background: var(--surface-color, #fff);
     border-radius: var(--border-radius-main);
     box-shadow: var(--shadow-medium);
+    font-size: var(--text-size-medium);
 }
 
 .settings-container h2 {
@@ -1232,32 +1273,42 @@ button.option-btn:disabled {
         display: block;
     }
     
-    /* Mobile Tab Cards */
+    /* Mobile Tab Buttons */
     .main-tabs {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
         padding: 0.5rem;
     }
     
-    .tab-card {
-        padding: 1rem;
-        flex-direction: column;
-        text-align: center;
-        gap: 0.8rem;
-    }
-    
-    .tab-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 1.5rem;
-    }
-    
-    .tab-content h3 {
+    .tab-btn {
+        padding: 0.6rem 1rem;
         font-size: 1.2rem;
     }
     
-    .tab-content p {
-        font-size: var(--text-size-small);
+    .tab-btn .material-icons {
+        font-size: 1rem;
+    }
+    
+    .tab-text {
+        font-size: 1.2rem;
+    }
+    
+    .control-group {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .surah-select {
+        min-width: 100%;
+        font-size: 1.2rem;
+    }
+    
+    .verse-range input {
+        font-size: 1.2rem;
+    }
+    
+    .verse-range span {
+        font-size: 1.2rem;
     }
     #sidebar {
         position: fixed;

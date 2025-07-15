@@ -90,98 +90,74 @@ body {
 }
 
 .main-tabs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: transparent;
-  border-radius: 0;
-  box-shadow: none;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #e0ffe6;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px #388e3c22;
 }
-.tab-card {
+.tab-btn {
   background: #fffbe6;
   border: 2px solid #a5d6a7;
-  border-radius: 18px;
-  padding: 1.5rem;
+  border-radius: 16px;
+  padding: 0.8rem 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  box-shadow: 0 2px 8px #388e3c22;
+  gap: 0.5rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #388e3c;
+  font-family: 'Scheherazade New', serif;
   position: relative;
   overflow: hidden;
 }
 
-.tab-card::before {
+.tab-btn::before {
   content: '';
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 3px;
   background: linear-gradient(90deg, #388e3c, #a5d6a7);
   transform: scaleX(0);
   transition: transform 0.3s ease;
 }
 
-.tab-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 16px #388e3c44;
+.tab-btn:hover {
   border-color: #388e3c;
-}
-
-.tab-card:hover::before {
-  transform: scaleX(1);
-}
-
-.tab-card.active {
-  border-color: #388e3c;
-  background: linear-gradient(135deg, #fffbe6 0%, #e0ffe6 100%);
-  box-shadow: 0 4px 16px #388e3c44;
-}
-
-.tab-card.active::before {
-  transform: scaleX(1);
-}
-
-.tab-icon {
-  background: linear-gradient(135deg, #388e3c, #a5d6a7);
-  color: white;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  flex-shrink: 0;
+  color: #1b5e20;
+  transform: translateY(-2px);
   box-shadow: 0 2px 8px #388e3c22;
 }
 
-.tab-card:hover .tab-icon {
-  transform: scale(1.1);
-  transition: transform 0.3s ease;
+.tab-btn:hover::before {
+  transform: scaleX(1);
 }
 
-.tab-content {
-  flex: 1;
+.tab-btn.active {
+  border-color: #388e3c;
+  background: #388e3c;
+  color: #fffbe6;
+  box-shadow: 0 4px 16px #388e3c44;
 }
 
-.tab-content h3 {
-  color: #388e3c;
+.tab-btn.active::before {
+  transform: scaleX(1);
+}
+
+.tab-btn .material-icons {
+  font-size: 1.2rem;
+}
+
+.tab-text {
   font-size: 1.4rem;
-  margin: 0 0 0.5rem 0;
-  font-family: 'Scheherazade New', serif;
-  font-weight: 700;
-}
-
-.tab-content p {
-  color: #1b5e20;
-  font-size: 1.1rem;
-  margin: 0;
-  line-height: 1.4;
+  font-weight: 600;
 }
 
 
@@ -189,26 +165,57 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 16px;
-  margin: 12px 0 18px 0;
-  font-size: 1.2rem;
+  margin: 0.5rem 0 1rem 0;
+  padding: 0.5rem;
 }
-.tab-controls label {
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   background: #fffbe6;
-  border-radius: 12px;
-  padding: 8px 16px;
-  box-shadow: 0 1px 4px #388e3c11;
-  font-family: 'Scheherazade New', serif;
-  font-size: 1.1rem;
-}
-.tab-controls select, .tab-controls input[type=number] {
+  padding: 0.8rem 1.2rem;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px #388e3c22;
   border: 1px solid #a5d6a7;
-  border-radius: 8px;
-  padding: 5px 10px;
-  font-size: 1.1rem;
-  margin-right: 6px;
-  font-family: 'Scheherazade New', serif;
 }
+
+.surah-select {
+  border: 1px solid #a5d6a7;
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  font-size: 1.4rem;
+  font-family: 'Scheherazade New', serif;
+  background: #e0ffe6;
+  color: #1b5e20;
+  min-width: 200px;
+  cursor: pointer;
+}
+
+.verse-range {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.verse-range input {
+  border: 1px solid #a5d6a7;
+  border-radius: 12px;
+  padding: 0.5rem;
+  font-size: 1.4rem;
+  font-family: 'Scheherazade New', serif;
+  background: #e0ffe6;
+  color: #1b5e20;
+  width: 80px;
+  text-align: center;
+}
+
+.verse-range span {
+  color: #388e3c;
+  font-weight: 600;
+  font-size: 1.4rem;
+}
+
 
 .tab-section {
   display: none;
@@ -226,7 +233,17 @@ body {
   border-radius: 18px;
   box-shadow: 0 2px 12px #388e3c22;
   padding: 24px 18px;
-  font-size: 1.4rem;
+  font-size: 1.8rem;
+  font-family: 'Scheherazade New', serif;
+}
+
+.basmallah {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #388e3c;
+  margin-bottom: 2rem;
+  margin-top: 1rem;
   font-family: 'Scheherazade New', serif;
 }
 
@@ -237,7 +254,7 @@ body {
   border: none;
   border-radius: 16px;
   padding: 12px 26px;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   margin: 8px 6px;
   box-shadow: 0 2px 8px #388e3c22;
   cursor: pointer;
@@ -256,7 +273,7 @@ body {
   margin: 8px 0;
   padding: 12px 20px;
   box-shadow: 0 1px 6px #388e3c22;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   cursor: grab;
   transition: background 0.2s, transform 0.2s;
   font-family: 'Scheherazade New', serif;
@@ -278,6 +295,58 @@ body {
 - يمكن إضافة رسومات SVG كخلفية أو زخرفة
 */ 
 
+/* صفحة الإعدادات في ثيم الغابة */
+.settings-container {
+  background: #fffbe6;
+  border: 2px solid #a5d6a7;
+  box-shadow: 0 4px 16px #388e3c44;
+  font-size: 1.4rem;
+}
+
+.settings-container h2 {
+  color: #388e3c;
+  font-size: 2rem;
+  font-family: 'Scheherazade New', serif;
+}
+
+.settings-group h3 {
+  color: #1b5e20;
+  font-size: 1.6rem;
+  font-family: 'Scheherazade New', serif;
+}
+
+.setting-item label {
+  color: #1b5e20;
+  font-size: 1.4rem;
+  font-family: 'Scheherazade New', serif;
+}
+
+.setting-item select {
+  border: 1px solid #a5d6a7;
+  background: #e0ffe6;
+  color: #1b5e20;
+  font-size: 1.4rem;
+  font-family: 'Scheherazade New', serif;
+}
+
+.mute-toggle-btn {
+  background: #a5d6a7;
+  color: #1b5e20;
+  border: 2px solid #388e3c;
+  font-size: 1.4rem;
+}
+
+.mute-toggle-btn:hover {
+  background: #388e3c;
+  color: #fffbe6;
+}
+
+.mute-toggle-btn.muted {
+  background: #f44336;
+  color: white;
+  border-color: #d32f2f;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .main-header h1 {
@@ -295,31 +364,41 @@ body {
     padding: 4px 8px;
   }
   
-  /* Mobile Tab Cards for Jungle Theme */
+  /* Mobile Tab Buttons for Jungle Theme */
   .main-tabs {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
     padding: 0.5rem;
   }
   
-  .tab-card {
-    padding: 1rem;
-    flex-direction: column;
-    text-align: center;
-    gap: 0.8rem;
-  }
-  
-  .tab-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-  }
-  
-  .tab-content h3 {
+  .tab-btn {
+    padding: 0.6rem 1rem;
     font-size: 1.2rem;
   }
   
-  .tab-content p {
+  .tab-btn .material-icons {
     font-size: 1rem;
+  }
+  
+  .tab-text {
+    font-size: 1.2rem;
+  }
+  
+  .control-group {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .surah-select {
+    min-width: 100%;
+    font-size: 1.2rem;
+  }
+  
+  .verse-range input {
+    font-size: 1.2rem;
+  }
+  
+  .verse-range span {
+    font-size: 1.2rem;
   }
 }
