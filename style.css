@@ -49,13 +49,35 @@ body::-webkit-scrollbar-thumb {
     border: 3px solid var(--bg-color, #f8f9fa);
 }
 
-#app-container {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    grid-template-columns: 1fr;
+.main-layout {
+    display: flex;
+    flex-direction: row;
     height: 100vh;
     overflow: hidden;
-    position: relative;
+}
+
+.sidebar {
+    position: static;
+    z-index: 1;
+    height: 100vh;
+    min-width: 80px;
+    max-width: 100px;
+    flex-shrink: 0;
+    border-radius: 32px 0 0 32px;
+    box-shadow: 2px 0 12px var(--primary-color, #388e3c22);
+    background: linear-gradient(180deg, var(--primary-color, #388e3c) 60%, var(--secondary-color, #a5d6a7) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+}
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
 }
 
 header {
