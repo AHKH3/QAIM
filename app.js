@@ -1448,14 +1448,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // إخفاء القائمة الجانبية في الموبايل فقط بعد اختيار قسم
       if (window.innerWidth <= 768) {
         hideSidebar();
-      } else {
-        // في الديسكتوب: تأكد أن القائمة الجانبية ظاهرة دائمًا
-        if (sidebar) {
-          sidebar.style.display = 'flex';
-          sidebar.classList.remove('sidebar-open');
-        }
-        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
-      }
+      } // لا تلمس القائمة الجانبية في الديسكتوب إطلاقًا
       // إظهار/إخفاء الأقسام مع التأكد من وجود العناصر
       const mainBar = document.getElementById('main-bar');
       const tabQuran = document.getElementById('tab-quran');
