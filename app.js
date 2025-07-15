@@ -2017,4 +2017,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tabQuran) tabQuran.classList.add('active');
       });
     }
+
+    // زر القائمة الجانبية (إظهار/إخفاء أسماء التبويبات)
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById('sidebar');
+      const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+      if (sidebar && sidebarToggleBtn) {
+        sidebarToggleBtn.addEventListener('click', function() {
+          sidebar.classList.toggle('collapsed');
+        });
+      }
+    });
 });

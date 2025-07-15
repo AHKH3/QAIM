@@ -8,27 +8,46 @@
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
-<!-- واجهة مبسطة وعصرية مستوحاة من الصورة المرفقة -->
 <body>
-  <header class="main-header">
-    <div class="app-title">QAIM</div>
-  </header>
   <div class="app-shell">
-    <!-- Sidebar بسيط -->
+    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
+      <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="إظهار/إخفاء أسماء التبويبات">
+        <span class="material-icons">menu</span>
+      </button>
       <div class="sidebar-logo">
         <img src="logo.png" alt="QAIM Logo" />
       </div>
       <nav class="sidebar-nav">
-        <button class="sidebar-btn" data-section="home" title="الرئيسية"><span class="material-icons">home</span></button>
-        <button class="sidebar-btn" data-section="quran" title="المصحف"><span class="material-icons">menu_book</span></button>
-        <button class="sidebar-btn" data-section="tafsir" title="التفسير"><span class="material-icons">lightbulb</span></button>
-        <button class="sidebar-btn" data-section="activities" title="الأنشطة"><span class="material-icons">sports_esports</span></button>
-        <button class="sidebar-btn" data-section="settings" title="الإعدادات"><span class="material-icons">settings</span></button>
+        <button class="sidebar-btn" data-section="home" title="الرئيسية">
+          <span class="material-icons">home</span>
+          <span class="sidebar-label">الرئيسية</span>
+        </button>
+        <button class="sidebar-btn" data-section="quran" title="المصحف">
+          <span class="material-icons">menu_book</span>
+          <span class="sidebar-label">المصحف</span>
+        </button>
+        <button class="sidebar-btn" data-section="tafsir" title="التفسير">
+          <span class="material-icons">lightbulb</span>
+          <span class="sidebar-label">التفسير</span>
+        </button>
+        <button class="sidebar-btn" data-section="activities" title="الأنشطة">
+          <span class="material-icons">sports_esports</span>
+          <span class="sidebar-label">الأنشطة</span>
+        </button>
+        <button class="sidebar-btn" data-section="settings" title="الإعدادات">
+          <span class="material-icons">settings</span>
+          <span class="sidebar-label">الإعدادات</span>
+        </button>
       </nav>
     </aside>
     <!-- Main Content -->
     <main class="main-content">
+      <header class="main-header">
+        <div class="sidebar-logo" style="margin-bottom:0;">
+          <img src="logo.png" alt="QAIM Logo" style="max-width:48px; border-radius:10px; box-shadow:none;" />
+        </div>
+      </header>
       <nav class="main-tabs">
         <button class="tab-btn" data-tab="quran"><span class="material-icons">menu_book</span> المصحف</button>
         <button class="tab-btn" data-tab="tafsir"><span class="material-icons">lightbulb</span> التفسير</button>
@@ -59,9 +78,36 @@
       <!-- صفحة الإعدادات -->
       <section id="settings-section" class="tab-section">
         <div class="settings-card">
-          <button id="close-settings-btn" class="close-settings-btn" title="إغلاق الإعدادات">&times;</button>
           <div class="settings-container">
-            <!-- إعدادات التطبيق الحقيقية هنا -->
+            <h2 style="margin-bottom:1rem; color:#3a6ee8;">الإعدادات</h2>
+            <div style="margin-bottom:1rem;">
+              <label for="settings-theme-dropdown">الثيم:</label>
+              <select id="settings-theme-dropdown">
+                <option value="classic">كلاسيكي</option>
+                <option value="jungle">غابة</option>
+                <option value="ocean">محيط</option>
+              </select>
+            </div>
+            <div style="margin-bottom:1rem;">
+              <label for="settings-mute-btn">الصوت:</label>
+              <button id="settings-mute-btn" class="tab-btn"><span class="material-icons">volume_up</span></button>
+            </div>
+            <div style="margin-bottom:1rem;">
+              <label for="text-size-dropdown">حجم الخط:</label>
+              <select id="text-size-dropdown">
+                <option value="small">صغير</option>
+                <option value="medium">متوسط</option>
+                <option value="large">كبير</option>
+              </select>
+            </div>
+            <div style="margin-bottom:1rem;">
+              <label for="game-difficulty-dropdown">صعوبة الألعاب:</label>
+              <select id="game-difficulty-dropdown">
+                <option value="easy">سهل</option>
+                <option value="medium">متوسط</option>
+                <option value="hard">صعب</option>
+              </select>
+            </div>
           </div>
         </div>
       </section>
@@ -70,3 +116,4 @@
   <script src="./quran_data/surah_index.js"></script>
   <script src="app.js"></script>
 </body>
+</html>

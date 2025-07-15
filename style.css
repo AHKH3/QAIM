@@ -168,6 +168,76 @@ body {
 .tab-section { display: none; }
 .tab-section.active { display: block; }
 
+/* --- آيات القرآن --- */
+.quran-ayah {
+  font-family: 'Scheherazade New', 'Amiri', serif;
+  font-size: 2.1rem;
+  line-height: 2.5rem;
+  color: #222;
+  margin-bottom: 1.2rem;
+  text-align: right;
+  direction: rtl;
+  letter-spacing: 0.5px;
+}
+
+/* --- تحسين select --- */
+.surah-select, .ayah-range-select {
+  font-size: 1.1rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #e3e8f7;
+  background: #f7faff;
+  color: #3a6ee8;
+  margin-left: 0.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px #e3e8f722;
+  transition: border 0.2s;
+}
+.surah-select:focus, .ayah-range-select:focus {
+  border: 1.5px solid #3a6ee8;
+  outline: none;
+}
+
+/* --- Sidebar Labels --- */
+.sidebar-label {
+  display: inline-block;
+  margin-right: 0.7rem;
+  font-size: 1.1rem;
+  color: #3a6ee8;
+  font-weight: 600;
+  opacity: 1;
+  transition: opacity 0.2s, width 0.2s;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.sidebar.collapsed .sidebar-label {
+  opacity: 0;
+  width: 0;
+  margin: 0;
+}
+
+/* --- زر القائمة الجانبية --- */
+.sidebar-toggle-btn {
+  background: none;
+  border: none;
+  color: #6a6a8e;
+  font-size: 2rem;
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  margin: 0 auto 1.2rem auto;
+}
+.sidebar-toggle-btn:hover, .sidebar-toggle-btn.active {
+  background: #e3e8f7;
+  color: #3a6ee8;
+  box-shadow: 0 2px 8px #e3e8f744;
+}
+
 /* --- Responsive --- */
 @media (max-width: 900px) {
   .main-content {
@@ -216,8 +286,22 @@ body {
   }
   .main-tabs {
     flex-direction: column;
-    gap: 0.3rem;
-    margin-bottom: 0.7rem;
+    gap: 0.1rem;
+    margin-bottom: 0.5rem;
+  }
+  .tab-btn {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+  }
+  .quran-ayah {
+    font-size: 1.3rem;
+    line-height: 1.8rem;
+  }
+  .surah-select, .ayah-range-select {
+    font-size: 0.95rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
   }
   .widget-card {
     padding: 0.7rem 0.3rem;
