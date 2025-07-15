@@ -286,27 +286,28 @@ main#explorer-view {
     background: var(--danger-color, #dc3545);
 }
 
-/* زر القائمة الجانبية للموبايل */
+/* زر القائمة الجانبية */
 .sidebar-toggle-btn {
-    display: none;
+    display: block;
     position: fixed;
     top: 1rem;
     right: 1rem;
     z-index: 1000;
-    background: var(--primary-color, #0d47a1);
+    background: #388e3c;
     color: white;
     border: none;
     border-radius: 50%;
     width: 48px;
     height: 48px;
     cursor: pointer;
-    box-shadow: var(--shadow-medium);
+    box-shadow: 0 4px 12px rgba(56, 142, 60, 0.3);
     transition: all 0.3s ease;
 }
 
 .sidebar-toggle-btn:hover {
-    background: var(--primary-dark, #0a3d8a);
+    background: #1b5e20;
     transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(56, 142, 60, 0.4);
 }
 
 .sidebar-overlay {
@@ -454,6 +455,7 @@ select:focus, input[type="number"]:focus {
     color: var(--primary-color, #0d47a1);
     border: 1px solid var(--border-color, #e9ecef);
     transition: all 0.2s ease-in-out;
+    pointer-events: auto;
 }
 
 /* --- Main Header Controls --- */
@@ -484,6 +486,7 @@ select:focus, input[type="number"]:focus {
 .tab-btn {
     background: transparent;
     border: 2px solid var(--border-color, #e9ecef);
+    pointer-events: auto;
     border-radius: var(--border-radius-inner);
     padding: 0.8rem 1.5rem;
     cursor: pointer;
@@ -1351,7 +1354,7 @@ button.option-btn:disabled {
 
 /* --- Responsive Adjustments --- */
     #sidebar-toggle-btn { 
-        display: block; 
+        display: block !important; 
     }
     #sidebar-overlay { 
         display: block; 
@@ -1526,21 +1529,22 @@ button.option-btn:disabled {
         top: 1rem;
         right: 1rem;
         z-index: 1001;
-        background: var(--primary-color, #0d47a1);
+        background: #388e3c;
         color: white;
         border: none;
         border-radius: 50%;
         width: 48px;
         height: 48px;
         cursor: pointer;
-        box-shadow: var(--shadow-medium);
+        box-shadow: 0 4px 12px rgba(56, 142, 60, 0.3);
         font-size: 1.5rem;
         transition: all 0.3s ease;
     }
     
     .sidebar-toggle-btn:hover {
-        background: var(--primary-dark, #0a3d8a);
+        background: #1b5e20;
         transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(56, 142, 60, 0.4);
     }
     #content-area {
         padding: 1rem;

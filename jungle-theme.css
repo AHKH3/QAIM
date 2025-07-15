@@ -9,6 +9,55 @@ body {
   padding: 0;
 }
 
+/* إصلاح زر القائمة الجانبية في ثيم الغابة */
+.sidebar-toggle-btn {
+  background: #388e3c !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(56, 142, 60, 0.3) !important;
+}
+
+.sidebar-toggle-btn:hover {
+  background: #1b5e20 !important;
+  box-shadow: 0 6px 16px rgba(56, 142, 60, 0.4) !important;
+}
+
+/* إصلاح ألوان الإعدادات في ثيم الغابة */
+.settings-container h2 {
+  color: #388e3c !important;
+}
+
+.settings-group h3 {
+  color: #1b5e20 !important;
+}
+
+.setting-item label {
+  color: #1b5e20 !important;
+}
+
+.setting-item select {
+  border-color: #a5d6a7 !important;
+  background: #e0ffe6 !important;
+  color: #1b5e20 !important;
+}
+
+.setting-item select:focus {
+  border-color: #388e3c !important;
+  box-shadow: 0 0 0 3px rgba(56, 142, 60, 0.2) !important;
+}
+
+.mute-toggle-btn {
+  background: #388e3c !important;
+  color: white !important;
+}
+
+.mute-toggle-btn:hover {
+  background: #1b5e20 !important;
+}
+
+.mute-toggle-btn.muted {
+  background: #f44336 !important;
+}
+
 .main-layout {
   display: flex;
   min-height: 100vh;
