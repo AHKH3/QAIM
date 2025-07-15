@@ -8,10 +8,13 @@
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
-<!-- واجهة جديدة بالكامل مع الحفاظ على كل الوظائف -->
+<!-- واجهة مبسطة وعصرية مستوحاة من الصورة المرفقة -->
 <body>
+  <header class="main-header">
+    <div class="app-title">QAIM</div>
+  </header>
   <div class="app-shell">
-    <!-- Sidebar عصري -->
+    <!-- Sidebar بسيط -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">
         <img src="logo.png" alt="QAIM Logo" />
@@ -26,14 +29,6 @@
     </aside>
     <!-- Main Content -->
     <main class="main-content">
-      <!-- Header عصري -->
-      <header class="main-header">
-        <h1 class="app-title">QAIM</h1>
-        <div class="user-controls">
-          <!-- يمكن إضافة زر مستخدم أو إعدادات سريعة هنا -->
-        </div>
-      </header>
-      <!-- تبويبات واضحة -->
       <nav class="main-tabs">
         <button class="tab-btn" data-tab="quran"><span class="material-icons">menu_book</span> المصحف</button>
         <button class="tab-btn" data-tab="tafsir"><span class="material-icons">lightbulb</span> التفسير</button>
@@ -41,21 +36,19 @@
       </nav>
       <!-- محتوى التبويبات -->
       <section id="tab-quran" class="tab-section active">
-        <div id="surah-container" class="widget-card"></div>
+        <div id="surah-container"></div>
       </section>
       <section id="tab-tafsir" class="tab-section">
-        <div id="tafsir-container" class="widget-card"></div>
+        <div id="tafsir-container"></div>
       </section>
       <section id="tab-activities" class="tab-section">
-        <div class="widget-card">
-          <div class="activities-header">
-            <h2 id="games-title">أنشطة على السورة</h2>
-          </div>
-          <div id="game-selector" class="game-selector"></div>
-          <div id="game-area"></div>
+        <div class="activities-header">
+          <h2 id="games-title">أنشطة على السورة</h2>
         </div>
+        <div id="game-selector" class="game-selector"></div>
+        <div id="game-area"></div>
       </section>
-      <!-- صفحة الإعدادات كـ Card عصري -->
+      <!-- صفحة الإعدادات -->
       <section id="settings-section" class="tab-section">
         <div class="settings-card">
           <button id="close-settings-btn" class="close-settings-btn" title="إغلاق الإعدادات">&times;</button>
@@ -66,7 +59,6 @@
       </section>
     </main>
   </div>
-  <!-- باقي السكريبتات -->
   <script src="./quran_data/surah_index.js"></script>
   <script src="app.js"></script>
 </body>
