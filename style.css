@@ -1882,3 +1882,89 @@ button.option-btn:disabled {
     overflow-y: auto;
   }
 }
+
+/* --- Sidebar Modern Look --- */
+.sidebar {
+  background: linear-gradient(180deg, #43cea2 60%, #185a9d 100%);
+  box-shadow: 2px 0 16px #185a9d22;
+  border-radius: 32px 0 0 32px;
+  min-width: 90px;
+  max-width: 110px;
+  padding-top: 2rem;
+  align-items: center;
+}
+.sidebar-logo {
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+.sidebar-logo img {
+  max-width: 80px;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px #43cea244;
+}
+
+/* --- Main Content Modern Layout --- */
+.main-content {
+  background: #f8f9fa;
+  border-radius: 32px;
+  box-shadow: 0 4px 32px #43cea222;
+  margin: 2rem 2rem 2rem 0;
+  padding: 2rem;
+  min-height: 90vh;
+  transition: box-shadow 0.3s;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin: 1rem 0;
+    border-radius: 18px;
+    padding: 1rem;
+    min-height: 80vh;
+  }
+  .sidebar {
+    border-radius: 0 0 32px 32px;
+    min-width: 80px;
+    max-width: 100vw;
+    box-shadow: 2px 0 12px #185a9d33;
+  }
+}
+
+/* --- Settings Section Modern --- */
+#settings-section {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px #43cea222;
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  position: relative;
+  z-index: 10;
+  margin: 0 auto;
+  max-width: 700px;
+  min-height: 400px;
+  display: none;
+}
+#settings-section.active {
+  display: block;
+}
+.close-settings-btn {
+  position: absolute;
+  top: 1.2rem;
+  left: 1.2rem;
+  background: #43cea2;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 2rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #185a9d22;
+  z-index: 20;
+  transition: background 0.2s;
+}
+.close-settings-btn:hover {
+  background: #185a9d;
+}
+
+/* --- Tab Section Display Logic --- */
+.tab-section { display: none; }
+.tab-section.active { display: block; }

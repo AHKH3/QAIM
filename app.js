@@ -1996,4 +1996,25 @@ document.addEventListener('DOMContentLoaded', () => {
     window.displayGeneralGames = displayGeneralGames;
 
     initializeApp();
+
+    // منطق إظهار/إخفاء صفحة الإعدادات العصري
+    const settingsBtn = document.querySelector('.sidebar-btn[data-section="settings"]');
+    const settingsSection = document.getElementById('settings-section');
+    const closeSettingsBtn = document.getElementById('close-settings-btn');
+    const tabSections = document.querySelectorAll('.tab-section');
+    const mainBar = document.getElementById('main-bar');
+    const tabQuran = document.getElementById('tab-quran');
+
+    if (settingsBtn && settingsSection && closeSettingsBtn) {
+      settingsBtn.addEventListener('click', function() {
+        tabSections.forEach(sec => sec.classList.remove('active'));
+        settingsSection.classList.add('active');
+      });
+      closeSettingsBtn.addEventListener('click', function() {
+        settingsSection.classList.remove('active');
+        // أظهر الرئيسية
+        if (mainBar) mainBar.classList.add('active');
+        if (tabQuran) tabQuran.classList.add('active');
+      });
+    }
 });
