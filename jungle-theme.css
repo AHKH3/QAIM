@@ -244,6 +244,33 @@ body {
   display: block;
 }
 
+/* --- Settings Section for Jungle Theme --- */
+#settings-section {
+  display: none;
+  padding: 24px 32px;
+  min-height: 400px;
+  animation: fadeIn 0.7s;
+}
+
+#settings-section[style*="display: block"],
+#settings-section[style*="display: "] {
+  display: block !important;
+  animation: fadeIn 0.7s;
+}
+
+/* Ensure settings container is visible in jungle theme */
+.settings-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #fffbe6;
+  border: 2px solid #a5d6a7;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px #388e3c44;
+  font-size: 1.4rem;
+  min-height: 300px;
+}
+
 #surah-container, #tafsir-container, #game-area {
   margin-top: 12px;
   background: #fffbe6;

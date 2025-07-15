@@ -171,6 +171,34 @@ main#explorer-view {
     animation: fadeIn 0.5s ease-in-out;
 }
 
+/* --- Settings Section --- */
+#settings-section {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 2rem;
+    min-height: 400px;
+}
+
+#settings-section[style*="display: block"],
+#settings-section[style*="display: "] {
+    display: block !important;
+    opacity: 1;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Ensure settings container is visible */
+.settings-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+    background: var(--surface-color, #fff);
+    border-radius: var(--border-radius-main);
+    box-shadow: var(--shadow-medium);
+    font-size: var(--text-size-medium);
+    min-height: 300px;
+}
+
 .section-title {
     font-size: 2.5rem;
     font-weight: 900;

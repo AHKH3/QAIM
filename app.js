@@ -1463,12 +1463,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (generalActivities) generalActivities.style.display = '';
         activateActivitiesTab('games');
       } else if (section === 'settings') {
-        const settingsSection = document.getElementById('settings-section');
         if (settingsSection) {
-          settingsSection.style.display = '';
+          console.log('Opening settings section');
+          settingsSection.style.display = 'block';
           // تحميل وتطبيق الإعدادات عند فتح صفحة الإعدادات
           loadSettings();
           setupSettingsEventListeners();
+        } else {
+          console.error('Settings section not found');
         }
       }
     }
@@ -1544,10 +1546,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // تحديث واجهة الإعدادات
     function updateSettingsUI() {
+        console.log('Updating settings UI');
         const themeDropdown = document.getElementById('settings-theme-dropdown');
         const muteBtn = document.getElementById('settings-mute-btn');
         const textSizeDropdown = document.getElementById('text-size-dropdown');
         const difficultyDropdown = document.getElementById('game-difficulty-dropdown');
+        
+        console.log('Found elements:', {
+            themeDropdown: !!themeDropdown,
+            muteBtn: !!muteBtn,
+            textSizeDropdown: !!textSizeDropdown,
+            difficultyDropdown: !!difficultyDropdown
+        });
         
         if (themeDropdown) themeDropdown.value = appSettings.theme;
         if (textSizeDropdown) textSizeDropdown.value = appSettings.textSize;
@@ -1567,13 +1577,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // إعداد مستمعي أحداث الإعدادات
     function setupSettingsEventListeners() {
+        console.log('Setting up settings event listeners');
         const themeDropdown = document.getElementById('settings-theme-dropdown');
         const muteBtn = document.getElementById('settings-mute-btn');
         const textSizeDropdown = document.getElementById('text-size-dropdown');
         const difficultyDropdown = document.getElementById('game-difficulty-dropdown');
         
+        console.log('Setting up listeners for:', {
+            themeDropdown: !!themeDropdown,
+            muteBtn: !!muteBtn,
+            textSizeDropdown: !!textSizeDropdown,
+            difficultyDropdown: !!difficultyDropdown
+        });
+        
         if (themeDropdown) {
             themeDropdown.addEventListener('change', function() {
+                console.log('Theme changed to:', this.value);
                 appSettings.theme = this.value;
                 applySettings();
                 saveSettings();
@@ -1582,6 +1601,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (muteBtn) {
             muteBtn.addEventListener('click', function() {
+                console.log('Mute button clicked');
                 appSettings.isMuted = !appSettings.isMuted;
                 applySettings();
                 saveSettings();
@@ -1590,6 +1610,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (textSizeDropdown) {
             textSizeDropdown.addEventListener('change', function() {
+                console.log('Text size changed to:', this.value);
                 appSettings.textSize = this.value;
                 applySettings();
                 saveSettings();
@@ -1598,6 +1619,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (difficultyDropdown) {
             difficultyDropdown.addEventListener('change', function() {
+                console.log('Difficulty changed to:', this.value);
                 appSettings.gameDifficulty = this.value;
                 saveSettings();
             });
@@ -1606,6 +1628,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // عند تحميل الصفحة، افتراضيًا الرئيسية
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM Content Loaded');
+      // تحميل الإعدادات أولاً
+      loadSettings();
       // تأكد من تحميل جميع العناصر
       setTimeout(() => {
         activateSidebar('home');
