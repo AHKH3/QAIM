@@ -1788,3 +1788,41 @@ button.option-btn:disabled {
         font-size: 1.8rem;
     }
 }
+
+/* ضمان ظهور القائمة الجانبية دائمًا في الديسكتوب */
+@media (min-width: 769px) {
+  #sidebar {
+    display: flex !important;
+    position: static !important;
+    z-index: 1 !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
+/* في الديسكتوب: جميع أقسام المحتوى تراعي وجود القائمة الجانبية ولا تمتد فوقها */
+@media (min-width: 769px) {
+  .main-content {
+    margin-right: 100px; /* نفس أقصى عرض للـ sidebar */
+  }
+  .tab-section,
+  #settings-section,
+  #general-game-area {
+    margin-right: 0;
+    /* لا حاجة لأي position absolute أو تغطية كاملة */
+    /* لو فيه position: absolute; أزلها */
+    position: static !important;
+    width: auto !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    z-index: auto !important;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
