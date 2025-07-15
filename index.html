@@ -36,6 +36,14 @@
       </nav>
       <!-- محتوى التبويبات -->
       <section id="tab-quran" class="tab-section active">
+        <div class="quran-controls" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem;">
+          <select id="surah-select" class="surah-select"></select>
+          <div class="verse-range" style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="number" id="verse-start" min="1" value="1" placeholder="من" style="width: 60px;">
+            <span>-</span>
+            <input type="number" id="verse-end" min="1" value="7" placeholder="إلى" style="width: 60px;">
+          </div>
+        </div>
         <div id="surah-container"></div>
       </section>
       <section id="tab-tafsir" class="tab-section">
