@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Theme handling
     let lastSelectedTheme = localStorage.getItem('selectedTheme') || 'theme-classic';
+    const themeClasses = ['theme-classic', 'theme-ocean', 'theme-jungle'];
+    body.classList.remove(...themeClasses);
     body.classList.add(lastSelectedTheme); // Apply initial theme
 
     // Sound Functionality
@@ -216,16 +218,14 @@ document.addEventListener('DOMContentLoaded', () => {
         displayGames(surah, startVerse, endVerse);
     }
 
+    // تطبيق الثيم الجديد
     function setTheme(theme) {
-        body.className = '';
+        body.classList.remove(...themeClasses);
         body.classList.add(theme);
-        lastSelectedTheme = theme;
-        if (themeDropdown) {
-            themeDropdown.value = theme;
-        }
-        if (themeDropdownMobile) {
-            themeDropdownMobile.value = theme;
-        }
+        localStorage.setItem('selectedTheme', theme);
+        // تحديث قيمة dropdown إذا كان موجودًا
+        if (themeDropdown) themeDropdown.value = theme;
+        if (themeDropdownMobile) themeDropdownMobile.value = theme;
     }
 
     async function loadSurahRange() {
@@ -1514,21 +1514,14 @@ document.addEventListener('DOMContentLoaded', () => {
         gameDifficulty: 'medium'
     };
 
-    // تحميل الإعدادات من localStorage
+    // عند تحميل الإعدادات من localStorage
     function loadSettings() {
-        console.log('Loading settings from localStorage');
         const saved = localStorage.getItem('quranExplorerSettings');
         if (saved) {
-            try {
-                const parsedSettings = JSON.parse(saved);
-                appSettings = { ...appSettings, ...parsedSettings };
-                console.log('Loaded settings:', appSettings);
-            } catch (error) {
-                console.error('Error parsing settings:', error);
-            }
-        } else {
-            console.log('No saved settings found, using defaults');
+            appSettings = { ...appSettings, ...JSON.parse(saved) };
         }
+        // تطبيق الثيم المختار
+        setTheme('theme-' + (appSettings.theme || 'classic'));
         applySettings();
     }
 
@@ -1635,9 +1628,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (themeDropdown) {
             const newThemeDropdown = themeDropdown.cloneNode(true);
             themeDropdown.parentNode.replaceChild(newThemeDropdown, themeDropdown);
+            newThemeDropdown.innerHTML = `
+                <option value="theme-classic">كلاسيكي</option>
+                <option value="theme-jungle">غابة</option>
+                <option value="theme-ocean">محيط</option>
+            `;
+            newThemeDropdown.value = lastSelectedTheme;
             newThemeDropdown.addEventListener('change', function() {
                 console.log('Theme changed to:', this.value);
-                appSettings.theme = this.value;
+                appSettings.theme = this.value.replace('theme-', '');
                 applySettings();
                 saveSettings();
             });
