@@ -1450,7 +1450,11 @@ document.addEventListener('DOMContentLoaded', () => {
         hideSidebar();
       } else {
         // في الديسكتوب: تأكد أن القائمة الجانبية ظاهرة دائمًا
-        if (sidebar) sidebar.style.display = 'flex';
+        if (sidebar) {
+          sidebar.style.display = 'flex';
+          sidebar.classList.remove('sidebar-open');
+        }
+        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
       }
       // إظهار/إخفاء الأقسام مع التأكد من وجود العناصر
       const mainBar = document.getElementById('main-bar');
