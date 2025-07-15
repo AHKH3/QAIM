@@ -1438,6 +1438,12 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
       const btn = document.querySelector(`.sidebar-btn[data-section="${section}"]`);
       if (btn) btn.classList.add('active');
+      
+      // إخفاء القائمة الجانبية في الموبايل بعد اختيار قسم
+      if (window.innerWidth <= 768) {
+        hideSidebar();
+      }
+      
       // إظهار/إخفاء الأقسام مع التأكد من وجود العناصر
       const mainBar = document.getElementById('main-bar');
       const tabQuran = document.getElementById('tab-quran');
@@ -1445,6 +1451,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const tabActivities = document.getElementById('tab-activities');
       const generalActivities = document.getElementById('general-activities-section');
       const settingsSection = document.getElementById('settings-section');
+      
       // إخفاء جميع الأقسام أولاً
       if (mainBar) mainBar.style.display = 'none';
       if (tabQuran) tabQuran.style.display = 'none';
@@ -1509,36 +1516,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // تحميل الإعدادات من localStorage
     function loadSettings() {
+        console.log('Loading settings from localStorage');
         const saved = localStorage.getItem('quranExplorerSettings');
         if (saved) {
-            appSettings = { ...appSettings, ...JSON.parse(saved) };
+            try {
+                const parsedSettings = JSON.parse(saved);
+                appSettings = { ...appSettings, ...parsedSettings };
+                console.log('Loaded settings:', appSettings);
+            } catch (error) {
+                console.error('Error parsing settings:', error);
+            }
+        } else {
+            console.log('No saved settings found, using defaults');
         }
         applySettings();
     }
 
     // حفظ الإعدادات
     function saveSettings() {
-        localStorage.setItem('quranExplorerSettings', JSON.stringify(appSettings));
+        console.log('Saving settings:', appSettings);
+        try {
+            localStorage.setItem('quranExplorerSettings', JSON.stringify(appSettings));
+            console.log('Settings saved successfully');
+        } catch (error) {
+            console.error('Error saving settings:', error);
+        }
     }
 
     // تطبيق الإعدادات
     function applySettings() {
+        console.log('Applying settings:', appSettings);
+        
         // تطبيق الثيم
         document.body.className = `theme-${appSettings.theme}`;
+        console.log('Applied theme:', appSettings.theme);
         
         // تطبيق حجم النص
-        document.documentElement.style.setProperty('--text-size-base', 
-            appSettings.textSize === 'small' ? '0.9rem' :
+        const textSizeValue = appSettings.textSize === 'small' ? '0.9rem' :
             appSettings.textSize === 'medium' ? '1.1rem' :
-            appSettings.textSize === 'large' ? '1.3rem' : '1.5rem'
-        );
+            appSettings.textSize === 'large' ? '1.3rem' : '1.5rem';
+        document.documentElement.style.setProperty('--text-size-base', textSizeValue);
+        console.log('Applied text size:', textSizeValue);
         
         // تطبيق كتم الصوت
+        isMuted = appSettings.isMuted;
         if (appSettings.isMuted) {
             document.body.classList.add('muted');
         } else {
             document.body.classList.remove('muted');
         }
+        console.log('Applied mute setting:', appSettings.isMuted);
         
         // تحديث واجهة الإعدادات
         updateSettingsUI();
@@ -1546,7 +1573,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // تحديث واجهة الإعدادات
     function updateSettingsUI() {
-        console.log('Updating settings UI');
+        console.log('Updating settings UI with:', appSettings);
         const themeDropdown = document.getElementById('settings-theme-dropdown');
         const muteBtn = document.getElementById('settings-mute-btn');
         const textSizeDropdown = document.getElementById('text-size-dropdown');
@@ -1559,18 +1586,32 @@ document.addEventListener('DOMContentLoaded', () => {
             difficultyDropdown: !!difficultyDropdown
         });
         
-        if (themeDropdown) themeDropdown.value = appSettings.theme;
-        if (textSizeDropdown) textSizeDropdown.value = appSettings.textSize;
-        if (difficultyDropdown) difficultyDropdown.value = appSettings.gameDifficulty;
+        if (themeDropdown) {
+            themeDropdown.value = appSettings.theme;
+            console.log('Set theme dropdown to:', appSettings.theme);
+        }
+        if (textSizeDropdown) {
+            textSizeDropdown.value = appSettings.textSize;
+            console.log('Set text size dropdown to:', appSettings.textSize);
+        }
+        if (difficultyDropdown) {
+            difficultyDropdown.value = appSettings.gameDifficulty;
+            console.log('Set difficulty dropdown to:', appSettings.gameDifficulty);
+        }
         
         if (muteBtn) {
             const icon = muteBtn.querySelector('.material-icons');
-            if (appSettings.isMuted) {
-                icon.textContent = 'volume_off';
-                muteBtn.classList.add('muted');
+            if (icon) {
+                if (appSettings.isMuted) {
+                    icon.textContent = 'volume_off';
+                    muteBtn.classList.add('muted');
+                } else {
+                    icon.textContent = 'volume_up';
+                    muteBtn.classList.remove('muted');
+                }
+                console.log('Set mute button to:', appSettings.isMuted ? 'muted' : 'unmuted');
             } else {
-                icon.textContent = 'volume_up';
-                muteBtn.classList.remove('muted');
+                console.error('Icon element not found in mute button');
             }
         }
     }
@@ -1590,8 +1631,11 @@ document.addEventListener('DOMContentLoaded', () => {
             difficultyDropdown: !!difficultyDropdown
         });
         
+        // إزالة المستمعين السابقين لتجنب التكرار
         if (themeDropdown) {
-            themeDropdown.addEventListener('change', function() {
+            const newThemeDropdown = themeDropdown.cloneNode(true);
+            themeDropdown.parentNode.replaceChild(newThemeDropdown, themeDropdown);
+            newThemeDropdown.addEventListener('change', function() {
                 console.log('Theme changed to:', this.value);
                 appSettings.theme = this.value;
                 applySettings();
@@ -1600,7 +1644,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (muteBtn) {
-            muteBtn.addEventListener('click', function() {
+            const newMuteBtn = muteBtn.cloneNode(true);
+            muteBtn.parentNode.replaceChild(newMuteBtn, muteBtn);
+            newMuteBtn.addEventListener('click', function() {
                 console.log('Mute button clicked');
                 appSettings.isMuted = !appSettings.isMuted;
                 applySettings();
@@ -1609,7 +1655,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (textSizeDropdown) {
-            textSizeDropdown.addEventListener('change', function() {
+            const newTextSizeDropdown = textSizeDropdown.cloneNode(true);
+            textSizeDropdown.parentNode.replaceChild(newTextSizeDropdown, textSizeDropdown);
+            newTextSizeDropdown.addEventListener('change', function() {
                 console.log('Text size changed to:', this.value);
                 appSettings.textSize = this.value;
                 applySettings();
@@ -1618,7 +1666,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (difficultyDropdown) {
-            difficultyDropdown.addEventListener('change', function() {
+            const newDifficultyDropdown = difficultyDropdown.cloneNode(true);
+            difficultyDropdown.parentNode.replaceChild(newDifficultyDropdown, difficultyDropdown);
+            newDifficultyDropdown.addEventListener('change', function() {
                 console.log('Difficulty changed to:', this.value);
                 appSettings.gameDifficulty = this.value;
                 saveSettings();
@@ -1634,6 +1684,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // تأكد من تحميل جميع العناصر
       setTimeout(() => {
         activateSidebar('home');
+        // إعداد مستمعي أحداث الإعدادات بعد تحميل الصفحة
+        setupSettingsEventListeners();
       }, 100);
     });
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QAIM - مستكشف القرآن للأطفال</title>
+  <title>QAIM</title>
   <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="jungle-theme.css">
@@ -14,8 +14,13 @@
   <div id="loading-indicator" class="loading-indicator" style="display: none;"></div>
   
   <div class="main-layout">
+    <!-- زر القائمة الجانبية للموبايل -->
+    <button id="sidebar-toggle-btn" class="sidebar-toggle-btn">
+      <span class="material-icons">menu</span>
+    </button>
+    
     <!-- القائمة الجانبية -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">QAIM</div>
       <button class="sidebar-btn active" data-section="home" title="الرئيسية"><span class="material-icons">home</span></button>
       <button class="sidebar-btn" data-section="general-activities" title="الأنشطة العامة"><span class="material-icons">sports_esports</span></button>
@@ -24,9 +29,13 @@
       <button class="sidebar-btn disabled" title="الحديث"><span class="material-icons">menu_book</span></button>
       <button class="sidebar-btn disabled" title="القرائية"><span class="material-icons">school</span></button>
     </aside>
+    
+    <!-- Overlay للموبايل -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    
     <div class="main-content">
       <header class="main-header">
-        <h1>QAIM - مستكشف القرآن للأطفال</h1>
+        <h1>QAIM</h1>
       </header>
       <!-- شريط علوي للرئيسية -->
       <div id="main-bar" class="main-bar">
