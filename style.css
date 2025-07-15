@@ -65,7 +65,7 @@ body::-webkit-scrollbar-thumb {
     flex-shrink: 0;
     border-radius: 32px 0 0 32px;
     box-shadow: 2px 0 12px var(--primary-color, #388e3c22);
-    background: linear-gradient(180deg, var(--primary-color, #388e3c) 60%, var(--secondary-color, #a5d6a7) 100%);
+    background: linear-gradient(180deg, var(--primary-color) 60%, var(--secondary-color) 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -414,22 +414,22 @@ main#explorer-view {
 .sidebar-logo {
     font-size: 1.8rem;
     font-weight: bold;
-    color: var(--primary-color, #388e3c);
+    color: var(--primary-color);
     text-align: center;
     margin-bottom: 24px;
     padding: 1rem;
-    border-bottom: 2px solid var(--secondary-color, #a5d6a7);
+    border-bottom: 2px solid var(--secondary-color);
     font-family: 'Scheherazade New', serif;
 }
 .sidebar-btn {
-    background: var(--surface-color, #fffbe6);
+    background: var(--surface-color);
     border: none;
     border-radius: 50%;
     width: 48px;
     height: 48px;
     margin: 8px 0;
     font-size: 1.7rem;
-    color: var(--primary-color, #388e3c);
+    color: var(--primary-color);
     box-shadow: 0 2px 8px var(--primary-color, #388e3c22);
     transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
     cursor: pointer;
@@ -439,8 +439,8 @@ main#explorer-view {
     justify-content: center;
 }
 .sidebar-btn.active, .sidebar-btn:hover {
-    background: var(--secondary-color, #a5d6a7);
-    color: var(--text-color, #1b5e20);
+    background: var(--secondary-color);
+    color: var(--surface-color);
     transform: scale(1.12) rotate(-3deg);
     box-shadow: 0 4px 16px var(--primary-color, #388e3c44);
 }
