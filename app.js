@@ -1411,7 +1411,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
-            // في الديسكتوب: تأكد أن القائمة الجانبية ظاهرة دائمًا
             if (sidebar) sidebar.classList.remove('sidebar-open');
             if (sidebarOverlay) sidebarOverlay.classList.remove('active');
         }
@@ -1447,7 +1446,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
       const btn = document.querySelector(`.sidebar-btn[data-section="${section}"]`);
       if (btn) btn.classList.add('active');
-      
       // إخفاء القائمة الجانبية في الموبايل فقط بعد اختيار قسم
       if (window.innerWidth <= 768) {
         hideSidebar();
