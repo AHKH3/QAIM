@@ -2019,13 +2019,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // زر القائمة الجانبية (إظهار/إخفاء أسماء التبويبات)
-    document.addEventListener('DOMContentLoaded', function() {
-      const sidebar = document.getElementById('sidebar');
-      const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-      if (sidebar && sidebarToggleBtn) {
-        sidebarToggleBtn.addEventListener('click', function() {
-          sidebar.classList.toggle('collapsed');
-        });
-      }
+    const sidebarElement = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarElement && sidebarToggle) {
+      sidebarToggle.addEventListener('click', () => {
+        sidebarElement.classList.toggle('collapsed');
+      });
+    }
+
+    // تفعيل التبويبات من الشريط الجانبي
+    document.querySelectorAll('.sidebar-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        // إظهار القسم المناسب
+        const section = this.getAttribute('data-section');
+        document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+        if (section === 'settings') {
+          document.getElementById('settings-section').classList.add('active');
+        } else {
+          document.getElementById('tab-' + section).classList.add('active');
+        }
+        // تفعيل زر التبويب العلوي أيضًا
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        const topTab = document.querySelector('.tab-btn[data-tab="' + section + '"]');
+        if (topTab) topTab.classList.add('active');
+      });
+    });
+
+    // تفعيل التبويبات من الأعلى
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const tab = this.getAttribute('data-tab');
+        document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        // تفعيل زر الشريط الجانبي أيضًا
+        document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+        const sideBtn = document.querySelector('.sidebar-btn[data-section="' + tab + '"]');
+        if (sideBtn) sideBtn.classList.add('active');
+      });
     });
 });

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QAIM</title>
+  <title>مستكشف القرآن</title>
   <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -12,18 +12,14 @@
   <div class="app-shell">
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-      <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="إظهار/إخفاء أسماء التبويبات">
+      <div class="sidebar-logo">
+        <img src="logo.png" alt="Quran Explorer Logo">
+      </div>
+      <button class="sidebar-toggle-btn" id="sidebarToggle" title="إظهار/إخفاء أسماء التبويبات">
         <span class="material-icons">menu</span>
       </button>
-      <div class="sidebar-logo">
-        <img src="logo.png" alt="QAIM Logo" />
-      </div>
       <nav class="sidebar-nav">
-        <button class="sidebar-btn" data-section="home" title="الرئيسية">
-          <span class="material-icons">home</span>
-          <span class="sidebar-label">الرئيسية</span>
-        </button>
-        <button class="sidebar-btn" data-section="quran" title="المصحف">
+        <button class="sidebar-btn active" data-section="quran" title="المصحف">
           <span class="material-icons">menu_book</span>
           <span class="sidebar-label">المصحف</span>
         </button>
@@ -44,12 +40,10 @@
     <!-- Main Content -->
     <main class="main-content">
       <header class="main-header">
-        <div class="sidebar-logo" style="margin-bottom:0;">
-          <img src="logo.png" alt="QAIM Logo" style="max-width:48px; border-radius:10px; box-shadow:none;" />
-        </div>
+        <div class="app-title">مستكشف القرآن</div>
       </header>
       <nav class="main-tabs">
-        <button class="tab-btn" data-tab="quran"><span class="material-icons">menu_book</span> المصحف</button>
+        <button class="tab-btn active" data-tab="quran"><span class="material-icons">menu_book</span> المصحف</button>
         <button class="tab-btn" data-tab="tafsir"><span class="material-icons">lightbulb</span> التفسير</button>
         <button class="tab-btn" data-tab="activities"><span class="material-icons">sports_esports</span> الأنشطة</button>
       </nav>
