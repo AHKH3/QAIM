@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مستكشف القرآن للأطفال</title>
+  <title>QAIM - مستكشف القرآن للأطفال</title>
   <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="jungle-theme.css">
@@ -16,7 +16,7 @@
   <div class="main-layout">
     <!-- القائمة الجانبية -->
     <aside class="sidebar">
-      <div class="sidebar-logo">🌳</div>
+      <div class="sidebar-logo">QAIM</div>
       <button class="sidebar-btn active" data-section="home" title="الرئيسية"><span class="material-icons">home</span></button>
       <button class="sidebar-btn" data-section="general-activities" title="الأنشطة العامة"><span class="material-icons">sports_esports</span></button>
       <button class="sidebar-btn" data-section="settings" title="الإعدادات"><span class="material-icons">settings</span></button>
@@ -26,31 +26,33 @@
     </aside>
     <div class="main-content">
       <header class="main-header">
-        <h1>مستكشف القرآن للأطفال</h1>
+        <h1>QAIM - مستكشف القرآن للأطفال</h1>
       </header>
       <!-- شريط علوي للرئيسية -->
       <div id="main-bar" class="main-bar">
-        <nav class="main-tabs" id="main-tabs">
-          <button class="tab-btn active" data-tab="quran">
-            <span class="material-icons">menu_book</span>
-            <span class="tab-text">المصحف</span>
-          </button>
-          <button class="tab-btn" data-tab="tafsir">
-            <span class="material-icons">lightbulb</span>
-            <span class="tab-text">التفسير</span>
-          </button>
-          <button class="tab-btn" data-tab="activities">
-            <span class="material-icons">sports_esports</span>
-            <span class="tab-text">الأنشطة</span>
-          </button>
-        </nav>
-        <div class="tab-controls">
-          <div class="control-group">
-            <select id="surah-select" class="surah-select"></select>
-            <div class="verse-range">
-              <input type="number" id="verse-start" min="1" value="1" placeholder="من">
-              <span>-</span>
-              <input type="number" id="verse-end" min="1" value="7" placeholder="إلى">
+        <div class="main-header-controls">
+          <nav class="main-tabs" id="main-tabs">
+            <button class="tab-btn active" data-tab="quran">
+              <span class="material-icons">menu_book</span>
+              <span class="tab-text">المصحف</span>
+            </button>
+            <button class="tab-btn" data-tab="tafsir">
+              <span class="material-icons">lightbulb</span>
+              <span class="tab-text">التفسير</span>
+            </button>
+            <button class="tab-btn" data-tab="activities">
+              <span class="material-icons">sports_esports</span>
+              <span class="tab-text">الأنشطة</span>
+            </button>
+          </nav>
+          <div class="tab-controls">
+            <div class="control-group">
+              <select id="surah-select" class="surah-select"></select>
+              <div class="verse-range">
+                <input type="number" id="verse-start" min="1" value="1" placeholder="من">
+                <span>-</span>
+                <input type="number" id="verse-end" min="1" value="7" placeholder="إلى">
+              </div>
             </div>
           </div>
         </div>

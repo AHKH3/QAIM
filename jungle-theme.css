@@ -29,9 +29,14 @@ body {
 }
 
 .sidebar-logo {
-  font-size: 2.5rem;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #388e3c;
+  text-align: center;
   margin-bottom: 24px;
-  filter: drop-shadow(0 2px 4px #388e3c66);
+  padding: 1rem;
+  border-bottom: 2px solid #a5d6a7;
+  font-family: 'Scheherazade New', serif;
 }
 
 .sidebar-btn {
@@ -89,15 +94,27 @@ body {
   text-shadow: 0 2px 8px #a5d6a7aa;
 }
 
-.main-tabs {
+.main-header-controls {
   display: flex;
-  justify-content: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 1rem;
   padding: 0.5rem;
   background: #e0ffe6;
   border-radius: 18px;
   box-shadow: 0 2px 8px #388e3c22;
+}
+
+.main-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
 }
 .tab-btn {
   background: #fffbe6;
@@ -165,19 +182,19 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0.5rem 0 1rem 0;
-  padding: 0.5rem;
+  margin: 0;
+  padding: 0;
 }
 
 .control-group {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: #fffbe6;
-  padding: 0.8rem 1.2rem;
-  border-radius: 18px;
-  box-shadow: 0 2px 8px #388e3c22;
-  border: 1px solid #a5d6a7;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
 }
 
 .surah-select {
@@ -347,6 +364,160 @@ body {
   border-color: #d32f2f;
 }
 
+/* --- Verse Cascade Game for Jungle Theme --- */
+.cascade-word {
+  background-color: #388e3c !important;
+  color: #fffbe6 !important;
+  border: 2px solid #1b5e20;
+}
+
+.cascade-word.incorrect {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+#cascade-verse-display {
+  background-color: #fffbe6 !important;
+  border: 2px solid #a5d6a7 !important;
+  color: #1b5e20 !important;
+}
+
+#cascade-verse-display small {
+  color: #388e3c !important;
+}
+
+#start-cascade-btn {
+  background-color: #a5d6a7 !important;
+  color: #1b5e20 !important;
+  border: 2px solid #388e3c !important;
+}
+
+#start-cascade-btn:hover {
+  background-color: #388e3c !important;
+  color: #fffbe6 !important;
+}
+
+.cascade-end-message {
+  color: #388e3c !important;
+}
+
+.btn-difficulty {
+  border: 2px solid #388e3c !important;
+  color: #388e3c !important;
+  background-color: transparent !important;
+}
+
+.btn-difficulty:hover {
+  background-color: #388e3c !important;
+  color: #fffbe6 !important;
+}
+
+#cascade-info {
+  background-color: #e0ffe6 !important;
+  color: #1b5e20 !important;
+  border: 1px solid #a5d6a7 !important;
+}
+
+#cascade-area {
+  border: 2px solid #a5d6a7 !important;
+  background-color: #e0ffe6 !important;
+}
+
+/* --- Wheel Game for Jungle Theme --- */
+#spin-wheel-btn {
+  background: linear-gradient(145deg, #388e3c, #a5d6a7) !important;
+  color: #fffbe6 !important;
+}
+
+#spin-wheel-btn:hover {
+  background: linear-gradient(145deg, #1b5e20, #388e3c) !important;
+}
+
+#wheel-question-area {
+  background-color: #e0ffe6 !important;
+  border: 2px solid #a5d6a7 !important;
+  color: #1b5e20 !important;
+}
+
+.verse-question {
+  color: #388e3c !important;
+}
+
+.blank-slot {
+  border-bottom: 2px dashed #388e3c !important;
+}
+
+.option-btn {
+  background: #fffbe6 !important;
+  border: 1px solid #a5d6a7 !important;
+  color: #1b5e20 !important;
+}
+
+.option-btn:hover {
+  border-color: #388e3c !important;
+  background: #e0ffe6 !important;
+}
+
+.option-btn.correct {
+  background-color: #4caf50 !important;
+  color: #fffbe6 !important;
+  border-color: #2e7d32 !important;
+}
+
+.option-btn.incorrect {
+  background-color: #f44336 !important;
+  color: white !important;
+  border-color: #d32f2f !important;
+}
+
+.btn-check {
+  background-color: #388e3c !important;
+  color: #fffbe6 !important;
+}
+
+.btn-check:hover {
+  background-color: #1b5e20 !important;
+}
+
+.btn-reset {
+  background-color: #a5d6a7 !important;
+  color: #1b5e20 !important;
+  border: 2px solid #388e3c !important;
+}
+
+.btn-reset:hover {
+  background-color: #388e3c !important;
+  color: #fffbe6 !important;
+}
+
+.feedback-correct {
+  background-color: #c8e6c9 !important;
+  color: #1b5e20 !important;
+  border: 1px solid #a5d6a7 !important;
+}
+
+.feedback-incorrect {
+  background-color: #ffcdd2 !important;
+  color: #c62828 !important;
+  border: 1px solid #ef9a9a !important;
+}
+
+/* --- Activities Header for Jungle Theme --- */
+.activities-header h2 {
+  color: #388e3c !important;
+}
+
+.game-select-btn {
+  border: 2px solid #388e3c !important;
+  color: #388e3c !important;
+  background: transparent !important;
+}
+
+.game-select-btn.active, .game-select-btn:hover {
+  background: #388e3c !important;
+  color: #fffbe6 !important;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .main-header h1 {
@@ -362,6 +533,12 @@ body {
   .tab-controls select, .tab-controls input {
     font-size: 0.9rem;
     padding: 4px 8px;
+  }
+  
+  /* Mobile Header Controls for Jungle Theme */
+  .main-header-controls {
+    flex-direction: column;
+    gap: 1rem;
   }
   
   /* Mobile Tab Buttons for Jungle Theme */
