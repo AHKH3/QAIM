@@ -226,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // تحديث قيمة dropdown إذا كان موجودًا
         if (themeDropdown) themeDropdown.value = theme;
         if (themeDropdownMobile) themeDropdownMobile.value = theme;
-        // تحديث إعدادات الإعدادات إذا كانت مفتوحة
         const settingsThemeDropdown = document.getElementById('settings-theme-dropdown');
         if (settingsThemeDropdown) settingsThemeDropdown.value = theme.replace('theme-', '');
     }
@@ -1449,6 +1448,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // إخفاء القائمة الجانبية في الموبايل فقط بعد اختيار قسم
       if (window.innerWidth <= 768) {
         hideSidebar();
+      } else {
+        // في الديسكتوب: تأكد أن القائمة الجانبية ظاهرة دائمًا
+        if (sidebar) sidebar.style.display = 'flex';
       }
       // إظهار/إخفاء الأقسام مع التأكد من وجود العناصر
       const mainBar = document.getElementById('main-bar');
@@ -1538,11 +1540,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // تطبيق الإعدادات
     function applySettings() {
+        // تأكد من تطبيق كلاس الثيم الصحيح
+        document.body.classList.remove(...themeClasses);
+        document.body.classList.add(`theme-${appSettings.theme}`);
+        // تحديث جميع dropdowns
+        if (themeDropdown) themeDropdown.value = `theme-${appSettings.theme}`;
+        if (themeDropdownMobile) themeDropdownMobile.value = `theme-${appSettings.theme}`;
+        const settingsThemeDropdown = document.getElementById('settings-theme-dropdown');
+        if (settingsThemeDropdown) settingsThemeDropdown.value = appSettings.theme;
         console.log('Applying settings:', appSettings);
-        
-        // تطبيق الثيم
-        document.body.className = `theme-${appSettings.theme}`;
-        console.log('Applied theme:', appSettings.theme);
         
         // تطبيق حجم النص
         const textSizeValue = appSettings.textSize === 'small' ? '0.9rem' :
