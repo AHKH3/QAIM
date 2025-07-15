@@ -226,6 +226,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // تحديث قيمة dropdown إذا كان موجودًا
         if (themeDropdown) themeDropdown.value = theme;
         if (themeDropdownMobile) themeDropdownMobile.value = theme;
+        // تحديث إعدادات الإعدادات إذا كانت مفتوحة
+        const settingsThemeDropdown = document.getElementById('settings-theme-dropdown');
+        if (settingsThemeDropdown) settingsThemeDropdown.value = theme.replace('theme-', '');
     }
 
     async function loadSurahRange() {
@@ -1391,12 +1394,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarOverlay = document.getElementById('sidebar-overlay');
 
     function showSidebar() {
-        if (sidebar) sidebar.classList.add('sidebar-open');
-        if (sidebarOverlay) sidebarOverlay.classList.add('active');
+        if (window.innerWidth <= 768) {
+            if (sidebar) sidebar.classList.add('sidebar-open');
+            if (sidebarOverlay) sidebarOverlay.classList.add('active');
+        }
     }
     function hideSidebar() {
-        if (sidebar) sidebar.classList.remove('sidebar-open');
-        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+        if (window.innerWidth <= 768) {
+            if (sidebar) sidebar.classList.remove('sidebar-open');
+            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+        }
     }
     if (sidebarToggleBtn && sidebar && sidebarOverlay) {
         sidebarToggleBtn.addEventListener('click', showSidebar);
@@ -1404,7 +1411,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
-            hideSidebar();
+            // في الديسكتوب: تأكد أن القائمة الجانبية ظاهرة دائمًا
+            if (sidebar) sidebar.classList.remove('sidebar-open');
+            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
         }
     });
 
@@ -1439,11 +1448,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const btn = document.querySelector(`.sidebar-btn[data-section="${section}"]`);
       if (btn) btn.classList.add('active');
       
-      // إخفاء القائمة الجانبية في الموبايل بعد اختيار قسم
+      // إخفاء القائمة الجانبية في الموبايل فقط بعد اختيار قسم
       if (window.innerWidth <= 768) {
         hideSidebar();
       }
-      
       // إظهار/إخفاء الأقسام مع التأكد من وجود العناصر
       const mainBar = document.getElementById('main-bar');
       const tabQuran = document.getElementById('tab-quran');
@@ -1451,7 +1459,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const tabActivities = document.getElementById('tab-activities');
       const generalActivities = document.getElementById('general-activities-section');
       const settingsSection = document.getElementById('settings-section');
-      
       // إخفاء جميع الأقسام أولاً
       if (mainBar) mainBar.style.display = 'none';
       if (tabQuran) tabQuran.style.display = 'none';
@@ -1459,7 +1466,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (tabActivities) tabActivities.style.display = 'none';
       if (generalActivities) generalActivities.style.display = 'none';
       if (settingsSection) settingsSection.style.display = 'none';
-      
       if (section === 'home') {
         if (mainBar) mainBar.style.display = '';
         if (tabQuran) tabQuran.style.display = '';
@@ -1471,13 +1477,9 @@ document.addEventListener('DOMContentLoaded', () => {
         activateActivitiesTab('games');
       } else if (section === 'settings') {
         if (settingsSection) {
-          console.log('Opening settings section');
           settingsSection.style.display = 'block';
-          // تحميل وتطبيق الإعدادات عند فتح صفحة الإعدادات
           loadSettings();
           setupSettingsEventListeners();
-        } else {
-          console.error('Settings section not found');
         }
       }
     }
