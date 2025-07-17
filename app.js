@@ -678,7 +678,8 @@ document.addEventListener('DOMContentLoaded', () => {
             { key: 'meaning-match', label: 'لعبة توصيل المعاني', icon: 'sync_alt' },
             { key: 'wheel', label: 'العجلة الدوارة', icon: 'rotate_right' },
             { key: 'verse-order', label: 'ترتيب الآيات', icon: 'sort' },
-            { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart' }
+            { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart' },
+            { key: 'train-verse', label: 'ترتيب كلمات الآية (القطار)', icon: 'train' }
         ];
         const selector = document.getElementById('game-selector');
         selector.innerHTML = '';
@@ -711,6 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupWheelGame(surah, start, end);
         setupVerseOrderGame(surah, start, end);
         setupVerseCascadeGame(surah, start, end);
+        setupTrainVerseGame(surah, start, end);
     }
 
     function showGame(game, surah, start, end) {
@@ -736,7 +738,156 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'verse-cascade':
                 setupVerseCascadeGame(surah, start, end);
                 break;
+            case 'train-verse':
+                setupTrainVerseGame(surah, start, end);
+                break;
         }
+// --- لعبة ترتيب كلمات الآية (القطار) ---
+function setupTrainVerseGame(surah, start, end) {
+    const container = document.getElementById('train-verse-game');
+    if (!container) return;
+    container.innerHTML = '';
+    // اختيار آية عشوائية من السورة
+    const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end && v.text.split(' ').length > 2);
+    if (versesToShow.length === 0) {
+        container.innerHTML = '<p>لا توجد آيات مناسبة لهذه اللعبة.</p>';
+        return;
+    }
+    const verseObj = versesToShow[Math.floor(Math.random() * versesToShow.length)];
+    const verseText = removeBasmallahFromVerse(verseObj.text, surah.id);
+    const words = verseText.split(' ').filter(w => w.trim() !== '');
+    const shuffledWords = [...words].sort(() => Math.random() - 0.5);
+    // اختيار شكل القطار
+    let trainType = localStorage.getItem('trainType') || 'modern';
+    container.innerHTML = `
+        <div style="margin-bottom:10px">
+            <label>اختر شكل القطار:</label>
+            <select id="train-type-select">
+                <option value="modern" ${trainType === 'modern' ? 'selected' : ''}>قطار حديث</option>
+                <option value="steam" ${trainType === 'steam' ? 'selected' : ''}>قطار بالفحم</option>
+            </select>
+        </div>
+        <div id="train-area" style="display:flex;align-items:end;gap:5px;margin-bottom:20px;"></div>
+        <button id="check-train-btn" class="btn-check">تحقق من الترتيب</button>
+        <button id="reset-train-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
+        <div id="train-feedback"></div>
+        <div id="train-image-area" style="margin-top:20px;text-align:center;"></div>
+    `;
+    // رسم عربات القطار
+    const trainArea = document.getElementById('train-area');
+    shuffledWords.forEach(word => {
+        const wagon = document.createElement('div');
+        wagon.className = 'train-wagon';
+        wagon.textContent = word;
+        wagon.draggable = true;
+        wagon.style.padding = '10px 18px';
+        wagon.style.background = '#eee';
+        wagon.style.border = '2px solid #888';
+        wagon.style.borderRadius = '8px';
+        wagon.style.fontWeight = 'bold';
+        wagon.style.cursor = 'grab';
+        wagon.style.transition = 'transform 0.5s';
+        trainArea.appendChild(wagon);
+        // Drag & Drop
+        wagon.addEventListener('dragstart', () => {
+            draggedItem = wagon;
+            setTimeout(() => wagon.classList.add('dragging'), 0);
+            playSound('drag_start');
+        });
+        wagon.addEventListener('dragend', () => {
+            if (draggedItem) draggedItem.classList.remove('dragging');
+            draggedItem = null;
+        });
+    });
+    trainArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(trainArea, e.clientY);
+        if (draggedItem) {
+            if (afterElement == null) {
+                trainArea.appendChild(draggedItem);
+            } else {
+                trainArea.insertBefore(draggedItem, afterElement);
+            }
+        }
+    });
+    trainArea.addEventListener('touchmove', (e) => {
+        if (draggedItem) {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(trainArea, e.touches[0].clientY);
+            if (afterElement == null) {
+                trainArea.appendChild(draggedItem);
+            } else {
+                trainArea.insertBefore(draggedItem, afterElement);
+            }
+        }
+    }, { passive: false });
+    // تحقق من الترتيب
+    document.getElementById('check-train-btn').onclick = () => {
+        playSound('click');
+        const userOrder = Array.from(trainArea.children).map(child => child.textContent);
+        const feedbackDiv = document.getElementById('train-feedback');
+        let isCorrect = true;
+        for (let i = 0; i < words.length; i++) {
+            if (userOrder[i] !== words[i]) {
+                isCorrect = false;
+                break;
+            }
+        }
+        if (isCorrect) {
+            feedbackDiv.textContent = 'ممتاز! ترتيبك صحيح.';
+            feedbackDiv.className = 'feedback-correct';
+            playTrainAnimation(trainType);
+        } else {
+            feedbackDiv.textContent = 'حاول مرة أخرى، الترتيب غير صحيح.';
+            feedbackDiv.className = 'feedback-incorrect';
+            playSound('incorrect');
+        }
+    };
+    // إعادة اللعبة
+    document.getElementById('reset-train-btn').onclick = () => {
+        setupTrainVerseGame(surah, start, end);
+        playSound('navigate');
+    };
+    // اختيار شكل القطار
+    document.getElementById('train-type-select').onchange = (e) => {
+        localStorage.setItem('trainType', e.target.value);
+        setupTrainVerseGame(surah, start, end);
+    };
+    // عرض صورة القطار
+    showTrainImage(trainType);
+}
+
+function playTrainAnimation(trainType) {
+    const trainArea = document.getElementById('train-area');
+    trainArea.style.transition = 'transform 2s cubic-bezier(0.4,1.5,0.5,1)';
+    trainArea.style.transform = 'translateX(400px)';
+    playTrainSound(trainType);
+    setTimeout(() => {
+        trainArea.style.transform = '';
+    }, 2200);
+}
+
+function playTrainSound(trainType) {
+    let audio = new Audio();
+    if (trainType === 'steam') {
+        audio.src = 'https://cdn.pixabay.com/audio/2022/10/16/audio_12b1b7e7e7.mp3'; // صوت قطار بالفحم
+    } else {
+        audio.src = 'https://cdn.pixabay.com/audio/2022/10/16/audio_12b1b7e7e7.mp3'; // صوت قطار حديث (يمكن تغييره لاحقًا)
+    }
+    audio.play();
+}
+
+function showTrainImage(trainType) {
+    const imgArea = document.getElementById('train-image-area');
+    if (!imgArea) return;
+    let imgUrl = '';
+    if (trainType === 'steam') {
+        imgUrl = 'https://cdn.pixabay.com/photo/2016/11/29/09/32/steam-locomotive-1868732_1280.jpg';
+    } else {
+        imgUrl = 'https://cdn.pixabay.com/photo/2017/01/06/19/15/train-1959257_1280.jpg';
+    }
+    imgArea.innerHTML = `<img src="${imgUrl}" alt="train" style="max-width:350px;border-radius:12px;box-shadow:0 2px 8px #aaa;">`;
+}
     }
 
     function setupVerseCascadeGame(surah, start, end) {
