@@ -760,33 +760,53 @@ function setupTrainVerseGame(surah, start, end) {
     // اختيار شكل القطار
     let trainType = localStorage.getItem('trainType') || 'modern';
     container.innerHTML = `
-        <div style="margin-bottom:10px">
-            <label>اختر شكل القطار:</label>
-            <select id="train-type-select">
+        <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:2.2rem;vertical-align:middle;">
+                <img src="https://cdn.pixabay.com/photo/2017/01/06/19/15/train-1959257_1280.png" alt="train-icon" style="width:48px;height:48px;vertical-align:middle;border-radius:8px;box-shadow:0 2px 8px #aaa;">
+            </span>
+            <label style="font-size:1.2rem;font-weight:bold;color:#0d47a1;">اختر شكل القطار:</label>
+            <select id="train-type-select" style="font-size:1.1rem;padding:4px 10px;border-radius:6px;border:1.5px solid #0d47a1;">
                 <option value="modern" ${trainType === 'modern' ? 'selected' : ''}>قطار حديث</option>
                 <option value="steam" ${trainType === 'steam' ? 'selected' : ''}>قطار بالفحم</option>
             </select>
         </div>
-        <div id="train-area" style="display:flex;align-items:end;gap:5px;margin-bottom:20px;"></div>
-        <button id="check-train-btn" class="btn-check">تحقق من الترتيب</button>
-        <button id="reset-train-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
-        <div id="train-feedback"></div>
+        <div id="train-area" style="display:flex;align-items:end;gap:8px;margin-bottom:20px;min-height:70px;background:linear-gradient(90deg,#e3f2fd 60%,#fff 100%);border-radius:12px;padding:12px 0;box-shadow:0 2px 8px #b3e5fc;"></div>
+        <button id="check-train-btn" class="btn-check" style="font-size:1.1rem;background:#43e97b;color:#fff;border-radius:8px;margin:8px 0;">🚂 تحقق من الترتيب</button>
+        <button id="reset-train-btn" class="btn-reset" style="font-size:1.1rem;background:#4fc3f7;color:#fff;border-radius:8px;margin:8px 0;"><span class="material-icons">refresh</span> إعادة اللعبة</button>
+        <div id="train-feedback" style="font-size:1.2rem;font-weight:bold;margin-top:10px;"></div>
         <div id="train-image-area" style="margin-top:20px;text-align:center;"></div>
     `;
     // رسم عربات القطار
     const trainArea = document.getElementById('train-area');
-    shuffledWords.forEach(word => {
+    shuffledWords.forEach((word, idx) => {
         const wagon = document.createElement('div');
         wagon.className = 'train-wagon';
         wagon.textContent = word;
         wagon.draggable = true;
-        wagon.style.padding = '10px 18px';
-        wagon.style.background = '#eee';
-        wagon.style.border = '2px solid #888';
-        wagon.style.borderRadius = '8px';
+        wagon.style.padding = '14px 22px';
+        wagon.style.background = idx % 2 === 0 ? '#ffecb3' : '#b3e5fc';
+        wagon.style.border = '3px solid #0d47a1';
+        wagon.style.borderRadius = '14px';
         wagon.style.fontWeight = 'bold';
+        wagon.style.fontSize = '1.2rem';
+        wagon.style.color = '#263238';
         wagon.style.cursor = 'grab';
+        wagon.style.boxShadow = '0 2px 8px #90caf9';
         wagon.style.transition = 'transform 0.5s';
+        wagon.style.display = 'flex';
+        wagon.style.alignItems = 'center';
+        wagon.style.justifyContent = 'center';
+        // إضافة أيقونة قطار صغيرة في أول عربة فقط
+        if (idx === 0) {
+            const icon = document.createElement('img');
+            icon.src = 'https://cdn.pixabay.com/photo/2017/01/06/19/15/train-1959257_1280.png';
+            icon.alt = 'train-icon';
+            icon.style.width = '32px';
+            icon.style.height = '32px';
+            icon.style.marginLeft = '8px';
+            icon.style.borderRadius = '6px';
+            wagon.prepend(icon);
+        }
         trainArea.appendChild(wagon);
         // Drag & Drop
         wagon.addEventListener('dragstart', () => {
