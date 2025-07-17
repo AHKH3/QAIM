@@ -678,8 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { key: 'meaning-match', label: 'لعبة توصيل المعاني', icon: 'sync_alt' },
             { key: 'wheel', label: 'العجلة الدوارة', icon: 'rotate_right' },
             { key: 'verse-order', label: 'ترتيب الآيات', icon: 'sort' },
-            { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart' },
-            { key: 'train-verse', label: 'ترتيب كلمات الآية (القطار)', icon: 'train' }
+            { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart' }
         ];
         const selector = document.getElementById('game-selector');
         selector.innerHTML = '';
@@ -712,7 +711,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setupWheelGame(surah, start, end);
         setupVerseOrderGame(surah, start, end);
         setupVerseCascadeGame(surah, start, end);
-        setupTrainVerseGame(surah, start, end);
     }
 
     function showGame(game, surah, start, end) {
@@ -738,179 +736,8 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'verse-cascade':
                 setupVerseCascadeGame(surah, start, end);
                 break;
-            case 'train-verse':
-                setupTrainVerseGame(surah, start, end);
-                break;
         }
-// --- لعبة ترتيب كلمات الآية (القطار) ---
-function setupTrainVerseGame(surah, start, end) {
-    const container = document.getElementById('train-verse-game');
-    if (!container) return;
-    container.innerHTML = '';
-    // اختيار آية عشوائية من السورة
-    const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end && v.text.split(' ').length > 2);
-    if (versesToShow.length === 0) {
-        container.innerHTML = '<p>لا توجد آيات مناسبة لهذه اللعبة.</p>';
-        return;
-    }
-    const verseObj = versesToShow[Math.floor(Math.random() * versesToShow.length)];
-    const verseText = removeBasmallahFromVerse(verseObj.text, surah.id);
-    const words = verseText.split(' ').filter(w => w.trim() !== '');
-    const shuffledWords = [...words].sort(() => Math.random() - 0.5);
-    // اختيار شكل القطار
-    let trainType = localStorage.getItem('trainType') || 'modern';
-    container.innerHTML = `
-        <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;">
-            <span style="font-size:2.2rem;vertical-align:middle;">
-                <svg width="48" height="48" viewBox="0 0 48 48" style="vertical-align:middle;">
-                  <rect x="6" y="20" width="36" height="14" rx="6" fill="#4fc3f7" stroke="#0d47a1" stroke-width="2"/>
-                  <circle cx="14" cy="38" r="5" fill="#ffecb3" stroke="#0d47a1" stroke-width="2"/>
-                  <circle cx="34" cy="38" r="5" fill="#ffecb3" stroke="#0d47a1" stroke-width="2"/>
-                  <rect x="30" y="10" width="8" height="10" rx="3" fill="#43e97b" stroke="#0d47a1" stroke-width="2"/>
-                  <rect x="10" y="10" width="8" height="10" rx="3" fill="#43e97b" stroke="#0d47a1" stroke-width="2"/>
-                  <rect x="20" y="6" width="8" height="14" rx="4" fill="#d81b60" stroke="#0d47a1" stroke-width="2"/>
-                </svg>
-            </span>
-            <label style="font-size:1.2rem;font-weight:bold;color:#0d47a1;">اختر شكل القطار:</label>
-            <select id="train-type-select" style="font-size:1.1rem;padding:4px 10px;border-radius:6px;border:1.5px solid #0d47a1;">
-                <option value="modern" ${trainType === 'modern' ? 'selected' : ''}>قطار حديث</option>
-                <option value="steam" ${trainType === 'steam' ? 'selected' : ''}>قطار بالفحم</option>
-            </select>
-        </div>
-        <div id="train-area" style="display:flex;align-items:end;gap:8px;margin-bottom:20px;min-height:70px;background:linear-gradient(90deg,#e3f2fd 60%,#fff 100%);border-radius:12px;padding:12px 0;box-shadow:0 2px 8px #b3e5fc;"></div>
-        <button id="check-train-btn" class="btn-check" style="font-size:1.1rem;background:#43e97b;color:#fff;border-radius:8px;margin:8px 0;">🚂 تحقق من الترتيب</button>
-        <button id="reset-train-btn" class="btn-reset" style="font-size:1.1rem;background:#4fc3f7;color:#fff;border-radius:8px;margin:8px 0;"><span class="material-icons">refresh</span> إعادة اللعبة</button>
-        <div id="train-feedback" style="font-size:1.2rem;font-weight:bold;margin-top:10px;"></div>
-        <div id="train-image-area" style="margin-top:20px;text-align:center;"></div>
-    `;
-    // رسم عربات القطار
-    const trainArea = document.getElementById('train-area');
-    shuffledWords.forEach((word, idx) => {
-        const wagon = document.createElement('div');
-        wagon.className = 'train-wagon';
-        wagon.textContent = word;
-        wagon.draggable = true;
-        wagon.style.padding = '14px 22px';
-        wagon.style.background = idx % 2 === 0 ? '#ffecb3' : '#b3e5fc';
-        wagon.style.border = '3px solid #0d47a1';
-        wagon.style.borderRadius = '14px';
-        wagon.style.fontWeight = 'bold';
-        wagon.style.fontSize = '1.2rem';
-        wagon.style.color = '#263238';
-        wagon.style.cursor = 'grab';
-        wagon.style.boxShadow = '0 2px 8px #90caf9';
-        wagon.style.transition = 'transform 0.5s';
-        wagon.style.display = 'flex';
-        wagon.style.alignItems = 'center';
-        wagon.style.justifyContent = 'center';
-        // أيقونة قطار SVG في أول عربة فقط
-        if (idx === 0) {
-            const icon = document.createElement('span');
-            icon.innerHTML = `<svg width="32" height="32" viewBox="0 0 48 48"><rect x="6" y="20" width="36" height="14" rx="6" fill="#4fc3f7" stroke="#0d47a1" stroke-width="2"/><circle cx="14" cy="38" r="5" fill="#ffecb3" stroke="#0d47a1" stroke-width="2"/><circle cx="34" cy="38" r="5" fill="#ffecb3" stroke="#0d47a1" stroke-width="2"/><rect x="30" y="10" width="8" height="10" rx="3" fill="#43e97b" stroke="#0d47a1" stroke-width="2"/><rect x="10" y="10" width="8" height="10" rx="3" fill="#43e97b" stroke="#0d47a1" stroke-width="2"/><rect x="20" y="6" width="8" height="14" rx="4" fill="#d81b60" stroke="#0d47a1" stroke-width="2"/></svg>`;
-            icon.style.marginLeft = '8px';
-            wagon.prepend(icon);
-        }
-        trainArea.appendChild(wagon);
-        // Drag & Drop
-        wagon.addEventListener('dragstart', () => {
-            draggedItem = wagon;
-            setTimeout(() => wagon.classList.add('dragging'), 0);
-            playSound('drag_start');
-        });
-        wagon.addEventListener('dragend', () => {
-            if (draggedItem) draggedItem.classList.remove('dragging');
-            draggedItem = null;
-        });
-    });
-    trainArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        const afterElement = getDragAfterElement(trainArea, e.clientY);
-        if (draggedItem) {
-            if (afterElement == null) {
-                trainArea.appendChild(draggedItem);
-            } else {
-                trainArea.insertBefore(draggedItem, afterElement);
-            }
-        }
-    });
-    trainArea.addEventListener('touchmove', (e) => {
-        if (draggedItem) {
-            e.preventDefault();
-            const afterElement = getDragAfterElement(trainArea, e.touches[0].clientY);
-            if (afterElement == null) {
-                trainArea.appendChild(draggedItem);
-            } else {
-                trainArea.insertBefore(draggedItem, afterElement);
-            }
-        }
-    }, { passive: false });
-    // تحقق من الترتيب
-    document.getElementById('check-train-btn').onclick = () => {
-        playSound('click');
-        const userOrder = Array.from(trainArea.children).map(child => child.textContent);
-        const feedbackDiv = document.getElementById('train-feedback');
-        let isCorrect = true;
-        for (let i = 0; i < words.length; i++) {
-            if (userOrder[i] !== words[i]) {
-                isCorrect = false;
-                break;
-            }
-        }
-        if (isCorrect) {
-            feedbackDiv.textContent = 'ممتاز! ترتيبك صحيح.';
-            feedbackDiv.className = 'feedback-correct';
-            playTrainAnimation(trainType);
-        } else {
-            feedbackDiv.textContent = 'حاول مرة أخرى، الترتيب غير صحيح.';
-            feedbackDiv.className = 'feedback-incorrect';
-            playSound('incorrect');
-        }
-    };
-    // إعادة اللعبة
-    document.getElementById('reset-train-btn').onclick = () => {
-        setupTrainVerseGame(surah, start, end);
-        playSound('navigate');
-    };
-    // اختيار شكل القطار
-    document.getElementById('train-type-select').onchange = (e) => {
-        localStorage.setItem('trainType', e.target.value);
-        setupTrainVerseGame(surah, start, end);
-    };
-    // عرض صورة القطار
-    showTrainImage(trainType);
-}
-
-function playTrainAnimation(trainType) {
-    const trainArea = document.getElementById('train-area');
-    trainArea.style.transition = 'transform 2s cubic-bezier(0.4,1.5,0.5,1)';
-    trainArea.style.transform = 'translateX(400px)';
-    playTrainSound(trainType);
-    setTimeout(() => {
-        trainArea.style.transform = '';
-    }, 2200);
-}
-
-function playTrainSound(trainType) {
-    let audio = new Audio();
-    if (trainType === 'steam') {
-        audio.src = 'https://cdn.pixabay.com/audio/2022/10/16/audio_12b1b7e7e7.mp3'; // صوت قطار بالفحم
-    } else {
-        audio.src = 'https://cdn.pixabay.com/audio/2022/10/16/audio_12b1b7e7e7.mp3'; // صوت قطار حديث (يمكن تغييره لاحقًا)
-    }
-    audio.play();
-}
-
-function showTrainImage(trainType) {
-    const imgArea = document.getElementById('train-image-area');
-    if (!imgArea) return;
-    let imgUrl = '';
-    if (trainType === 'steam') {
-        imgUrl = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80';
-    } else {
-        imgUrl = 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80';
-    }
-    imgArea.innerHTML = `<img src="${imgUrl}" alt="train" style="max-width:350px;border-radius:12px;box-shadow:0 2px 8px #aaa;">`;
-}
+// ...existing code...
     }
 
     function setupVerseCascadeGame(surah, start, end) {
