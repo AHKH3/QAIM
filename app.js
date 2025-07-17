@@ -762,7 +762,14 @@ function setupTrainVerseGame(surah, start, end) {
     container.innerHTML = `
         <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px;">
             <span style="font-size:2.2rem;vertical-align:middle;">
-                <img src="https://cdn.pixabay.com/photo/2017/01/06/19/15/train-1959257_1280.png" alt="train-icon" style="width:48px;height:48px;vertical-align:middle;border-radius:8px;box-shadow:0 2px 8px #aaa;">
+                <svg width="48" height="48" viewBox="0 0 48 48" style="vertical-align:middle;">
+                  <rect x="6" y="20" width="36" height="14" rx="6" fill="#4fc3f7" stroke="#0d47a1" stroke-width="2"/>
+                  <circle cx="14" cy="38" r="5" fill="#ffecb3" stroke="#0d47a1" stroke-width="2"/>
+                  <circle cx="34" cy="38" r="5" fill="#ffecb3" stroke="#0d47a1" stroke-width="2"/>
+                  <rect x="30" y="10" width="8" height="10" rx="3" fill="#43e97b" stroke="#0d47a1" stroke-width="2"/>
+                  <rect x="10" y="10" width="8" height="10" rx="3" fill="#43e97b" stroke="#0d47a1" stroke-width="2"/>
+                  <rect x="20" y="6" width="8" height="14" rx="4" fill="#d81b60" stroke="#0d47a1" stroke-width="2"/>
+                </svg>
             </span>
             <label style="font-size:1.2rem;font-weight:bold;color:#0d47a1;">اختر شكل القطار:</label>
             <select id="train-type-select" style="font-size:1.1rem;padding:4px 10px;border-radius:6px;border:1.5px solid #0d47a1;">
@@ -796,15 +803,11 @@ function setupTrainVerseGame(surah, start, end) {
         wagon.style.display = 'flex';
         wagon.style.alignItems = 'center';
         wagon.style.justifyContent = 'center';
-        // إضافة أيقونة قطار صغيرة في أول عربة فقط
+        // أيقونة قطار SVG في أول عربة فقط
         if (idx === 0) {
-            const icon = document.createElement('img');
-            icon.src = 'https://cdn.pixabay.com/photo/2017/01/06/19/15/train-1959257_1280.png';
-            icon.alt = 'train-icon';
-            icon.style.width = '32px';
-            icon.style.height = '32px';
+            const icon = document.createElement('span');
+            icon.innerHTML = `<svg width="32" height="32" viewBox="0 0 48 48"><rect x="6" y="20" width="36" height="14" rx="6" fill="#4fc3f7" stroke="#0d47a1" stroke-width="2"/><circle cx="14" cy="38" r="5" fill="#ffecb3" stroke="#0d47a1" stroke-width="2"/><circle cx="34" cy="38" r="5" fill="#ffecb3" stroke="#0d47a1" stroke-width="2"/><rect x="30" y="10" width="8" height="10" rx="3" fill="#43e97b" stroke="#0d47a1" stroke-width="2"/><rect x="10" y="10" width="8" height="10" rx="3" fill="#43e97b" stroke="#0d47a1" stroke-width="2"/><rect x="20" y="6" width="8" height="14" rx="4" fill="#d81b60" stroke="#0d47a1" stroke-width="2"/></svg>`;
             icon.style.marginLeft = '8px';
-            icon.style.borderRadius = '6px';
             wagon.prepend(icon);
         }
         trainArea.appendChild(wagon);
@@ -902,9 +905,9 @@ function showTrainImage(trainType) {
     if (!imgArea) return;
     let imgUrl = '';
     if (trainType === 'steam') {
-        imgUrl = 'https://cdn.pixabay.com/photo/2016/11/29/09/32/steam-locomotive-1868732_1280.jpg';
+        imgUrl = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80';
     } else {
-        imgUrl = 'https://cdn.pixabay.com/photo/2017/01/06/19/15/train-1959257_1280.jpg';
+        imgUrl = 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80';
     }
     imgArea.innerHTML = `<img src="${imgUrl}" alt="train" style="max-width:350px;border-radius:12px;box-shadow:0 2px 8px #aaa;">`;
 }
