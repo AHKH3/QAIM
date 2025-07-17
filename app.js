@@ -1270,7 +1270,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('reset-verse-order-btn').onclick = () => {
             usedOrderVerseIndexes = [];
-            setupVerseOrderGame(surah, start, end);
+            // عند إعادة اللعبة، استخدم كل السورة وليس النطاق الحالي
+            setupVerseOrderGame(surah, 1, surah.verses.length);
             playSound('navigate');
         };
     }
