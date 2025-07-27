@@ -178,9 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('read-active');
 
         // Show default sidebar controls for 'read' section
-        document.getElementById('surah-select').style.display = 'block';
-        document.getElementById('verse-range-selector').style.display = 'grid';
-        document.getElementById('general-games-sidebar-controls').style.display = 'none';
+        document.getElementById('surah-select').classList.remove('hidden');
+        document.getElementById('verse-range-selector').classList.remove('hidden');
+        document.getElementById('verse-range-selector').classList.add('grid');
+        document.getElementById('general-games-sidebar-controls').classList.add('hidden');
 
         if (surahSelect.options.length > 0) {
             await loadAndDisplaySurah(surahSelect.value);
@@ -332,25 +333,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 // If switching to general games, load them
                 if (sectionId === 'general-games') {
                     loadGeneralGames();
+                } else if (sectionId === 'games') {
+                    showGameGrid(); // Always show the game grid when navigating to the games tab
                 }
 
                 // Manage sidebar controls visibility
                 const surahSelectElement = document.getElementById('surah-select');
                 const verseRangeSelectorElement = document.getElementById('verse-range-selector');
-                const generalSurahStartSelect = document.getElementById('general-surah-start-select');
-                const generalSurahEndSelect = document.getElementById('general-surah-end-select');
-                const generalSurahRangeSelectorDiv = document.getElementById('general-surah-range-selector');
                 const generalGamesSidebarControls = document.getElementById('general-games-sidebar-controls');
                 const surahSelectTitleElement = document.getElementById('surah-select-title');
 
                 if (sectionId === 'general-games') {
                     if (surahSelectElement) surahSelectElement.classList.add('hidden');
-                    if (verseRangeSelectorElement) verseRangeSelectorElement.classList.add('hidden');
+                    if (verseRangeSelectorElement) {
+                        verseRangeSelectorElement.classList.add('hidden');
+                        verseRangeSelectorElement.classList.remove('grid'); // Ensure grid display is removed
+                    }
                     if (generalGamesSidebarControls) generalGamesSidebarControls.classList.remove('hidden');
                     if (surahSelectTitleElement) surahSelectTitleElement.classList.add('hidden'); // Hide the title
                 } else {
                     if (surahSelectElement) surahSelectElement.classList.remove('hidden');
-                    if (verseRangeSelectorElement) verseRangeSelectorElement.classList.remove('hidden');
+                    if (verseRangeSelectorElement) {
+                        verseRangeSelectorElement.classList.remove('hidden');
+                        verseRangeSelectorElement.classList.add('grid'); // Re-add grid display
+                    }
                     if (generalGamesSidebarControls) generalGamesSidebarControls.classList.add('hidden');
                     if (surahSelectTitleElement) surahSelectTitleElement.classList.remove('hidden'); // Show the title
                 }
@@ -805,6 +811,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `).join('');
+        cardsGrid.classList.remove('hidden');
+        cardsGrid.classList.add('grid');
 
         document.querySelectorAll('.game-card').forEach((card, i) => {
             card.style.opacity = 0;
@@ -831,10 +839,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Ensure game cards grid is visible and all game containers are hidden initially
         document.querySelectorAll('.game-container').forEach(g => {
-            g.style.display = 'none';
+            g.classList.add('hidden');
             g.classList.remove('active');
             const backButton = g.querySelector('.back-to-games-btn');
-            if (backButton) backButton.style.display = 'none';
+            if (backButton) backButton.classList.add('hidden');
         });
     }
 
@@ -868,11 +876,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `).join('')}</div>
-        <div id="general-wheel-game" class="game-container" style="display:none;">
+        <div id="general-wheel-game" class="game-container hidden">
             <button class="back-to-games-btn"><span class="material-icons">arrow_back</span></button>
             <div class="game-content-area"></div>
         </div>
         `;
+        generalGameArea.querySelector('.games-cards-grid').classList.remove('hidden');
+        generalGameArea.querySelector('.games-cards-grid').classList.add('grid');
 
         document.querySelectorAll('#general-game-area .game-card').forEach((card, i) => {
             card.style.opacity = 0;
@@ -897,10 +907,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Ensure game cards grid is visible and all game containers are hidden initially
         generalGameArea.querySelectorAll('.game-container').forEach(g => {
-            g.style.display = 'none';
+            g.classList.add('hidden');
             g.classList.remove('active');
             const backButton = g.querySelector('.back-to-games-btn');
-            if (backButton) backButton.style.display = 'none';
+            if (backButton) backButton.classList.add('hidden');
         });
     }
 
@@ -929,7 +939,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Now that all verses are loaded, proceed with game setup
                 const generalGameArea = document.getElementById('general-game-area');
                 const cardsGrid = generalGameArea.querySelector('.games-cards-grid');
-                if (cardsGrid) cardsGrid.classList.add('hidden');
+                if (cardsGrid) {
+                    cardsGrid.classList.add('hidden');
+                    cardsGrid.classList.remove('grid'); // Remove grid class when hiding
+                    console.log('general-games-cards-grid hidden:', cardsGrid.classList.contains('hidden'));
+                }
 
                 generalGameArea.querySelectorAll('.game-container').forEach(g => {
                     g.classList.add('hidden');
@@ -964,8 +978,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function showGeneralGameGrid() {
         const generalGameArea = document.getElementById('general-game-area');
         const cardsGrid = generalGameArea.querySelector('.games-cards-grid');
-        if (cardsGrid) cardsGrid.classList.remove('hidden');
-        if (cardsGrid) cardsGrid.classList.add('grid');
+        if (cardsGrid) {
+            cardsGrid.classList.remove('hidden');
+            cardsGrid.classList.add('grid');
+            console.log('general-games-cards-grid visible:', !cardsGrid.classList.contains('hidden'));
+        }
 
         generalGameArea.querySelectorAll('.game-container').forEach(g => {
             g.classList.add('hidden');
@@ -986,7 +1003,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function showGame(game, surah, start, end) {
         cleanupActiveGame();
         const cardsGrid = document.querySelector('.games-cards-grid');
-        if (cardsGrid) cardsGrid.classList.add('hidden');
+        if (cardsGrid) {
+            cardsGrid.classList.add('hidden');
+            cardsGrid.classList.remove('grid'); // Remove grid class when hiding
+            console.log('games-cards-grid hidden:', cardsGrid.classList.contains('hidden'));
+        }
 
         document.querySelectorAll('.game-container').forEach(g => {
             g.classList.add('hidden');
@@ -996,7 +1017,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const el = document.getElementById(`${game}-game`);
         if (!el) return;
-        el.classList.remove('hidden'); // Use block to make it visible
+        el.classList.remove('hidden');
         el.classList.add('active');
 
         const backButton = document.getElementById('global-back-to-games-btn');
@@ -1025,8 +1046,11 @@ document.addEventListener('DOMContentLoaded', () => {
             g.classList.remove('active');
         });
         const cardsGrid = document.querySelector('.games-cards-grid');
-        if (cardsGrid) cardsGrid.classList.remove('hidden');
-        if (cardsGrid) cardsGrid.classList.add('grid');
+        if (cardsGrid) {
+            cardsGrid.classList.remove('hidden');
+            cardsGrid.classList.add('grid');
+            console.log('games-cards-grid visible:', !cardsGrid.classList.contains('hidden'));
+        }
 
         const backButton = document.getElementById('global-back-to-games-btn');
         if (backButton) backButton.classList.add('hidden');
@@ -1048,22 +1072,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Define color palettes for the wheel segments
         const wheelColorPalettes = [
-            // Light Mode Palettes
+            // Light Mode Palettes - Diverse and contrasting
             {
-                light: ['#FFD700', '#FF8C00', '#FF4500', '#FF6347'], // Gold, DarkOrange, OrangeRed, Tomato
-                dark: ['#B8860B', '#CD5700', '#B22222', '#A52A2A'] // DarkGoldenrod, Darker Orange, Firebrick, Brown
+                light: ['#FFD700', '#4CAF50', '#2196F3', '#9C27B0'], // Gold, Green, Blue, Purple
+                dark: ['#B8860B', '#388E3C', '#1976D2', '#7B1FA2'] // Darker Gold, Darker Green, Darker Blue, Darker Purple
             },
             {
-                light: ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B'], // Green, Light Green, Lime, Yellow
-                dark: ['#388E3C', '#689F38', '#AFB42B', '#FBC02D'] // Darker Green, Dark Green, Dark Lime, Dark Yellow
+                light: ['#FF5722', '#00BCD4', '#8BC34A', '#E91E63'], // Deep Orange, Cyan, Light Green, Pink
+                dark: ['#D84315', '#00838F', '#689F38', '#C2185B'] // Darker Deep Orange, Darker Cyan, Darker Light Green, Darker Pink
             },
             {
-                light: ['#2196F3', '#03A9F4', '#00BCD4', '#009688'], // Blue, Light Blue, Cyan, Teal
-                dark: ['#1976D2', '#0288D1', '#0097A7', '#00796B'] // Darker Blue, Dark Blue, Dark Cyan, Dark Teal
+                light: ['#FFC107', '#607D8B', '#795548', '#FF9800'], // Amber, Blue Grey, Brown, Orange
+                dark: ['#FF8F00', '#455A64', '#5D4037', '#F57C00'] // Darker Amber, Darker Blue Grey, Darker Brown, Darker Orange
             },
             {
-                light: ['#9C27B0', '#673AB7', '#3F51B5', '#2196F3'], // Purple, Deep Purple, Indigo, Blue
-                dark: ['#7B1FA2', '#512DA8', '#303F9F', '#1976D2'] // Darker Purple, Dark Deep Purple, Dark Indigo, Dark Blue
+                light: ['#F44336', '#03A9F4', '#4CAF50', '#FFEB3B'], // Red, Light Blue, Green, Yellow
+                dark: ['#D32F2F', '#0288D1', '#388E3C', '#FBC02D'] // Darker Red, Darker Light Blue, Darker Green, Darker Yellow
+            },
+            {
+                light: ['#673AB7', '#009688', '#FFEB3B', '#FF4081'], // Deep Purple, Teal, Yellow, Pink Accent
+                dark: ['#512DA8', '#00796B', '#FBC02D', '#C51162'] // Darker Deep Purple, Darker Teal, Darker Yellow, Darker Pink Accent
             }
         ];
 
@@ -1074,17 +1102,13 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPalette = wheelColorPalettes[randomIndex];
 
             const root = document.documentElement;
-            if (document.body.classList.contains('dark-mode')) {
-                root.style.setProperty('--wheel-segment-1', currentPalette.dark[0]);
-                root.style.setProperty('--wheel-segment-2', currentPalette.dark[1]);
-                root.style.setProperty('--wheel-segment-3', currentPalette.dark[2]);
-                root.style.setProperty('--wheel-segment-4', currentPalette.dark[3]);
-            } else {
-                root.style.setProperty('--wheel-segment-1', currentPalette.light[0]);
-                root.style.setProperty('--wheel-segment-2', currentPalette.light[1]);
-                root.style.setProperty('--wheel-segment-3', currentPalette.light[2]);
-                root.style.setProperty('--wheel-segment-4', currentPalette.light[3]);
-            }
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            
+            const colors = isDarkMode ? currentPalette.dark : currentPalette.light;
+            root.style.setProperty('--wheel-segment-1', colors[0]);
+            root.style.setProperty('--wheel-segment-2', colors[1]);
+            root.style.setProperty('--wheel-segment-3', colors[2]);
+            root.style.setProperty('--wheel-segment-4', colors[3]);
         }
 
         // Initial color application
@@ -1157,6 +1181,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isSpinning) return;
             isSpinning = true;
             spinButton.disabled = true;
+            playSound('spin_start'); // Play sound on spin start
             
             rotation += Math.ceil(Math.random() * 2000) + 2500;
             wheelElement.style.transform = `rotate(${rotation}deg)`;
@@ -1165,6 +1190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function handleSpinEnd() {
+            playSound('spin_stop'); // Play sound on spin stop
             const actualRotation = rotation % 360;
             const segmentIndex = Math.floor(actualRotation / 90);
             const selectedType = questionTypes[segmentIndex];
@@ -1204,16 +1230,58 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!question) {
-                alert("لقد أجبت على جميع الأسئلة المتاحة! سيتم إعادة تعيين الأسئلة.");
-                usedQuestionIdentifiers.clear();
-                question = generateQuestion(type);
+                // Using a custom message box instead of alert()
+                const modalOverlay = document.getElementById('game-modal-overlay');
+                if (modalOverlay) {
+                    const modalContent = modalOverlay.querySelector('.game-modal-content');
+                    modalContent.innerHTML = `
+                        <h2>لقد أجبت على جميع الأسئلة المتاحة!</h2>
+                        <p>سيتم إعادة تعيين الأسئلة لتبدأ من جديد.</p>
+                        <button class="action-button" id="modal-ok-btn">موافق</button>
+                    `;
+                    modalOverlay.classList.add('active');
+                    document.getElementById('modal-ok-btn').onclick = () => {
+                        modalOverlay.classList.remove('active');
+                        usedQuestionIdentifiers.clear();
+                        question = generateQuestion(type); // Try generating again after clearing
+                        if (question) {
+                            usedQuestionIdentifiers.add(question.id);
+                            displayQuestion(question);
+                        } else {
+                            // Fallback if even after reset, question generation fails
+                            const fallbackModal = document.getElementById('game-modal-overlay');
+                            if (fallbackModal) {
+                                fallbackModal.querySelector('.game-modal-content').innerHTML = `
+                                    <h2>حدث خطأ</h2>
+                                    <p>حدث خطأ أثناء إنشاء السؤال، يرجى إعادة المحاولة.</p>
+                                    <button class="action-button" id="fallback-ok-btn">موافق</button>
+                                `;
+                                fallbackModal.classList.add('active');
+                                document.getElementById('fallback-ok-btn').onclick = () => fallbackModal.classList.remove('active');
+                            }
+                            isSpinning = false;
+                            spinButton.disabled = false;
+                        }
+                    };
+                }
+                return; // Stop here, modal handles next step
             }
             
             if (question) {
                 usedQuestionIdentifiers.add(question.id);
                 displayQuestion(question);
             } else {
-                alert("حدث خطأ أثناء إنشاء السؤال، يرجى إعادة المحاولة.");
+                // Using a custom message box instead of alert()
+                const modalOverlay = document.getElementById('game-modal-overlay');
+                if (modalOverlay) {
+                    modalOverlay.querySelector('.game-modal-content').innerHTML = `
+                        <h2>حدث خطأ</h2>
+                        <p>حدث خطأ أثناء إنشاء السؤال، يرجى إعادة المحاولة.</p>
+                        <button class="action-button" id="error-ok-btn">موافق</button>
+                    `;
+                    modalOverlay.classList.add('active');
+                    document.getElementById('error-ok-btn').onclick = () => modalOverlay.classList.remove('active');
+                }
                 isSpinning = false;
                 spinButton.disabled = false;
             }
@@ -1580,7 +1648,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const shuffledOrder = [...correctOrder].sort(() => Math.random() - 0.5);
 
         gameContentArea.innerHTML = `
-            <p>قم بسحب وإفلات الآيات لترتيبها بالترتيب الصحيح.</p>
+            <div class="game-header">
+                <h3 class="game-title">لعبة ترتيب الآيات</h3>
+                <p class="game-instructions">قم بسحب وإفلات الآيات لترتيبها بالترتيب الصحيح.</p>
+            </div>
             <div id="verse-order-area"></div>
             <button id="check-order-btn" class="btn-check">تحقق من الترتيب</button>
             <button id="reset-verse-order-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
@@ -1711,6 +1782,9 @@ document.addEventListener('DOMContentLoaded', () => {
         function renderDifficultySelection() {
             cleanupGame();
             gameContentArea.innerHTML = `
+                <div class="game-header">
+                    <h3 class="game-title">لعبة شلال الآيات</h3>
+                </div>
                 <div class="difficulty-selector">
                     <h3>اختر مستوى الصعوبة</h3>
                     <button class="btn-difficulty" data-difficulty="easy">سهل</button>
@@ -1899,9 +1973,9 @@ document.addEventListener('DOMContentLoaded', () => {
         renderDifficultySelection();
     }
 
-    // دالة توحيد نص البسملة (إزالة التشكيل وتوحيد الرموز)
+    // دالة لتوحيد نص البسملة (إزالة التشكيل وتوحيد الرموز)
     function normalizeBasmallah(text) {
-        // إزالة التشكيل والرموز الخاصة
+        // إزالة كل أنواع التشكيل والرموز الخاصة
         let normalized = text
             .normalize("NFD")
             .replace(/[\u064B-\u0652\u0670\u06D6-\u06ED]/g, "") // إزالة كل أنواع التشكيل

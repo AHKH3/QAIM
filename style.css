@@ -573,6 +573,10 @@ select:focus, input[type="number"]:focus {
     gap: 0.75rem;
     align-items: center;
 }
+
+#general-games-sidebar-controls {
+    /* Removed display: none; */
+}
 #verse-range-selector label {
     font-size: 0.85rem;
     color: var(--text-color-light);
@@ -758,9 +762,9 @@ select:focus, input[type="number"]:focus {
 .game-container.active { display: block; animation: fadeIn 0.4s; }
 
 .hidden { display: none !important; }
-.block { display: block !important; }
-.grid { display: grid !important; }
-.flex { display: flex !important; }
+.block { display: block; }
+.grid { display: grid; }
+.flex { display: flex; }
 
 .back-to-games-btn {
     position: absolute;
@@ -778,6 +782,38 @@ select:focus, input[type="number"]:focus {
     cursor: pointer;
     transition: all 0.2s ease;
     z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.spin-button:hover {
+    background-color: var(--wheel-secondary);
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.spin-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: translate(-50%, -50%);
+}
+
+.dark-mode .spin-button {
+    background-color: var(--wheel-secondary);
+    box-shadow: 0 5px 15px rgba(255,255,255,0.1);
+}
+
+.dark-mode .spin-button:hover {
+    background-color: var(--wheel-primary);
+    box-shadow: 0 8px 20px rgba(255,255,255,0.2);
+}
+
+.dark-mode .spin-button:disabled {
+    background-color: #555;
+}
     color: var(--text-color); /* Ensure icon color is visible */
     box-shadow: none; /* Removed box-shadow */
 }
@@ -786,41 +822,50 @@ select:focus, input[type="number"]:focus {
 }
 .back-to-games-btn:hover { background-color: rgba(142, 68, 173, 0.2); /* Slightly darker on hover */ }
 
+#verse-order-game .game-title {
+    font-size: 2.2rem;
+    color: var(--verse-order-primary);
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
 #verse-order-area {
-    padding: 1rem;
-    border-radius: var(--border-radius-inner);
-    background-color: var(--verse-order-bg-light);
+    padding: 1.5rem;
+    border-radius: var(--border-radius-main);
+    background: linear-gradient(135deg, #e0f7fa, #d4f1f4);
     min-height: 300px;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--verse-order-secondary);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
 }
 
 .verse-order-item {
-    background-color: var(--surface-color);
+    background: linear-gradient(145deg, var(--verse-order-primary), var(--verse-order-secondary));
+    color: white;
     padding: 1rem;
     border-radius: var(--border-radius-inner);
-    box-shadow: var(--shadow-light);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     cursor: grab;
     transition: all 0.2s ease-in-out;
     font-family: var(--font-quran);
     font-size: 1.3rem;
     line-height: 1.8;
-    border-right: 4px solid var(--verse-order-primary);
-    border: 1px solid var(--border-color);
+    border: none;
     user-select: none;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 .dark-mode #verse-order-area {
-    background-color: var(--verse-order-bg-dark);
-    border-color: var(--border-color);
+    background: linear-gradient(135deg, #1a2a3a, #0a1a2a);
+    border-color: var(--verse-order-secondary);
 }
 
 .dark-mode .verse-order-item {
-    background-color: var(--surface-color);
-    border-color: var(--verse-order-secondary);
-    color: var(--text-color);
+    background: linear-gradient(145deg, var(--verse-order-primary), var(--verse-order-secondary));
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
 .btn-check, .btn-reset {
@@ -869,21 +914,14 @@ select:focus, input[type="number"]:focus {
 ========================================
 */
 
-.game-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
+#meaning-match-game .game-title {
+    color: var(--meaning-match-primary);
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+    font-size: 2.2rem; /* Increased font size */
 }
 
-.game-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--games-primary);
-    margin-bottom: 0.25rem;
-}
-
-.game-instructions {
-    font-size: 1rem;
-    color: var(--text-color-light);
+#meaning-match-game .game-instructions {
+    color: var(--meaning-match-secondary);
 }
 
 .meaning-game-area {
@@ -891,66 +929,129 @@ select:focus, input[type="number"]:focus {
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
     margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--games-bg-start), var(--games-bg-end));
+    border-radius: var(--border-radius-main);
 }
 
 .words-container, .meanings-container {
     padding: 1rem;
     border-radius: var(--border-radius-inner);
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(5px);
     min-height: 320px;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    box-shadow: var(--shadow-light);
+}
+
+.dark-mode .words-container, .dark-mode .meanings-container {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .word-item {
+    background: linear-gradient(145deg, var(--games-primary), var(--games-secondary));
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.dark-mode .word-item.matched {
+    background: #333;
+    opacity: 0.5;
+}
+
+.dark-mode .meaning-box {
+    border-color: var(--games-primary);
+    color: var(--games-primary);
+}
+
+.dark-mode .meaning-box.over {
+    background: rgba(165, 105, 189, 0.2);
+    border-color: var(--games-secondary);
+}
+
+.dark-mode .meaning-box.correct {
+    background-color: #27ae60;
+    border-color: #2ecc71;
+    color: #fff;
+}
+
+.dark-mode .meaning-box.incorrect {
+    background-color: #e74c3c;
+    border-color: #c0392b;
+    color: #fff;
 }
 
 .word-item {
-    background: var(--surface-color);
-    border: 1px solid var(--border-color);
-    padding: 0.8rem 1rem;
+    background: linear-gradient(145deg, var(--meaning-match-primary), var(--meaning-match-secondary));
+    color: white;
+    border: none;
+    padding: 1rem 1.2rem;
     border-radius: var(--border-radius-inner);
     font-family: var(--font-body);
     font-weight: bold;
     text-align: center;
     cursor: grab;
     transition: all 0.2s ease;
-    box-shadow: var(--shadow-light);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.word-item:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
 }
 
 .word-item.dragging {
-    opacity: 0.5;
+    opacity: 0.7;
     transform: scale(1.05);
     box-shadow: var(--shadow-medium);
 }
 
 .word-item.matched {
-    opacity: 0.4;
+    opacity: 0.3;
     cursor: not-allowed;
-    background-color: var(--background-color);
+    background: var(--border-color);
     text-decoration: line-through;
+    box-shadow: none;
+    transform: none;
 }
 
 .meaning-box {
-    border: 2px dashed var(--verse-cascade-primary);
-    border-radius: var(--border-radius-main);
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: 3px dashed var(--meaning-match-primary);
+    border-radius: var(--border-radius-inner);
+    background-color: transparent;
+    color: var(--meaning-match-primary);
+    font-weight: bold;
+    transition: all 0.2s ease;
 }
 
 .meaning-box.over {
     background: var(--games-glass-bg);
-    border-color: var(--games-primary);
+    border-color: var(--meaning-match-secondary);
     border-style: solid;
+    transform: scale(1.02);
 }
 
 .meaning-box.correct {
-    background-color: #27ae60;
+    background-color: #2ecc71; /* A bright, clear green for success */
     border-color: #27ae60;
     color: white;
     border-style: solid;
     font-weight: bold;
+    animation: pulse 0.5s;
 }
 
 .meaning-box.correct .material-icons {
     margin-right: 0.5rem;
+    animation: spin-icon 0.5s ease-out;
 }
 
 .meaning-box.incorrect {
@@ -965,12 +1066,17 @@ select:focus, input[type="number"]:focus {
     justify-content: space-between;
     align-items: center;
     margin-top: 1rem;
+    padding: 0 1rem;
 }
 
 .game-score {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
-    color: var(--text-color);
+    color: var(--meaning-match-primary);
+}
+
+.dark-mode .game-score {
+    color: var(--games-primary);
 }
 
 .btn-reset-game {
@@ -980,8 +1086,8 @@ select:focus, input[type="number"]:focus {
     font-size: 1.8rem;
     cursor: pointer;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -989,14 +1095,26 @@ select:focus, input[type="number"]:focus {
 }
 
 .btn-reset-game:hover {
-    background-color: var(--background-color);
-    color: var(--games-primary);
+    background-color: var(--games-glass-bg);
+    color: var(--meaning-match-primary);
+    transform: rotate(90deg);
 }
 
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes spin-icon {
+    from { transform: rotate(0deg) scale(0.5); }
+    to { transform: rotate(360deg) scale(1); }
 }
 
 
@@ -1071,6 +1189,38 @@ select:focus, input[type="number"]:focus {
         padding: 0.6rem 1.5rem;
         font-size: 1rem;
     }
+
+    .wheel-container {
+        width: 90vw;       /* Use viewport width for responsiveness */
+        max-width: 280px;  /* Set a max size */
+        aspect-ratio: 1 / 1; /* Force a square shape, which becomes a circle */
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .wheel-text {
+        font-size: 0.9rem; /* Smaller font for the smaller wheel */
+    }
+
+    /* Adjust text positioning for the smaller wheel */
+    .text-1 { transform: translate(-50%, -50%) rotate(45deg) translate(75px) rotate(-45deg); }
+    .text-2 { transform: translate(-50%, -50%) rotate(135deg) translate(75px) rotate(-135deg); }
+    .text-3 { transform: translate(-50%, -50%) rotate(225deg) translate(75px) rotate(-225deg); }
+    .text-4 { transform: translate(-50%, -50%) rotate(315deg) translate(75px) rotate(-315deg); }
+
+    .spin-button {
+        width: 80px;
+        height: 80px;
+        font-size: 1.5rem;
+    }
+
+    /* Ensure the parent container of wheel-container is also centered or has appropriate padding */
+    #general-wheel-game .game-content-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Center items horizontally */
+        padding: 1rem; /* Add some padding */
+    }
 }
 
 /* Verse Cascade Game Styles */
@@ -1125,6 +1275,12 @@ select:focus, input[type="number"]:focus {
     background-color: var(--verse-cascade-primary);
 }
 
+#verse-cascade-game .game-title {
+    font-size: 2.2rem;
+    color: var(--verse-cascade-primary);
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
 #cascade-area {
     position: relative;
     width: 100%;
@@ -1132,38 +1288,37 @@ select:focus, input[type="number"]:focus {
     border: 2px dashed var(--verse-cascade-primary);
     border-radius: var(--border-radius-main);
     overflow: hidden;
-    background-color: var(--verse-cascade-bg-light);
+    background: linear-gradient(to bottom, #fff0f5, #ffe4e1);
     margin-top: 1.5rem;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-}
-
-.dark-mode #cascade-area {
-    background-color: var(--verse-cascade-bg-dark);
-    border-color: var(--verse-cascade-secondary);
 }
 
 .cascade-word {
     position: absolute;
     top: -50px; /* Start above the visible area */
-    background-color: var(--verse-cascade-secondary);
+    background: linear-gradient(145deg, var(--verse-cascade-primary), var(--verse-cascade-secondary));
     color: white;
     padding: 0.6rem 1rem;
-    border-radius: var(--border-radius-inner);
+    border-radius: 20px;
     font-family: var(--font-quran);
     font-size: 1.5rem;
     font-weight: bold;
     text-align: center;
     white-space: nowrap;
     cursor: pointer;
-    box-shadow: var(--shadow-light);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     animation: fall linear forwards;
     z-index: 5;
-    border: 1px solid var(--verse-cascade-primary);
+    border: none;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 .dark-mode .cascade-word {
-    background-color: var(--verse-cascade-primary);
-    border-color: var(--verse-cascade-secondary);
+    background: linear-gradient(145deg, var(--verse-cascade-primary), var(--verse-cascade-secondary));
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    border: none;
 }
 
 .cascade-word.incorrect {

@@ -1,9 +1,11 @@
 /* Wheel Styling */
 .wheel-container {
     position: relative;
-    width: 380px;
-    height: 380px;
-    margin: 1rem auto;
+    width: 380px; /* Default size for larger screens */
+    max-width: 85vw; /* Slightly smaller viewport width */
+    aspect-ratio: 1 / 1; /* Force it to be a square, which becomes a circle */
+    margin: 1rem auto; /* Keep it centered */
+    left: 30px; /* Move it slightly more to the right */
 }
 .wheel {
     width: 100%;
@@ -19,15 +21,6 @@
     box-shadow: 0 0 0 10px var(--wheel-secondary), inset 0 0 30px rgba(0,0,0,0.3), 0 15px 40px rgba(0,0,0,0.4); /* Enhanced shadow */
     transition: transform 7s cubic-bezier(0.25, 1, 0.5, 1);
     position: relative;
-}
-
-.dark-mode .wheel {
-    background-image: conic-gradient(
-        var(--wheel-segment-1-dark) 0deg 90deg,
-        var(--wheel-segment-2-dark) 90deg 180deg,
-        var(--wheel-segment-3-dark) 180deg 270deg,
-        var(--wheel-segment-4-dark) 270deg 360deg
-    );
 }
 .wheel::after { /* Outer ring */
     content: '';
@@ -102,9 +95,9 @@
     transform: translate(-50%, -50%);
     width: 100px;
     height: 100px;
-    background: radial-gradient(circle, var(--wheel-bg-light), var(--wheel-bg-dark));
+    background: linear-gradient(145deg, #ffc85a, #e69500); /* A nice, solid orange gradient */
     border-radius: 50%;
-    border: 6px solid white;
+    border: none; /* Remove the old border */
     z-index: 10;
     cursor: pointer;
     display: flex;
@@ -112,13 +105,21 @@
     justify-content: center;
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--wheel-primary);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.2), inset 0 -6px 8px rgba(0,0,0,0.15);
+    color: white; /* White text for better contrast on the orange */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4); /* Shadow for the text */
+    box-shadow:
+        inset 0 4px 6px rgba(255, 255, 255, 0.4), /* Inner highlight */
+        inset 0 -4px 6px rgba(0, 0, 0, 0.2),   /* Inner shadow */
+        0 10px 20px rgba(0,0,0,0.3),            /* Outer shadow for lifting effect */
+        0 5px 10px rgba(0,0,0,0.2);             /* Another layer of outer shadow */
     transition: all 0.1s ease;
 }
 .spin-button:active:not(:disabled) {
-    transform: translate(-50%, -50%) scale(0.95);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 -4px 5px rgba(0,0,0,0.15);
+    transform: translate(-50%, -48%) scale(0.97); /* Move it down slightly */
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.3),   /* Stronger inner shadow */
+        inset 0 -2px 4px rgba(255, 255, 255, 0.2), /* Fainter inner highlight */
+        0 4px 8px rgba(0,0,0,0.3);             /* Reduced outer shadow */
 }
 .spin-button:disabled {
     cursor: not-allowed;
