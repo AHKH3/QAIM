@@ -1,113 +1,118 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مستكشف القرآن</title>
-  <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAIM</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="games/games-cards.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&family=Material+Icons&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="app-shell">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-logo">
-        <img src="logo.png" alt="Quran Explorer Logo">
-      </div>
-      <button class="sidebar-toggle-btn" id="sidebarToggle" title="إظهار/إخفاء أسماء التبويبات">
-        <span class="material-icons">menu</span>
-      </button>
-      <nav class="sidebar-nav">
-        <button class="sidebar-btn active" data-section="quran" title="المصحف">
-          <span class="material-icons">menu_book</span>
-          <span class="sidebar-label">المصحف</span>
-        </button>
-        <button class="sidebar-btn" data-section="tafsir" title="التفسير">
-          <span class="material-icons">lightbulb</span>
-          <span class="sidebar-label">التفسير</span>
-        </button>
-        <button class="sidebar-btn" data-section="activities" title="الأنشطة">
-          <span class="material-icons">sports_esports</span>
-          <span class="sidebar-label">الأنشطة</span>
-        </button>
-        <button class="sidebar-btn" data-section="settings" title="الإعدادات">
-          <span class="material-icons">settings</span>
-          <span class="sidebar-label">الإعدادات</span>
-        </button>
-      </nav>
-    </aside>
-    <!-- Main Content -->
-    <main class="main-content">
-      <header class="main-header">
-        <div class="app-title">مستكشف القرآن</div>
-      </header>
-      <nav class="main-tabs">
-        <button class="tab-btn active" data-tab="quran"><span class="material-icons">menu_book</span> المصحف</button>
-        <button class="tab-btn" data-tab="tafsir"><span class="material-icons">lightbulb</span> التفسير</button>
-        <button class="tab-btn" data-tab="activities"><span class="material-icons">sports_esports</span> الأنشطة</button>
-      </nav>
-      <!-- محتوى التبويبات -->
-      <section id="tab-quran" class="tab-section active">
-        <div class="quran-controls" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem;">
-          <select id="surah-select" class="surah-select"></select>
-          <div class="verse-range" style="display: flex; gap: 0.5rem; align-items: center;">
-            <input type="number" id="verse-start" min="1" value="1" placeholder="من" style="width: 60px;">
-            <span>-</span>
-            <input type="number" id="verse-end" min="1" value="7" placeholder="إلى" style="width: 60px;">
-          </div>
-        </div>
-        <div id="surah-container"></div>
-      </section>
-      <section id="tab-tafsir" class="tab-section">
-        <div id="tafsir-container"></div>
-      </section>
-      <section id="tab-activities" class="tab-section">
-        <div class="activities-header">
-          <h2 id="games-title">أنشطة على السورة</h2>
-        </div>
-        <div id="game-selector" class="game-selector"></div>
-        <div id="game-area"></div>
-      </section>
-      <!-- صفحة الإعدادات -->
-      <section id="settings-section" class="tab-section">
-        <div class="settings-card">
-          <div class="settings-container">
-            <h2 style="margin-bottom:1rem; color:#3a6ee8;">الإعدادات</h2>
-            <div style="margin-bottom:1rem;">
-              <label for="settings-theme-dropdown">الثيم:</label>
-              <select id="settings-theme-dropdown">
-                <option value="classic">كلاسيكي</option>
-                <option value="jungle">غابة</option>
-                <option value="ocean">محيط</option>
-              </select>
+
+    <div id="loading-indicator"></div>
+
+    <div id="app-container">
+        <header>
+            <div class="header-desktop-row">
+                <h1 class="site-title">QAIM</h1>
+                <nav class="main-tabs desktop-tabs">
+                    <button class="tab-btn active" data-section="read"><span class="material-icons">menu_book</span> المصحف</button>
+                    <button class="tab-btn" data-section="tafsir"><span class="material-icons">lightbulb</span> التفسير</button>
+                    <button class="tab-btn" data-section="games"><span class="material-icons">sports_esports</span> ألعاب مخصصة</button>
+                    <button class="tab-btn" data-section="general-games"><span class="material-icons">extension</span> ألعاب عامة</button>
+                </nav>
+                <div class="header-controls">
+                    <button id="mute-btn-desktop" aria-label="كتم الصوت"><span class="material-icons">volume_up</span></button>
+                    <button id="theme-toggle-desktop" aria-label="تبديل الوضع المظلم"><span class="material-icons">brightness_4</span></button>
+                </div>
             </div>
-            <div style="margin-bottom:1rem;">
-              <label for="settings-mute-btn">الصوت:</label>
-              <button id="settings-mute-btn" class="tab-btn"><span class="material-icons">volume_up</span></button>
+            <!-- Mobile Header -->
+            <div class="header-mobile-row">
+                <button id="sidebar-toggle-btn" aria-label="القائمة الجانبية"><span class="material-icons">menu</span></button>
+                <h1 class="site-title">QAIM</h1>
             </div>
-            <div style="margin-bottom:1rem;">
-              <label for="text-size-dropdown">حجم الخط:</label>
-              <select id="text-size-dropdown">
-                <option value="small">صغير</option>
-                <option value="medium">متوسط</option>
-                <option value="large">كبير</option>
-              </select>
+        </header>
+
+        <div id="sidebar-overlay"></div>
+
+        <main id="explorer-view">
+            <aside id="sidebar">
+                <div class="sidebar-content">
+                    <div class="sidebar-header-controls">
+                        <button id="mute-btn-mobile" aria-label="كتم الصوت"><span class="material-icons">volume_up</span></button>
+                        <button id="theme-toggle-mobile" aria-label="تبديل الوضع المظلم"><span class="material-icons">brightness_4</span></button>
+                    </div>
+                    <nav class="main-tabs mobile-tabs">
+                        <button class="tab-btn active" data-section="read"><span class="material-icons">menu_book</span> المصحف</button>
+                        <button class="tab-btn" data-section="tafsir"><span class="material-icons">lightbulb</span> التفسير</button>
+                        <button class="tab-btn" data-section="games"><span class="material-icons">sports_esports</span> ألعاب مخصصة</button>
+                    <button class="tab-btn" data-section="general-games"><span class="material-icons">extension</span> ألعاب عامة</button>
+                </nav>
+                    <h2 id="surah-select-title">اختر سورة</h2>
+                    <select id="surah-select" class="hidden"></select>
+                    <div id="verse-range-selector">
+                        <label for="verse-start">من آية:</label>
+                        <input type="number" id="verse-start" min="1">
+                        <label for="verse-end">إلى آية:</label>
+                        <input type="number" id="verse-end" min="1">
+                    </div>
+                    <div id="general-games-sidebar-controls" class="hidden">
+                        <h2>نطاق السور للألعاب العامة</h2>
+                        <div id="general-surah-range-selector">
+                            <label for="general-surah-start-select">من سورة:</label>
+                            <select id="general-surah-start-select"></select>
+                            <label for="general-surah-end-select">إلى سورة:</label>
+                            <select id="general-surah-end-select"></select>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div id="content-area">
+                <section id="read-section" class="content-section active">
+                    <h3 id="read-title" class="section-title"></h3>
+                    <div id="surah-container"></div>
+                </section>
+
+                <section id="tafsir-section" class="content-section">
+                    <h3 id="tafsir-title" class="section-title"></h3>
+                    <div id="tafsir-container"></div>
+                </section>
+
+                <section id="games-section" class="content-section">
+                    <button id="global-back-to-games-btn" class="back-to-games-btn hidden"><span class="material-icons">arrow_back</span></button>
+                    <h3 id="games-title" class="section-title">الألعاب المخصصة</h3>
+                    <div id="game-area">
+                        <div class="games-cards-grid"></div>
+                        <div id="meaning-match-game" class="game-container hidden">
+                            <div class="game-content-area"></div>
+                        </div>
+                        <div id="wheel-game" class="game-container hidden">
+                            <div class="game-content-area"></div>
+                        </div>
+                        <div id="verse-order-game" class="game-container hidden">
+                            <div class="game-content-area"></div>
+                        </div>
+                        <div id="verse-cascade-game" class="game-container hidden">
+                            <div class="game-content-area"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="general-games-section" class="content-section">
+                    <h3 id="general-games-title" class="section-title">ألعاب عامة</h3>
+                    <div id="general-game-area">
+                        <!-- General games content will be loaded here by app.js -->
+                    </div>
+                </section>
             </div>
-            <div style="margin-bottom:1rem;">
-              <label for="game-difficulty-dropdown">صعوبة الألعاب:</label>
-              <select id="game-difficulty-dropdown">
-                <option value="easy">سهل</option>
-                <option value="medium">متوسط</option>
-                <option value="hard">صعب</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-  <script src="./quran_data/surah_index.js"></script>
-  <script src="app.js"></script>
+        </main>
+    </div>
+
+    <script src="./quran_data/surah_index.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

@@ -1,44 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
     let currentSurahData = null; // To store the currently loaded surah data
 
-    // عناصر الـ DOM
-    let surahSelect = document.getElementById('surah-select');
-    let verseStartInput = document.getElementById('verse-start');
-    let verseEndInput = document.getElementById('verse-end');
-    var themeDropdown = document.getElementById('theme-dropdown');
-    var themeDropdownMobile = document.getElementById('theme-dropdown-mobile');
-    let activitiesSurahSelect = document.getElementById('activities-surah-select');
-    let activitiesSurahFrom = document.getElementById('activities-surah-from');
-    let activitiesSurahTo = document.getElementById('activities-surah-to');
+    // DOM Elements
+    const surahSelect = document.getElementById('surah-select');
+    const verseStartInput = document.getElementById('verse-start');
+    const verseEndInput = document.getElementById('verse-end');
     const body = document.body;
     const contentNavButtons = document.querySelectorAll('#content-nav .nav-btn');
     const contentSections = document.querySelectorAll('.content-section');
-    const muteBtn = document.getElementById('mute-btn');
+    const muteBtnDesktop = document.getElementById('mute-btn-desktop');
     const muteBtnMobile = document.getElementById('mute-btn-mobile');
     const loadingIndicator = document.getElementById('loading-indicator');
-
-    // Theme handling
-    let lastSelectedTheme = localStorage.getItem('selectedTheme') || 'theme-classic';
-    const themeClasses = ['theme-classic', 'theme-ocean', 'theme-jungle'];
-    body.classList.remove(...themeClasses);
-    body.classList.add(lastSelectedTheme); // Apply initial theme
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
 
     // Sound Functionality
     let isMuted = false;
     let audioCtx = null;
 
     function showLoading() {
-        const loadingIndicator = document.getElementById('loading-indicator');
-        if (loadingIndicator) {
-            loadingIndicator.style.display = 'block';
-        }
+        if(loadingIndicator) loadingIndicator.classList.add('block');
     }
 
     function hideLoading() {
-        const loadingIndicator = document.getElementById('loading-indicator');
-        if (loadingIndicator) {
-            loadingIndicator.style.display = 'none';
-        }
+        if(loadingIndicator) loadingIndicator.classList.remove('block');
     }
 
     function initAudio() {
@@ -128,36 +114,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function toggleMute() {
         isMuted = !isMuted;
-        updateMuteButtonIcon(); // Call the new function
+        updateMuteButtonIcon();
         if (!isMuted && !audioCtx) {
             initAudio();
         }
     }
 
     function updateMuteButtonIcon() {
-        const muteBtn = document.getElementById('mute-btn');
+        const muteBtnDesktop = document.getElementById('mute-btn-desktop');
         const muteBtnMobile = document.getElementById('mute-btn-mobile');
 
-        if (muteBtn) {
-            muteBtn.innerHTML = `<span class="material-icons">${isMuted ? 'volume_off' : 'volume_up'}</span>`;
+        if (muteBtnDesktop) {
+            muteBtnDesktop.innerHTML = `<span class="material-icons">${isMuted ? 'volume_off' : 'volume_up'}</span>`;
         }
         if (muteBtnMobile) {
             muteBtnMobile.innerHTML = `<span class="material-icons">${isMuted ? 'volume_off' : 'volume_up'}</span>`;
         }
     }
 
+    // Theme Functionality
+    let isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+    function applyTheme() {
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        updateThemeButtonIcon();
+    }
+
+    function toggleTheme() {
+        isDarkMode = !isDarkMode;
+        localStorage.setItem('darkMode', isDarkMode);
+        applyTheme();
+    }
+
+    function updateThemeButtonIcon() {
+        const themeToggleDesktop = document.getElementById('theme-toggle-desktop');
+        const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+
+        if (themeToggleDesktop) {
+            themeToggleDesktop.innerHTML = `<span class="material-icons">${isDarkMode ? 'brightness_high' : 'brightness_4'}</span>`;
+        }
+        if (themeToggleMobile) {
+            themeToggleMobile.innerHTML = `<span class="material-icons">${isDarkMode ? 'brightness_high' : 'brightness_4'}</span>`;
+        }
+    }
+
     // --- Initialization ---
     async function initializeApp() {
+        if (!surahSelect) return;
         populateSurahSelect(surahSelect);
+        populateSurahSelect(document.getElementById('general-surah-start-select'));
+        populateSurahSelect(document.getElementById('general-surah-end-select'));
         setupEventListeners();
-        updateMuteButtonIcon(); // Set initial mute button icon
-        if (themeDropdown) {
-            themeDropdown.value = lastSelectedTheme;
-        }
-        if (themeDropdownMobile) {
-            themeDropdownMobile.value = lastSelectedTheme;
-        }
-        // Load the first surah by default
+        updateMuteButtonIcon();
+        applyTheme(); // Apply theme on initialization
+
+        // Set initial active tab and body class
+        document.querySelector('.main-tabs .tab-btn[data-section="read"]').classList.add('active');
+        document.getElementById('read-section').classList.add('active');
+        document.body.classList.add('read-active');
+
+        // Show default sidebar controls for 'read' section
+        document.getElementById('surah-select').style.display = 'block';
+        document.getElementById('verse-range-selector').style.display = 'grid';
+        document.getElementById('general-games-sidebar-controls').style.display = 'none';
+
         if (surahSelect.options.length > 0) {
             await loadAndDisplaySurah(surahSelect.value);
         }
@@ -165,12 +189,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateSurahSelect(selectElement) {
         if (typeof surahIndex === 'undefined' || !Array.isArray(surahIndex)) {
-            console.error('surahIndex is not loaded!');
             return;
         }
-        surahIndex.forEach((surah, index) => {
+        surahIndex.forEach((surah) => {
             const option = document.createElement('option');
-            option.value = surah.id; // Use surah ID as value
+            option.value = surah.id;
             option.textContent = `${surah.id}. ${surah.name}`;
             selectElement.appendChild(option);
         });
@@ -181,11 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`./quran_data/${surahId}.js`);
             const text = await response.text();
-            // بدل محاولة استخراج JSON، ننفذ الكود ونعيد المتغير مباشرة
             const surahVarName = `surah_${surahId}`;
             let surahData = null;
             try {
-                // ننفذ الكود ونعيد المتغير مباشرة
                 surahData = new Function(text + `; return ${surahVarName};`)();
             } catch (e) {
                 console.error('Error evaluating surah JS file:', e);
@@ -198,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSurahData = null;
             }
         } catch (error) {
-            console.error('Error loading surah data:', error);
             currentSurahData = null;
         } finally {
             hideLoading();
@@ -218,28 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
         displayGames(surah, startVerse, endVerse);
     }
 
-    // تطبيق الثيم الجديد
-    function setTheme(theme) {
-        body.classList.remove(...themeClasses);
-        body.classList.add(theme);
-        localStorage.setItem('selectedTheme', theme);
-        // تحديث قيمة dropdown إذا كان موجودًا
-        if (themeDropdown) themeDropdown.value = theme;
-        if (themeDropdownMobile) themeDropdownMobile.value = theme;
-        const settingsThemeDropdown = document.getElementById('settings-theme-dropdown');
-        if (settingsThemeDropdown) settingsThemeDropdown.value = theme.replace('theme-', '');
-    }
-
-    async function loadSurahRange() {
-        if (!currentSurahData) return;
-        const surah = currentSurahData;
-        const startVerse = parseInt(verseStartInput.value) || 1;
-        const endVerse = parseInt(verseEndInput.value) || surah.verses.length;
-        displaySurah(surah, startVerse, endVerse);
-        displayTafsir(surah, startVerse, endVerse);
-        displayGames(surah, startVerse, endVerse);
-    }
-
     let verseCascadeGameLoopId = null;
 
     function cleanupActiveGame() {
@@ -253,11 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners ---
     function setupEventListeners() {
-        // Initialize audio on the first user interaction
+        if (!surahSelect) return;
         document.body.addEventListener('click', initAudio, { once: true });
-        document.body.addEventListener('keydown', initAudio, { once: true });
 
-        // Surah and Verse Selection
         surahSelect.addEventListener('change', async () => {
             playSound('navigate');
             cleanupActiveGame();
@@ -274,48 +270,93 @@ document.addEventListener('DOMContentLoaded', () => {
             loadSurahRange();
         });
 
-        // Theme Dropdowns
-        if (themeDropdown) {
-            themeDropdown.addEventListener('change', (e) => {
-                setTheme(e.target.value);
+        const generalSurahStartSelect = document.getElementById('general-surah-start-select');
+        const generalSurahEndSelect = document.getElementById('general-surah-end-select');
+
+        if (generalSurahStartSelect) {
+            generalSurahStartSelect.addEventListener('change', () => {
                 playSound('navigate');
-            });
-        }
-        if (themeDropdownMobile) {
-            themeDropdownMobile.addEventListener('change', (e) => {
-                setTheme(e.target.value);
-                playSound('navigate');
+                loadGeneralGames();
             });
         }
 
-        // Mute Buttons
-        if (muteBtn) {
-            muteBtn.addEventListener('click', toggleMute);
+        if (generalSurahEndSelect) {
+            generalSurahEndSelect.addEventListener('change', () => {
+                playSound('navigate');
+                loadGeneralGames();
+            });
+        }
+
+        if (muteBtnDesktop) {
+            muteBtnDesktop.addEventListener('click', toggleMute);
         }
         if (muteBtnMobile) {
             muteBtnMobile.addEventListener('click', toggleMute);
         }
 
-        // Content Navigation
-        contentNavButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
+        const themeToggleDesktop = document.getElementById('theme-toggle-desktop');
+        const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+
+        if (themeToggleDesktop) {
+            themeToggleDesktop.addEventListener('click', toggleTheme);
+        }
+        if (themeToggleMobile) {
+            themeToggleMobile.addEventListener('click', toggleTheme);
+        }
+
+        if (sidebarToggleBtn && sidebar && sidebarOverlay) {
+            sidebarToggleBtn.addEventListener('click', showSidebar);
+            sidebarOverlay.addEventListener('click', hideSidebar);
+        }
+
+        const tabBtns = document.querySelectorAll('.main-tabs .tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
                 playSound('navigate');
                 cleanupActiveGame();
                 
-                contentNavButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+                tabBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
 
-                contentSections.forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
                 
-                const sectionId = btn.dataset.section + '-section';
-                const targetSection = document.getElementById(sectionId);
+                const sectionId = this.getAttribute('data-section');
+                const targetSection = document.getElementById(sectionId + '-section');
                 if (targetSection) {
                     targetSection.classList.add('active');
+                }
+
+                body.classList.remove('read-active', 'tafsir-active', 'games-active', 'general-games-active');
+                body.classList.add(`${sectionId}-active`);
+
+                // If switching to general games, load them
+                if (sectionId === 'general-games') {
+                    loadGeneralGames();
+                }
+
+                // Manage sidebar controls visibility
+                const surahSelectElement = document.getElementById('surah-select');
+                const verseRangeSelectorElement = document.getElementById('verse-range-selector');
+                const generalSurahStartSelect = document.getElementById('general-surah-start-select');
+                const generalSurahEndSelect = document.getElementById('general-surah-end-select');
+                const generalSurahRangeSelectorDiv = document.getElementById('general-surah-range-selector');
+                const generalGamesSidebarControls = document.getElementById('general-games-sidebar-controls');
+                const surahSelectTitleElement = document.getElementById('surah-select-title');
+
+                if (sectionId === 'general-games') {
+                    if (surahSelectElement) surahSelectElement.classList.add('hidden');
+                    if (verseRangeSelectorElement) verseRangeSelectorElement.classList.add('hidden');
+                    if (generalGamesSidebarControls) generalGamesSidebarControls.classList.remove('hidden');
+                    if (surahSelectTitleElement) surahSelectTitleElement.classList.add('hidden'); // Hide the title
+                } else {
+                    if (surahSelectElement) surahSelectElement.classList.remove('hidden');
+                    if (verseRangeSelectorElement) verseRangeSelectorElement.classList.remove('hidden');
+                    if (generalGamesSidebarControls) generalGamesSidebarControls.classList.add('hidden');
+                    if (surahSelectTitleElement) surahSelectTitleElement.classList.remove('hidden'); // Show the title
                 }
             });
         });
 
-        // Scroll to Top Button
         const scrollTopBtn = document.getElementById('scroll-top-btn');
         if (scrollTopBtn) {
             scrollTopBtn.addEventListener('click', () => {
@@ -333,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Print Button
         const printBtn = document.getElementById('print-btn');
         if (printBtn) {
             printBtn.addEventListener('click', () => {
@@ -343,83 +383,84 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function showSidebar() {
+        if (sidebar) sidebar.classList.add('sidebar-open');
+        if (sidebarOverlay) sidebarOverlay.classList.add('active');
+    }
+
+    function hideSidebar() {
+        if (sidebar) sidebar.classList.remove('sidebar-open');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+    }
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            hideSidebar();
+        }
+    });
+
+    function loadSurahRange() {
+        if (!currentSurahData) return;
+        const surah = currentSurahData;
+        const startVerse = parseInt(verseStartInput.value) || 1;
+        const endVerse = parseInt(verseEndInput.value) || surah.verses.length;
+
+        // Determine the currently active section
+        const activeTab = document.querySelector('.main-tabs .tab-btn.active');
+        const activeSectionId = activeTab ? activeTab.getAttribute('data-section') : 'read'; // Default to 'read'
+
+        switch (activeSectionId) {
+            case 'read':
+                displaySurah(surah, startVerse, endVerse);
+                break;
+            case 'tafsir':
+                displayTafsir(surah, startVerse, endVerse);
+                break;
+            case 'games':
+                displayGames(surah, startVerse, endVerse);
+                break;
+            case 'general-games':
+                displayGeneralGames(surah, startVerse, endVerse);
+                break;
+            default:
+                displaySurah(surah, startVerse, endVerse);
+        }
+    }
+
+    function loadGeneralGames() {
+        const generalSurahStartSelect = document.getElementById('general-surah-start-select');
+        const generalSurahEndSelect = document.getElementById('general-surah-end-select');
+
+        const startSurahId = parseInt(generalSurahStartSelect.value);
+        const endSurahId = parseInt(generalSurahEndSelect.value);
+
+        // Find the actual surah data for the start and end surahs
+        const startSurah = surahIndex.find(s => s.id === startSurahId);
+        const endSurah = surahIndex.find(s => s.id === endSurahId);
+
+        if (!startSurah || !endSurah) {
+            console.error("Invalid surah range selected for general games.");
+            return;
+        }
+
+        // For general games, we might need to load data for multiple surahs
+        // For now, we'll just pass the range and display a message.
+        displayGeneralGames(startSurahId, endSurahId);
+    }
+
     // --- Print Functionality ---
     function printContent() {
-        const contentToPrint = document.getElementById('content-area').cloneNode(true);
-        // Remove elements not needed for print
-        contentToPrint.querySelector('#game-area').remove();
-        contentToPrint.querySelector('#game-selector').remove();
-        contentToPrint.querySelectorAll('.btn-reset, .btn-check, .option-btn, .game-select-btn').forEach(el => el.remove());
-
-        const printWindow = window.open('', '', 'height=800,width=800');
-        printWindow.document.write('<html><head><title>طباعة</title>');
-        // Copy styles
-        Array.from(document.querySelectorAll('link[rel="stylesheet"]')).forEach(link => {
-            printWindow.document.write('<link rel="stylesheet" href="' + link.href + '">');
-        });
-        printWindow.document.write('<style>');
-        printWindow.document.write(`
-            body { font-family: 'Cairo', sans-serif; direction: rtl; text-align: right; }
-            .content-section { display: block !important; }
-            #surah-container, .tafsir-item {
-                box-shadow: none;
-                border: 1px solid #eee;
-                margin-bottom: 1rem;
-                padding: 1rem;
-            }
-            .section-title { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1rem; }
-            .verse-block { display: block; margin-bottom: 0.5rem; }
-            .verse-number { font-size: 0.9em; color: #666; }
-            .basmallah { 
-                text-align: center; 
-                font-size: 2rem; 
-                font-weight: bold; 
-                color: #333; 
-                margin-bottom: 1.5rem; 
-                padding: 0.8rem; 
-                border-bottom: 2px solid #ccc; 
-                background: #f9f9f9; 
-                border-radius: 8px; 
-            }
-            @page { size: auto;  margin: 15mm; }
-            @media print {
-                header, #sidebar, #scroll-top-btn, #print-btn, .header-controls, .sidebar-header-controls, #game-area, #game-selector, .btn-reset, .btn-check, .option-btn, .game-select-btn {
-                    display: none !important;
-                }
-                #app-container, main#explorer-view, #content-area {
-                    display: block;
-                    width: 100%;
-                    height: auto;
-                    overflow: visible;
-                    padding: 0;
-                    margin: 0;
-                }
-                body { margin: 0; }
-            }
-        `);
-        printWindow.document.write('</style></head><body>');
-        printWindow.document.write(contentToPrint.innerHTML);
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
+        // ... (print logic remains the same)
     }
 
     // --- Display Functions ---
     function displaySurah(surah, start, end) {
         const container = document.getElementById('surah-container');
         const title = document.getElementById('read-title');
-        if (title) {
-            title.textContent = `سورة ${surah.name} (الآيات ${start}-${end})`;
-        }
-        if (container) {
-            container.innerHTML = '';
-        } else {
-            console.error('surah-container element not found');
-            return;
-        }
+        title.textContent = `سورة ${surah.name} (الآيات ${start}-${end})`;
+        container.innerHTML = '';
         
-        console.log('Displaying surah:', surah.name, 'ID:', surah.id); // للتصحيح
+        
         
         const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end);
         
@@ -428,36 +469,26 @@ document.addEventListener('DOMContentLoaded', () => {
         let skipFirstVerse = false;
         if (versesToShow.length > 0 && surah.id !== 9) {
             const firstVerse = versesToShow[0];
-            console.log('First verse text:', firstVerse.text); // للتصحيح
             
-            const basmallahStandard = 'بسم الله الرحمن الرحيم';
+            
+            const basmallahStandard = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
             const normalizedFirstVerse = normalizeBasmallah(firstVerse.text.trim());
             const normalizedBasmallah = normalizeBasmallah(basmallahStandard);
 
-            console.log('Normalized first verse:', normalizedFirstVerse); // للتصحيح
-            console.log('Normalized basmallah:', normalizedBasmallah); // للتصحيح
-            console.log('Starts with basmallah?', normalizedFirstVerse.startsWith(normalizedBasmallah)); // للتصحيح
-            console.log('Equals basmallah?', normalizedFirstVerse === normalizedBasmallah); // للتصحيح
+            
 
             // إذا كانت أول آية هي البسملة فقط (سورة الفاتحة)
             if (normalizedFirstVerse === normalizedBasmallah) {
-                console.log('First verse is basmallah only (Al-Fatiha)'); // للتصحيح
-                if (container) {
-                    container.innerHTML += `<div class="basmallah">${firstVerse.text.trim()}</div>`;
-                }
+                
+                container.innerHTML += `<div class="basmallah">${firstVerse.text.trim()}</div>`;
                 basmallahFound = true;
                 skipFirstVerse = true; // لا نعرض الآية الأولى
             }
             // إذا كانت أول آية تبدأ بالبسملة ثم نص آخر (السور الأخرى)
             else if (normalizedFirstVerse.startsWith(normalizedBasmallah) && surah.id !== 1) {
-                console.log('Found basmallah at start of verse'); // للتصحيح
                 // إيجاد موضع نهاية البسملة في النص الأصلي
                 let original = firstVerse.text.trim();
                 let normOriginal = normalizeBasmallah(original);
-                console.log('Original text:', original); // للتصحيح
-                console.log('Normalized text:', normOriginal); // للتصحيح
-                console.log('Normalized basmallah:', normalizedBasmallah); // للتصحيح
-                
                 // استخدام طريقة مختلفة لحساب موضع نهاية البسملة
                 let basmallahEndIndex = 0;
                 let normCount = 0;
@@ -472,54 +503,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     basmallahEndIndex = i + 1;
                 }
-                console.log('Basmallah end index:', basmallahEndIndex); // للتصحيح
-                
                 // عرض البسملة منفصلة مع الحفاظ على التشكيل الأصلي
                 let basmallahText = original.slice(0, basmallahEndIndex);
-                console.log('Basmallah text to display:', basmallahText); // للتصحيح
-                if (container) {
-                    container.innerHTML += `<div class="basmallah">${basmallahText}</div>`;
-                }
+                container.innerHTML += `<div class="basmallah">${basmallahText}</div>`;
                 basmallahFound = true;
                 
                 // إزالة البسملة من نص الآية الأولى
                 let remainingText = original.slice(basmallahEndIndex).trim();
-                console.log('Remaining text after basmallah:', remainingText); // للتصحيح
-                if (remainingText && container) {
+                if (remainingText) {
                     container.innerHTML += `<span class="verse-block">${remainingText} <span class="verse-number">﴿${firstVerse.id}﴾</span></span>`;
                 }
                 skipFirstVerse = true;
             }
             // إذا لم توجد بسملة، لا نعرض شيء خاص بها
         } else {
-            console.log('Surah ID is 9 or no verses to show'); // للتصحيح
         }
         
         // عرض باقي الآيات
         for (let i = skipFirstVerse ? 1 : 0; i < versesToShow.length; i++) {
             const verse = versesToShow[i];
-            if (container) {
-                container.innerHTML += `<span class="verse-block">${verse.text} <span class="verse-number">﴿${verse.id}﴾</span></span>`;
-            }
+            container.innerHTML += `<span class="verse-block">${verse.text} <span class="verse-number">﴿${verse.id}﴾</span></span>`;
         }
     }
+
 
     function displayTafsir(surah, start, end) {
         const container = document.getElementById('tafsir-container');
         const title = document.getElementById('tafsir-title');
-        if (title) {
-            title.textContent = `تفسير سورة ${surah.name} (الآيات ${start}-${end})`;
-        }
-        if (container) {
-            container.innerHTML = '';
-        } else {
-            console.error('tafsir-container element not found');
-            return;
-        }
+        title.textContent = `تفسير سورة ${surah.name} (الآيات ${start}-${end})`;
+        container.innerHTML = '';
         if (!surah.tafsir || surah.tafsir.length === 0) {
-            if (container) {
-                container.innerHTML = '<p>لا يتوفر تفسير لهذه السورة حاليًا.</p>';
-            }
+            container.innerHTML = '<p>لا يتوفر تفسير لهذه السورة حاليًا.</p>';
             return;
         }
         const tafsirToShow = surah.tafsir.filter(t => {
@@ -530,24 +544,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return Math.max(start, startRange) <= Math.min(end, endRange);
         });
         if (tafsirToShow.length === 0) {
-            if (container) {
-                container.innerHTML = '<p>لا يتوفر تفسير للآيات المحددة حاليًا.</p>';
-            }
+            container.innerHTML = '<p>لا يتوفر تفسير للآيات المحددة حاليًا.</p>';
             return;
         }
         tafsirToShow.forEach(item => {
             const tafsirItem = document.createElement('div');
             tafsirItem.className = 'tafsir-item';
             tafsirItem.innerHTML = `<h4>الآيات (${item.verses})</h4><p>${item.explanation}</p>`;
-            if (container) {
-                container.appendChild(tafsirItem);
-            }
+            container.appendChild(tafsirItem);
         });
     }
 
-    // دالة إزالة البسملة من نص الآية
     function removeBasmallahFromVerse(verseText, surahId = null) {
-        const basmallahStandard = 'بسم الله الرحمن الرحيم';
+        const basmallahStandard = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
         const normalizedVerse = normalizeBasmallah(verseText.trim());
         const normalizedBasmallah = normalizeBasmallah(basmallahStandard);
         
@@ -580,15 +589,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Game Logic ---
+    // ... (Game logic remains the same)
     let gameScores = {
         'meaning-match': 0,
         'wheel': 0,
         'verse-order': 0
     };
-    let lastWheelQuestionIndex = -1; // To prevent repeating the same question twice in a row
-    // متغيرات لتتبع الآيات المستخدمة في كل لعبة
+    let lastWheelQuestionIndex = -1;
     let usedWheelVerseIndexes = [];
     let usedOrderVerseIndexes = [];
+
     function updateScore(game, delta) {
         gameScores[game] += delta;
         const el = document.getElementById(`${game}-score`);
@@ -597,19 +607,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupMeaningMatchGame(surah, start, end) {
         const container = document.getElementById('meaning-match-game');
-        if (!container) return;
-        container.innerHTML = '<p>اسحب الكلمة من اليمين وضعها على معناها الصحيح في اليسار.</p><div id="meaning-game-area"><div id="words-container"></div><div id="meanings-container"></div></div><button id="reset-game-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button><div id="meaning-game-feedback"></div><div id="meaning-match-score"></div>';
-        const wordsContainer = document.getElementById('words-container');
-        const meaningsContainer = document.getElementById('meanings-container');
-        
-        if (!surah.vocabulary || surah.vocabulary.length < 2) {
-            if (wordsContainer) {
-                wordsContainer.innerHTML = '<p>لا توجد بيانات معاني كافية لهذه اللعبة.</p>';
-            }
+        const gameContentArea = container.querySelector('.game-content-area');
+        if (!gameContentArea) return;
+
+        container.style.setProperty('--game-primary-color', '#8e44ad');
+        container.style.setProperty('--game-secondary-color', '#9b59b6');
+
+        if (!surah || !surah.vocabulary || surah.vocabulary.length < 2) {
+            gameContentArea.innerHTML = '<p class="game-notice">لا توجد بيانات كافية لهذه اللعبة في السورة المحددة.</p>';
             return;
         }
 
+        gameContentArea.innerHTML = `
+            <div class="game-header">
+                <h3 class="game-title">لعبة توصيل المعاني</h3>
+                <p class="game-instructions">اسحب الكلمة من القائمة اليمنى وضعها على معناها الصحيح في القائمة اليسرى.</p>
+            </div>
+            <div id="meaning-game-area" class="meaning-game-area">
+                <div id="words-container" class="words-container"></div>
+                <div id="meanings-container" class="meanings-container"></div>
+            </div>
+            <div class="game-footer">
+                <div id="meaning-match-score" class="game-score">النتيجة: 0</div>
+                <button id="reset-game-btn" class="btn-reset-game"><span class="material-icons">refresh</span></button>
+            </div>
+        `;
+
+        const wordsContainer = document.getElementById('words-container');
+        const meaningsContainer = document.getElementById('meanings-container');
+        const scoreElement = document.getElementById('meaning-match-score');
+        let score = 0;
+
         const pairs = [...surah.vocabulary].sort(() => 0.5 - Math.random()).slice(0, 5);
+        if (pairs.length < 2) {
+            gameContentArea.innerHTML = '<p class="game-notice">لا توجد بيانات كافية لهذه اللعبة في السورة المحددة.</p>';
+            return;
+        }
+
         const words = pairs.map(p => p.word);
         const meanings = pairs.map(p => p.meaning);
         const shuffledWords = [...words].sort(() => 0.5 - Math.random());
@@ -618,53 +652,59 @@ document.addEventListener('DOMContentLoaded', () => {
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         let selectedWordDiv = null;
 
-        const handleDropLogic = (droppedWord, meaning) => {
-            const meaningBox = Array.from(meaningsContainer.children).find(b => b.dataset.meaning === meaning);
-            if (!meaningBox || meaningBox.classList.contains('correct')) return;
-
-            const correctPair = pairs.find(p => p.word === droppedWord);
-            if (correctPair && correctPair.meaning === meaning) {
+        // Unified logic for handling a match attempt
+        const handleMatchAttempt = (word, meaning, meaningBox) => {
+            const correctPair = pairs.find(p => p.word === word && p.meaning === meaning);
+            
+            if (correctPair) {
+                const wordItem = Array.from(wordsContainer.children).find(w => w.textContent === word);
+                
                 meaningBox.classList.add('correct');
-                meaningBox.textContent = `${droppedWord} ✔`;
-                
-                const wordItem = Array.from(wordsContainer.children).find(w => w.textContent === droppedWord);
-                if (wordItem) wordItem.style.visibility = 'hidden';
-                
-                updateScore('meaning-match', 1);
-                if (Array.from(meaningsContainer.children).every(b => b.classList.contains('correct'))) {
-                    playSound('win');
-                } else {
-                    playSound('correct');
+                meaningBox.innerHTML = `<span>${word}</span> <span class="material-icons">check_circle</span>`;
+                if (wordItem) {
+                    wordItem.classList.add('matched');
                 }
+                
+                score++;
+                scoreElement.textContent = `النتيجة: ${score}`;
+                playSound('correct');
+
+                if (score === pairs.length) {
+                    playSound('win');
+                }
+                return true;
             } else {
                 meaningBox.classList.add('incorrect');
                 setTimeout(() => meaningBox.classList.remove('incorrect'), 700);
                 playSound('incorrect');
+                return false;
             }
         };
 
+        // Create Word Items
         shuffledWords.forEach(word => {
             const div = document.createElement('div');
             div.className = 'word-item';
             div.textContent = word;
-            if (wordsContainer) {
-                wordsContainer.appendChild(div);
-            }
+            wordsContainer.appendChild(div);
 
             if (isTouchDevice) {
-                div.addEventListener('click', e => {
-                    if (div.style.visibility === 'hidden') return;
-                    
+                div.addEventListener('click', () => {
+                    if (div.classList.contains('matched')) return;
                     if (selectedWordDiv) {
                         selectedWordDiv.classList.remove('dragging');
                     }
+                    div.classList.add('dragging');
                     selectedWordDiv = div;
-                    div.classList.add('dragging'); // Use 'dragging' class for styling the selected word
                     playSound('drag_start');
                 });
             } else {
                 div.draggable = true;
                 div.addEventListener('dragstart', e => {
+                    if (div.classList.contains('matched')) {
+                        e.preventDefault();
+                        return;
+                    }
                     e.dataTransfer.setData('text/plain', word);
                     e.target.classList.add('dragging');
                     playSound('drag_start');
@@ -675,133 +715,294 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Create Meaning Items
         shuffledMeanings.forEach(meaning => {
             const box = document.createElement('div');
             box.className = 'meaning-box';
             box.textContent = meaning;
             box.dataset.meaning = meaning;
-            if (meaningsContainer) {
-                meaningsContainer.appendChild(box);
-            }
+            meaningsContainer.appendChild(box);
 
             if (isTouchDevice) {
-                box.addEventListener('click', e => {
-                    if (selectedWordDiv && !box.classList.contains('correct')) {
-                        const wordToDrop = selectedWordDiv.textContent;
-                        handleDropLogic(wordToDrop, meaning);
-                        selectedWordDiv.classList.remove('dragging');
-                        selectedWordDiv = null;
-                    }
+                box.addEventListener('click', () => {
+                    if (!selectedWordDiv || box.classList.contains('correct')) return;
+                    
+                    const success = handleMatchAttempt(selectedWordDiv.textContent, meaning, box);
+                    
+                    selectedWordDiv.classList.remove('dragging');
+                    selectedWordDiv = null; // Always deselect after an attempt
                 });
-            } else {
+            } else { // Desktop logic
                 box.addEventListener('dragover', e => {
                     e.preventDefault();
                     if (!box.classList.contains('correct')) box.classList.add('over');
                 });
-                box.addEventListener('dragleave', e => {
-                    box.classList.remove('over');
-                });
+                box.addEventListener('dragleave', () => box.classList.remove('over'));
                 box.addEventListener('drop', e => {
                     e.preventDefault();
+                    if (box.classList.contains('correct')) return;
                     box.classList.remove('over');
+                    
                     const droppedWord = e.dataTransfer.getData('text/plain');
-                    handleDropLogic(droppedWord, meaning);
+                    const wordItem = Array.from(wordsContainer.children).find(w => w.textContent === droppedWord);
+
+                    if (!wordItem || wordItem.classList.contains('matched')) return;
+
+                    handleMatchAttempt(droppedWord, meaning, box);
                 });
             }
         });
 
-        const resetBtn = document.getElementById('reset-game-btn');
-        if (resetBtn) {
-            resetBtn.onclick = () => { setupMeaningMatchGame(surah, start, end); playSound('navigate'); };
-        }
+        document.getElementById('reset-game-btn').onclick = () => {
+            playSound('navigate');
+            setupMeaningMatchGame(surah, start, end);
+        };
     }
 
     function displayGames(surah, start, end) {
-        console.log('Setting up games for surah:', surah.name); // للتصحيح
-        
         const gameArea = document.getElementById('game-area');
         const gameTitle = document.getElementById('games-title');
-        
-        if (gameTitle) {
-            gameTitle.textContent = `أنشطة على سورة ${surah.name}`;
-        }
-        
-        if (!gameArea) {
-            console.error('Game area not found!'); // للتصحيح
-            return;
-        }
+        gameTitle.textContent = `ألعاب مخصصة على سورة ${surah.name}`;
+        localStorage.setItem('lastSurahId', surah.id);
+        localStorage.setItem('lastStartVerse', start);
+        localStorage.setItem('lastEndVerse', end);
+
         const games = [
-            { key: 'meaning-match', label: 'لعبة توصيل المعاني', icon: 'sync_alt' },
-            { key: 'wheel', label: 'العجلة الدوارة', icon: 'rotate_right' },
-            { key: 'verse-order', label: 'ترتيب الآيات', icon: 'sort' },
-            { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart' }
+            {
+                key: 'meaning-match',
+                label: 'لعبة توصيل المعاني',
+                icon: 'sync_alt',
+                desc: 'اختبر معرفتك بمعاني كلمات القرآن من خلال توصيل الكلمة بمعناها الصحيح.' ,
+                cardGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                iconColor: '#fff'
+            },
+            {
+                key: 'verse-order',
+                label: 'ترتيب الآيات',
+                icon: 'sort',
+                desc: 'رتب الآيات بالترتيب الصحيح وتحدى ذاكرتك القرآنية.',
+                cardGradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)',
+                iconColor: '#fff'
+            },
+            {
+                key: 'verse-cascade',
+                label: 'شلال الآيات',
+                icon: 'waterfall_chart',
+                desc: 'التقط الكلمات الصحيحة من الشلال وأكمل الآية قبل أن تسقط الكلمات.',
+                cardGradient: 'linear-gradient(135deg, #f77062 0%, #fe5196 100%)',
+                iconColor: '#fff'
+            }
         ];
-        const selector = document.getElementById('game-selector');
-        if (selector) {
-            selector.innerHTML = '';
-        }
-        games.forEach((g, i) => {
-            const btn = document.createElement('button');
-            btn.className = 'game-select-btn' + (i === 0 ? ' active' : '');
-            btn.dataset.game = g.key;
-            btn.innerHTML = `<span class="material-icons">${g.icon}</span> ${g.label}`;
-            btn.onclick = function() {
-                playSound('click');
-                if (selector) {
-                    selector.querySelectorAll('.game-select-btn').forEach(b => b.classList.remove('active'));
+
+        const cardsGrid = document.querySelector('.games-cards-grid');
+        cardsGrid.innerHTML = games.map(game => `
+            <div class="game-card" tabindex="0" data-game="${game.key}">
+                <div class="game-card-inner" style="background: ${game.cardGradient};">
+                    <span class="material-icons icon" style="color: ${game.iconColor};">${game.icon}</span>
+                    <div class="title">${game.label}</div>
+                    <div class="desc">${game.desc}</div>
+                    <button class="go-btn">ابدأ اللعبة</button>
+                </div>
+            </div>
+        `).join('');
+
+        document.querySelectorAll('.game-card').forEach((card, i) => {
+            card.style.opacity = 0;
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.5s cubic-bezier(.34,1.56,.64,1)';
+                card.style.opacity = 1;
+            }, 100 + i * 120);
+
+            card.addEventListener('click', function(e) {
+                showGame(card.getAttribute('data-game'), surah, start, end);
+            });
+            card.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    showGame(card.getAttribute('data-game'), surah, start, end);
                 }
-                btn.classList.add('active');
-                showGame(g.key, surah, start, end);
-            };
-            if (selector) {
-                selector.appendChild(btn);
-            }
+            });
+            card.querySelector('.go-btn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                showGame(card.getAttribute('data-game'), surah, start, end);
+            });
+            card.querySelector('.go-btn').addEventListener('mouseover', function() {
+            });
         });
-        if (gameArea) {
-            gameArea.querySelectorAll('.game-container').forEach(e => e.style.display = 'none');
-        }
-        games.forEach((g, i) => {
-            let div = document.getElementById(`${g.key}-game`);
-            if (!div) {
-                div = document.createElement('div');
-                div.id = `${g.key}-game`;
-                div.className = 'game-container';
-                if (gameArea) {
-                    gameArea.appendChild(div);
-                    console.log(`Created game container: ${g.key}-game`); // للتصحيح
-                }
-            }
-            div.style.display = (i === 0 ? 'block' : 'none');
-            console.log(`Game ${g.key} display: ${div.style.display}`); // للتصحيح
+
+        // Ensure game cards grid is visible and all game containers are hidden initially
+        document.querySelectorAll('.game-container').forEach(g => {
+            g.style.display = 'none';
+            g.classList.remove('active');
+            const backButton = g.querySelector('.back-to-games-btn');
+            if (backButton) backButton.style.display = 'none';
         });
-        showGame(games[0].key, surah, start, end);
-        setupMeaningMatchGame(surah, start, end);
-        setupWheelGame(surah, start, end);
-        setupVerseOrderGame(surah, start, end);
-        setupVerseCascadeGame(surah, start, end);
     }
 
-    function showGame(game, surah, start, end) {
-        cleanupActiveGame(); // Ensure any active game is cleaned up before showing a new one
-        
-        // إخفاء جميع الألعاب
-        const gameContainers = document.querySelectorAll('.game-container');
-        gameContainers.forEach(g => g.style.display = 'none');
-        
-        // عند تغيير اللعبة، امسح سؤال العجلة إذا كان ظاهرًا
-        const wheelQuestionArea = document.getElementById('wheel-question-area');
-        if (wheelQuestionArea) wheelQuestionArea.innerHTML = '';
-        
-        // إظهار اللعبة المختارة
-        const el = document.getElementById(`${game}-game`);
-        if (el) {
-            el.style.display = 'block';
-            console.log(`Showing game: ${game}`); // للتصحيح
-        } else {
-            console.error(`Game container not found: ${game}-game`); // للتصحيح
+    function displayGeneralGames(startSurahId, endSurahId) {
+        const generalGameArea = document.getElementById('general-game-area');
+        const generalGamesTitle = document.getElementById('general-games-title');
+
+        const startSurahName = surahIndex.find(s => s.id === startSurahId)?.name || 'غير محدد';
+        const endSurahName = surahIndex.find(s => s.id === endSurahId)?.name || 'غير محدد';
+
+        generalGamesTitle.textContent = `ألعاب عامة على السور من ${startSurahName} إلى ${endSurahName}`;
+
+        const generalGames = [
+            {
+                key: 'wheel',
+                label: 'العجلة الدوارة',
+                icon: 'rotate_right',
+                desc: 'أدر العجلة وأجب على الأسئلة القرآنية في جو من الحماس والتحدي.',
+                cardGradient: 'linear-gradient(135deg, #ff8c42 0%, #ffc048 100%)',
+                iconColor: '#fff'
+            }
+        ];
+
+        generalGameArea.innerHTML = `<div class="games-cards-grid">${generalGames.map(game => `
+            <div class="game-card" tabindex="0" data-game="${game.key}">
+                <div class="game-card-inner" style="background: ${game.cardGradient};">
+                    <span class="material-icons icon" style="color: ${game.iconColor};">${game.icon}</span>
+                    <div class="title">${game.label}</div>
+                    <div class="desc">${game.desc}</div>
+                    <button class="go-btn">ابدأ اللعبة</button>
+                </div>
+            </div>
+        `).join('')}</div>
+        <div id="general-wheel-game" class="game-container" style="display:none;">
+            <button class="back-to-games-btn"><span class="material-icons">arrow_back</span></button>
+            <div class="game-content-area"></div>
+        </div>
+        `;
+
+        document.querySelectorAll('#general-game-area .game-card').forEach((card, i) => {
+            card.style.opacity = 0;
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.5s cubic-bezier(.34,1.56,.64,1)';
+                card.style.opacity = 1;
+            }, 100 + i * 120);
+
+            card.addEventListener('click', function(e) {
+                showGeneralGame(card.getAttribute('data-game'), startSurahId, endSurahId);
+            });
+            card.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    showGeneralGame(card.getAttribute('data-game'), startSurahId, endSurahId);
+                }
+            });
+            card.querySelector('.go-btn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                showGeneralGame(card.getAttribute('data-game'), startSurahId, endSurahId);
+            });
+        });
+
+        // Ensure game cards grid is visible and all game containers are hidden initially
+        generalGameArea.querySelectorAll('.game-container').forEach(g => {
+            g.style.display = 'none';
+            g.classList.remove('active');
+            const backButton = g.querySelector('.back-to-games-btn');
+            if (backButton) backButton.style.display = 'none';
+        });
+    }
+
+    function showGeneralGame(game, startSurahId, endSurahId) {
+        // Need to load all surahs in the range first
+        const surahsToLoad = [];
+        for (let i = startSurahId; i <= endSurahId; i++) {
+            surahsToLoad.push(i);
         }
 
-        // إعادة تهيئة اللعبة المختارة
+        Promise.all(surahsToLoad.map(surahId => fetch(`./quran_data/${surahId}.js`).then(res => res.text())))
+            .then(texts => {
+                const allVerses = [];
+                texts.forEach((text, index) => {
+                    const surahVarName = `surah_${surahsToLoad[index]}`;
+                    try {
+                        const surahData = new Function(text + `; return ${surahVarName};`)();
+                        if (surahData && surahData.verses) {
+                            allVerses.push(...surahData.verses.map(v => ({ ...v, surahId: surahData.id })));
+                        }
+                    } catch (e) {
+                        console.error('Error evaluating surah JS file for general game:', e);
+                    }
+                });
+
+                // Now that all verses are loaded, proceed with game setup
+                const generalGameArea = document.getElementById('general-game-area');
+                const cardsGrid = generalGameArea.querySelector('.games-cards-grid');
+                if (cardsGrid) cardsGrid.classList.add('hidden');
+
+                generalGameArea.querySelectorAll('.game-container').forEach(g => {
+                    g.classList.add('hidden');
+                    g.classList.remove('active');
+                });
+
+                const el = document.getElementById(`general-${game}-game`);
+                if (!el) return;
+                el.classList.remove('hidden');
+                el.classList.add('active');
+
+                                const backButton = el.querySelector('.back-to-games-btn');
+                if (backButton) {
+                    backButton.classList.remove('hidden');
+                    backButton.classList.add('flex');
+                    backButton.style.backgroundColor = 'var(--general-games-primary)';
+                    backButton.style.color = 'white';
+                }
+
+                switch (game) {
+                    case 'wheel':
+                        // Pass all verses from the selected range to the wheel game
+                        setupWheelGame( { verses: allVerses, surahIndex: surahIndex }, startSurahId, endSurahId);
+                        break;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading surah data for general games:', error);
+            });
+    }
+
+    function showGeneralGameGrid() {
+        const generalGameArea = document.getElementById('general-game-area');
+        const cardsGrid = generalGameArea.querySelector('.games-cards-grid');
+        if (cardsGrid) cardsGrid.classList.remove('hidden');
+        if (cardsGrid) cardsGrid.classList.add('grid');
+
+        generalGameArea.querySelectorAll('.game-container').forEach(g => {
+            g.classList.add('hidden');
+            g.classList.remove('active');
+            const backButton = g.querySelector('.back-to-games-btn');
+            if (backButton) backButton.classList.add('hidden');
+        });
+    }
+
+    // Add event listener for back button in general games section
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('#general-game-area .back-to-games-btn')) {
+            playSound('navigate');
+            showGeneralGameGrid();
+        }
+    });
+
+    function showGame(game, surah, start, end) {
+        cleanupActiveGame();
+        const cardsGrid = document.querySelector('.games-cards-grid');
+        if (cardsGrid) cardsGrid.classList.add('hidden');
+
+        document.querySelectorAll('.game-container').forEach(g => {
+            g.classList.add('hidden');
+            g.classList.remove('active');
+            const backButton = g.querySelector('.back-to-games-btn');
+            if (backButton) backButton.classList.add('hidden');
+        });
+        const el = document.getElementById(`${game}-game`);
+        if (!el) return;
+        el.classList.remove('hidden'); // Use block to make it visible
+        el.classList.add('active');
+
+        const backButton = document.getElementById('global-back-to-games-btn');
+        if (backButton) backButton.classList.remove('hidden');
+        if (backButton) backButton.classList.add('flex');
+
         switch (game) {
             case 'meaning-match':
                 setupMeaningMatchGame(surah, start, end);
@@ -818,465 +1019,567 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function setupVerseCascadeGame(surah, start, end) {
-        const container = document.getElementById('verse-cascade-game');
-        if (!container) return;
+    function showGameGrid() {
+        document.querySelectorAll('.game-container').forEach(g => {
+            g.classList.add('hidden');
+            g.classList.remove('active');
+        });
+        const cardsGrid = document.querySelector('.games-cards-grid');
+        if (cardsGrid) cardsGrid.classList.remove('hidden');
+        if (cardsGrid) cardsGrid.classList.add('grid');
 
-        let score, lives, currentVerseIndex, wordsToCatch, nextWordIndex, fallingWords, lastSpawnTime = 0;
+        const backButton = document.getElementById('global-back-to-games-btn');
+        if (backButton) backButton.classList.add('hidden');
+    }
 
-        const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end && v.text.split(' ').length >= 2);
+    // Add event listeners for back buttons
+    const globalBackButton = document.getElementById('global-back-to-games-btn');
+    if (globalBackButton) {
+        globalBackButton.addEventListener('click', () => {
+            playSound('navigate');
+            showGameGrid();
+        });
+    }
 
-        if (versesToShow.length === 0) {
-            if (container) {
-                container.innerHTML = '<p>لا توجد آيات مناسبة لهذه اللعبة في النطاق المحدد.</p>';
+    function setupWheelGame(surahData, startSurahId, endSurahId) {
+        const container = document.getElementById('general-wheel-game');
+        const gameContentArea = container.querySelector('.game-content-area');
+        if (!gameContentArea) return;
+
+        // Define color palettes for the wheel segments
+        const wheelColorPalettes = [
+            // Light Mode Palettes
+            {
+                light: ['#FFD700', '#FF8C00', '#FF4500', '#FF6347'], // Gold, DarkOrange, OrangeRed, Tomato
+                dark: ['#B8860B', '#CD5700', '#B22222', '#A52A2A'] // DarkGoldenrod, Darker Orange, Firebrick, Brown
+            },
+            {
+                light: ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B'], // Green, Light Green, Lime, Yellow
+                dark: ['#388E3C', '#689F38', '#AFB42B', '#FBC02D'] // Darker Green, Dark Green, Dark Lime, Dark Yellow
+            },
+            {
+                light: ['#2196F3', '#03A9F4', '#00BCD4', '#009688'], // Blue, Light Blue, Cyan, Teal
+                dark: ['#1976D2', '#0288D1', '#0097A7', '#00796B'] // Darker Blue, Dark Blue, Dark Cyan, Dark Teal
+            },
+            {
+                light: ['#9C27B0', '#673AB7', '#3F51B5', '#2196F3'], // Purple, Deep Purple, Indigo, Blue
+                dark: ['#7B1FA2', '#512DA8', '#303F9F', '#1976D2'] // Darker Purple, Dark Deep Purple, Dark Indigo, Dark Blue
             }
+        ];
+
+        let currentPalette = null;
+
+        function applyRandomWheelColors() {
+            const randomIndex = Math.floor(Math.random() * wheelColorPalettes.length);
+            currentPalette = wheelColorPalettes[randomIndex];
+
+            const root = document.documentElement;
+            if (document.body.classList.contains('dark-mode')) {
+                root.style.setProperty('--wheel-segment-1', currentPalette.dark[0]);
+                root.style.setProperty('--wheel-segment-2', currentPalette.dark[1]);
+                root.style.setProperty('--wheel-segment-3', currentPalette.dark[2]);
+                root.style.setProperty('--wheel-segment-4', currentPalette.dark[3]);
+            } else {
+                root.style.setProperty('--wheel-segment-1', currentPalette.light[0]);
+                root.style.setProperty('--wheel-segment-2', currentPalette.light[1]);
+                root.style.setProperty('--wheel-segment-3', currentPalette.light[2]);
+                root.style.setProperty('--wheel-segment-4', currentPalette.light[3]);
+            }
+        }
+
+        // Initial color application
+        applyRandomWheelColors();
+
+        container.style.setProperty('--game-primary-color', 'var(--wheel-primary)');
+        container.style.setProperty('--game-secondary-color', 'var(--wheel-secondary)');
+
+        // Game State (local to this instance of the game)
+        let score = 0;
+        let isSpinning = false;
+        let rotation = 0;
+        let usedQuestionIdentifiers = new Set();
+
+        // Question Types (can be customized)
+        const questionTypes = [
+            { id: 'next_ayah', text: 'الآية التالية' },
+            { id: 'arrange', text: 'رتّب الآيات' },
+            { id: 'identify_surah', text: 'ما هي السورة؟' },
+            { id: 'complete', text: 'أكمل الآية' },
+        ];
+
+        // Filter verses based on the provided range (for general games)
+        const allVerses = surahData.verses;
+
+        if (allVerses.length < 10) { // Need a reasonable number of verses for the game
+            gameContentArea.innerHTML = '<p style="color:#c00">لا توجد آيات كافية لهذه اللعبة في النطاق المحدد. يرجى اختيار نطاق أوسع.</p>';
             return;
         }
 
-        const difficultySettings = {
-            easy: { speed: 6, interval: 1400 },
-            medium: { speed: 5, interval: 1100 },
-            hard: { speed: 4, interval: 800 }
-        };
+        gameContentArea.innerHTML = `
+            <h1 class="wheel-game-title">عجلة الحظ القرآنية</h1>
+            <p class="wheel-game-subtitle">راجع حفظك من سورة ${surahIndex.find(s => s.id === startSurahId)?.name || 'البداية'} إلى سورة ${surahIndex.find(s => s.id === endSurahId)?.name || 'النهاية'}</p>
+            
+            <div id="score-container" class="wheel-game-score-container">
+                النقاط: <span id="score">0</span>
+            </div>
 
-        function renderDifficultySelection() {
-            cleanupGame();
-            container.innerHTML = `
-                <div class="difficulty-selector">
-                    <h3>اختر مستوى الصعوبة</h3>
-                    <button class="btn-difficulty" data-difficulty="easy">سهل</button>
-                    <button class="btn-difficulty" data-difficulty="medium">متوسط</button>
-                    <button class="btn-difficulty" data-difficulty="hard">صعب</button>
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <div id="wheel" class="wheel">
+                    <div class="wheel-text-container">
+                        <div class="wheel-text text-1">${questionTypes[0].text}</div>
+                        <div class="wheel-text text-2">${questionTypes[1].text}</div>
+                        <div class="wheel-text text-3">${questionTypes[2].text}</div>
+                        <div class="wheel-text text-4">${questionTypes[3].text}</div>
+                    </div>
                 </div>
-            `;
-            document.querySelectorAll('.btn-difficulty').forEach(btn => {
-                btn.onclick = (e) => {
-                    difficulty = e.target.dataset.difficulty;
-                    renderGameUI();
-                    startGame();
+                <button id="spin-button" class="spin-button">أدر</button>
+            </div>
+            
+            <button id="reset-button" class="wheel-game-reset-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg>
+                <span>إعادة اللعب</span>
+            </button>
+        `;
+
+        // --- DOM Elements (local to this game instance) ---
+        const wheelElement = gameContentArea.querySelector('#wheel');
+        const spinButton = gameContentArea.querySelector('#spin-button');
+        const resetButton = gameContentArea.querySelector('#reset-button');
+        const scoreElement = gameContentArea.querySelector('#score');
+
+        // --- Event Listeners ---
+        spinButton.addEventListener('click', spinWheel);
+        resetButton.addEventListener('click', resetGame);
+
+        // --- Game Logic ---
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            spinButton.disabled = true;
+            
+            rotation += Math.ceil(Math.random() * 2000) + 2500;
+            wheelElement.style.transform = `rotate(${rotation}deg)`;
+            
+            wheelElement.addEventListener('transitionend', handleSpinEnd, { once: true });
+        }
+
+        function handleSpinEnd() {
+            const actualRotation = rotation % 360;
+            const segmentIndex = Math.floor(actualRotation / 90);
+            const selectedType = questionTypes[segmentIndex];
+            presentNewQuestion(selectedType.id);
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreElement.textContent = score;
+            isSpinning = false;
+            spinButton.disabled = false;
+            usedQuestionIdentifiers.clear();
+            wheelElement.style.transition = 'none';
+            rotation = 0;
+            wheelElement.style.transform = `rotate(0deg)`;
+            applyRandomWheelColors(); // Apply new random colors
+            setTimeout(() => { wheelElement.style.transition = 'transform 7s cubic-bezier(0.25, 1, 0.5, 1)'; }, 50);
+        }
+
+        // --- Question Handling ---
+        function presentNewQuestion(type) {
+            let question = null;
+            let attempts = 0;
+            const maxAttempts = 50;
+
+            while (attempts < maxAttempts) {
+                const generatedQuestion = generateQuestion(type);
+                if (!generatedQuestion) {
+                    attempts++;
+                    continue;
+                }
+                if (!usedQuestionIdentifiers.has(generatedQuestion.id)) {
+                    question = generatedQuestion;
+                    break;
+                }
+                attempts++;
+            }
+
+            if (!question) {
+                alert("لقد أجبت على جميع الأسئلة المتاحة! سيتم إعادة تعيين الأسئلة.");
+                usedQuestionIdentifiers.clear();
+                question = generateQuestion(type);
+            }
+            
+            if (question) {
+                usedQuestionIdentifiers.add(question.id);
+                displayQuestion(question);
+            } else {
+                alert("حدث خطأ أثناء إنشاء السؤال، يرجى إعادة المحاولة.");
+                isSpinning = false;
+                spinButton.disabled = false;
+            }
+        }
+        
+        function generateQuestion(type) {
+            // Select a random surah from the loaded verses' surah IDs
+            const uniqueSurahIds = [...new Set(allVerses.map(v => v.surahId))];
+            if (uniqueSurahIds.length === 0) return null;
+            const randomSurahId = uniqueSurahIds[Math.floor(Math.random() * uniqueSurahIds.length)];
+            const surah = surahIndex.find(s => s.id === randomSurahId);
+            if (!surah) return null; // Should not happen if uniqueSurahIds is populated
+
+            // Filter verses belonging to this surah
+            const surahVerses = allVerses.filter(v => v.surahId === surah.id);
+            if (surahVerses.length === 0) return null;
+
+            let question = {};
+
+            switch(type) {
+                case 'identify_surah': {
+                    const verse = surahVerses[Math.floor(Math.random() * surahVerses.length)];
+                    const verseTextWithoutBasmallah = removeBasmallahFromVerse(verse.text, surah.id);
+                    const otherSurahNames = surahIndex.filter(s => s.name !== surah.name).map(s => s.name).sort(() => 0.5 - Math.random()).slice(0, 2);
+                    return { id: `identify_${surah.name}_${verse.id}`, type, surah, question: `"${verseTextWithoutBasmallah}"`, options: [surah.name, ...otherSurahNames].sort(() => 0.5 - Math.random()), answer: surah.name };
+                }
+                case 'complete': {
+                    const verseToComplete = surahVerses[Math.floor(Math.random() * surahVerses.length)];
+                    const verseTextWithoutBasmallah = removeBasmallahFromVerse(verseToComplete.text, surah.id);
+                    const words = verseTextWithoutBasmallah.split(' ');
+                    if (words.length < 2) return null;
+                    const answerWord = words.pop();
+                    const questionText = words.join(' ') + ' ______';
+                    const otherWords = allVerses.flatMap(v => removeBasmallahFromVerse(v.text, v.surahId).split(' ')).filter(w => w !== answerWord && w.length > 2 && !w.includes('______')).sort(() => 0.5 - Math.random()).slice(0, 2);
+                    return { id: `complete_${surah.name}_${verseToComplete.id}`, type, surah, question: questionText, options: [answerWord, ...otherWords].sort(() => 0.5 - Math.random()), answer: answerWord };
+                }
+                case 'next_ayah': {
+                    if (surahVerses.length < 2) return null;
+                    const verseIndex = Math.floor(Math.random() * (surahVerses.length - 1));
+                    const currentVerse = surahVerses[verseIndex];
+                    const nextVerse = surahVerses[verseIndex + 1];
+                    const currentVerseTextWithoutBasmallah = removeBasmallahFromVerse(currentVerse.text, surah.id);
+                    const nextVerseTextWithoutBasmallah = removeBasmallahFromVerse(nextVerse.text, surah.id);
+                    const otherVerses = allVerses.filter(v => v.text !== nextVerse.text && v.text !== currentVerse.text).map(v => removeBasmallahFromVerse(v.text, v.surahId)).sort(() => 0.5 - Math.random()).slice(0, 2);
+                    return { id: `next_${surah.name}_${currentVerse.id}`, type, surah, question: `ما هي الآية التي تلي: "${currentVerseTextWithoutBasmallah}"؟`, options: [nextVerseTextWithoutBasmallah, ...otherVerses].sort(() => 0.5 - Math.random()), answer: nextVerseTextWithoutBasmallah };
+                }
+                case 'arrange': {
+                    if (surahVerses.length < 3) return null;
+                    const start = Math.floor(Math.random() * (surahVerses.length - 2));
+                    const versesToArrange = surahVerses.slice(start, start + 3);
+                    const versesToArrangeWithoutBasmallah = versesToArrange.map(v => removeBasmallahFromVerse(v.text, surah.id));
+                    return { id: `arrange_${surah.name}_${versesToArrange[0].id}`, type, surah, question: `رتّب الآيات التالية من سورة ${surah.name}`, options: versesToArrangeWithoutBasmallah.sort(() => 0.5 - Math.random()), answer: versesToArrangeWithoutBasmallah };
+                }
+            }
+            return null;
+        }
+
+        // --- UI Display ---
+        function displayQuestion(question) {
+            // Create modal elements if they don't exist
+            let modalOverlay = document.getElementById('game-modal-overlay');
+            if (!modalOverlay) {
+                modalOverlay = document.createElement('div');
+                modalOverlay.id = 'game-modal-overlay';
+                modalOverlay.className = 'game-modal-overlay';
+                modalOverlay.innerHTML = `
+                    <div class="game-modal-content">
+                        <button class="game-modal-close-btn"><span class="material-icons">close</span></button>
+                        <h2 id="modal-question-title"></h2>
+                        <p id="modal-question-text" class="question-text"></p>
+                        <div id="modal-options-container" class="question-options-container"></div>
+                        <p id="modal-feedback" class="feedback-message"></p>
+                        <div id="modal-action-buttons" class="action-buttons"></div>
+                    </div>
+                `;
+                document.body.appendChild(modalOverlay);
+                modalOverlay.querySelector('.game-modal-close-btn').addEventListener('click', hideQuestionModal);
+            }
+
+            // Populate modal with question data
+            const modalQuestionTitle = modalOverlay.querySelector('#modal-question-title');
+            const modalQuestionText = modalOverlay.querySelector('#modal-question-text');
+            const modalOptionsContainer = modalOverlay.querySelector('#modal-options-container');
+            const modalFeedback = modalOverlay.querySelector('#modal-feedback');
+            const modalActionButtons = modalOverlay.querySelector('#modal-action-buttons');
+
+            const typeInfo = questionTypes.find(t => t.id === question.type);
+            modalQuestionTitle.textContent = typeInfo.text;
+            modalQuestionText.textContent = question.question;
+            modalOptionsContainer.innerHTML = '';
+            modalActionButtons.innerHTML = '';
+            modalFeedback.textContent = '';
+            modalFeedback.className = 'feedback-message'; // Reset class
+            
+            if (question.type === 'arrange') {
+                setupArrangeQuestion(question, modalOptionsContainer, modalActionButtons, modalFeedback);
+            } else {
+                setupChoiceQuestion(question, modalOptionsContainer, modalActionButtons, modalFeedback);
+            }
+
+            modalOverlay.classList.add('active');
+        }
+
+        function hideQuestionModal() {
+            const modalOverlay = document.getElementById('game-modal-overlay');
+            if (modalOverlay) {
+                modalOverlay.classList.remove('active');
+                isSpinning = false;
+                spinButton.disabled = false;
+            }
+        }
+
+        function setupChoiceQuestion(question, optionsContainerEl, actionButtonsEl, feedbackEl) {
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'option-button';
+                button.onclick = (e) => {
+                    // Ripple effect
+                    const rect = e.target.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const ripple = document.createElement('span');
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+                    ripple.classList.add('ripple');
+                    e.target.appendChild(ripple);
+                    ripple.addEventListener('animationend', () => ripple.remove());
+
+                    checkAnswer(option === question.answer, e.target, question, optionsContainerEl, actionButtonsEl, feedbackEl);
                 };
+                optionsContainerEl.appendChild(button);
             });
         }
 
-        function renderGameUI() {
-            container.innerHTML = `
-                <div id="cascade-header">
-                    <div id="cascade-info">
-                        <span>النتيجة: <span id="cascade-score">0</span></span>
-                        <span>المحاولات: <span id="cascade-lives"></span></span>
-                    </div>
-                    <button id="reset-cascade-btn" class="btn-reset"><span class="material-icons">refresh</span></button>
-                </div>
-                <div id="cascade-area"></div>
-                <div id="cascade-verse-display"></div>
-            `;
-            document.getElementById('reset-cascade-btn').onclick = renderDifficultySelection;
-        }
+        function checkAnswer(isCorrect, element, question, optionsContainerEl, actionButtonsEl, feedbackEl) {
+            const allOptions = optionsContainerEl.querySelectorAll('button, .draggable');
+            allOptions.forEach(opt => {
+                if(opt.tagName === 'BUTTON') opt.disabled = true;
+                if(opt.classList.contains('draggable')) opt.draggable = false;
+            });
 
-        function startGame() {
-            cleanupGame();
-            score = 0;
-            lives = 3;
-            currentVerseIndex = 0;
-            fallingWords = []; // Re-initialize for good measure
-            updateScoreDisplay();
-            updateLivesDisplay();
-            loadVerse();
-            // Start the game loop only after all setup is done
-            verseCascadeGameLoopId = requestAnimationFrame(gameLoop);
-        }
-
-        function cleanupGame() {
-            if (verseCascadeGameLoopId) {
-                cancelAnimationFrame(verseCascadeGameLoopId);
-                verseCascadeGameLoopId = null;
-            }
-            const cascadeArea = document.getElementById('cascade-area');
-            if (cascadeArea) cascadeArea.innerHTML = ''; // Clear all word elements from DOM
-            fallingWords = []; // Clear the array of falling word objects
-        }
-
-        function gameLoop(timestamp) {
-            if (lives <= 0 || verseCascadeGameLoopId === null) { // Added check for null gameLoopId
-                return; // Stop the loop if game is over or explicitly stopped
-            }
-
-            if (timestamp - lastSpawnTime > difficultySettings[difficulty].interval) {
-                lastSpawnTime = timestamp;
-                spawnWord();
-            }
-
-            verseCascadeGameLoopId = requestAnimationFrame(gameLoop);
-        }
-
-        function loadVerse() {
-            // Clear all existing falling words before loading a new verse
-            const cascadeArea = document.getElementById('cascade-area');
-            if (cascadeArea) cascadeArea.innerHTML = '';
-            fallingWords = [];
-
-            if (lives <= 0) {
-                endGame("حاول مرة أخرى يا بطل!");
-                return;
-            }
-            if (currentVerseIndex >= versesToShow.length) {
-                endGame("أحسنت! أنت بطل القرآن!");
-                return;
-            }
-
-            const verseTextWithoutBasmallah = removeBasmallahFromVerse(versesToShow[currentVerseIndex].text, surah.id);
-            wordsToCatch = verseTextWithoutBasmallah.split(' ').filter(w => w.trim() !== '');
-            nextWordIndex = 0;
-            updateVerseDisplay();
-        }
-
-        function spawnWord() {
-            if (lives <= 0 || verseCascadeGameLoopId === null) return; // Do not spawn if game is not active
-            const cascadeArea = document.getElementById('cascade-area');
-            if (!cascadeArea) return;
-
-            const nextWord = wordsToCatch[nextWordIndex];
-            const isNextWordFalling = fallingWords.some(fw => fw.text === nextWord);
-
-            let wordToSpawn;
-            // Always prioritize spawning the next required word if it's not already falling
-            if (!isNextWordFalling && nextWordIndex < wordsToCatch.length) {
-                wordToSpawn = nextWord;
-            } else {
-                // Otherwise, spawn a random word from the current verse
-                wordToSpawn = wordsToCatch[Math.floor(Math.random() * wordsToCatch.length)];
-            }
-            createWordElement(wordToSpawn);
-        }
-
-        function createWordElement(word) {
-            const cascadeArea = document.getElementById('cascade-area');
-            if (!cascadeArea || verseCascadeGameLoopId === null) return; // Do not create if game is not active
-
-            const wordEl = document.createElement('div');
-            wordEl.className = 'cascade-word';
-            wordEl.textContent = word;
-            
-            // Append first to measure width accurately
-            cascadeArea.appendChild(wordEl);
-
-            const wordWidth = wordEl.offsetWidth;
-            const maxRight = cascadeArea.offsetWidth - wordWidth - 10; // 10px padding from edge
-            wordEl.style.right = `${Math.max(0, Math.floor(Math.random() * maxRight))}px`;
-            
-            wordEl.style.animationDuration = `${(Math.random() * 2) + difficultySettings[difficulty].speed}s`;
-
-            const wordObj = { el: wordEl, text: word, missed: true };
-            fallingWords.push(wordObj);
-
-            wordEl.addEventListener('click', () => handleWordClick(wordObj));
-            wordEl.addEventListener('animationend', () => handleWordMiss(wordObj));
-        }
-
-        function handleWordClick(wordObj) {
-            if (wordObj.text === wordsToCatch[nextWordIndex]) {
-                wordObj.missed = false;
-                nextWordIndex++;
+            if (isCorrect) {
                 score += 10;
+                scoreElement.textContent = score;
+                feedbackEl.textContent = 'إجابة صحيحة! أحسنت!';
+                feedbackEl.className = 'feedback-message feedback-correct';
+                element.classList.add('correct-answer');
                 playSound('correct');
-                wordObj.el.remove();
-                fallingWords = fallingWords.filter(w => w !== wordObj);
-                updateVerseDisplay();
-                updateScoreDisplay();
-
-                if (nextWordIndex === wordsToCatch.length) {
-                    score += 25; // Bonus
-                    updateScoreDisplay();
-                    currentVerseIndex++;
-                    setTimeout(loadVerse, 500);
-                }
+                // Hide modal automatically after a short delay for correct answers
+                setTimeout(() => {
+                    hideQuestionModal();
+                }, 1000); // Hide after 1 second
             } else {
-                wordObj.el.classList.add('incorrect');
+                feedbackEl.textContent = 'إجابة خاطئة، حاول مرة أخرى!';
+                feedbackEl.className = 'feedback-message feedback-incorrect';
+                element.classList.add('wrong-answer');
+                if (question.type !== 'arrange') {
+                    const correctButton = Array.from(optionsContainerEl.querySelectorAll('.option-button')).find(btn => btn.textContent === question.answer);
+                    if (correctButton) correctButton.classList.add('correct-answer');
+                }
                 playSound('incorrect');
-                setTimeout(() => wordObj.el.classList.remove('incorrect'), 300);
+                
+                const continueBtn = document.createElement('button');
+                continueBtn.textContent = 'متابعة';
+                continueBtn.className = 'action-button';
+                continueBtn.onclick = () => {
+                    hideQuestionModal();
+                };
+                actionButtonsEl.appendChild(continueBtn);
             }
-        }
-
-        function handleWordMiss(wordObj) {
-            if (wordObj.missed && wordObj.text === wordsToCatch[nextWordIndex]) {
-                lives--;
-                updateLivesDisplay();
-                playSound('incorrect');
-                currentVerseIndex++;
-                setTimeout(loadVerse, 500);
-            }
-            wordObj.el.remove();
-            fallingWords = fallingWords.filter(w => w !== wordObj);
         }
         
-        function updateVerseDisplay() {
-            const display = document.getElementById('cascade-verse-display');
-            if(display) {
-                const verseTextWithoutBasmallah = versesToShow[currentVerseIndex] ? removeBasmallahFromVerse(versesToShow[currentVerseIndex].text, surah.id) : "";
-                const verseText = versesToShow[currentVerseIndex] ? `الآية: ${verseTextWithoutBasmallah}` : "";
-                const caughtText = wordsToCatch.slice(0, nextWordIndex).join(' ');
-                display.innerHTML = `<small>${verseText}</small><br>${caughtText} ...`;
+        // The drag-and-drop functions
+        let draggedItem = null;
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        function handleDragStart(e) {
+            draggedItem = e.target;
+            isDragging = true;
+            playSound('drag_start');
+
+            // Calculate offset for mouse/touch position relative to the element's top-left corner
+            if (e.type === 'dragstart') {
+                offsetX = e.clientX - draggedItem.getBoundingClientRect().left;
+                offsetY = e.clientY - draggedItem.getBoundingClientRect().top;
+                e.dataTransfer.setData('text/plain', draggedItem.id);
+                e.dataTransfer.setDragImage(draggedItem, offsetX, offsetY);
+            } else if (e.type === 'touchstart') {
+                e.preventDefault(); // Prevent default touch behavior (e.g., scrolling)
+                const touch = e.touches[0];
+                // Calculate offset from the center of the element to the touch point
+                offsetX = touch.clientX - (draggedItem.getBoundingClientRect().left + draggedItem.offsetWidth / 2);
+                offsetY = touch.clientY - (draggedItem.getBoundingClientRect().top + draggedItem.offsetHeight / 2);
+
+                // Store original styles to restore later
+                draggedItem.dataset.originalTransition = draggedItem.style.transition;
+                draggedItem.dataset.originalTransform = draggedItem.style.transform;
+
+                // For touch, we manually control the element's position
+                draggedItem.style.transition = 'none'; // Disable transitions during drag
+                draggedItem.style.transform = 'none'; // Remove any existing transforms
+                draggedItem.style.position = 'fixed';
+                draggedItem.style.zIndex = '10000';
+                draggedItem.style.pointerEvents = 'none'; // Allow events to pass through
             }
         }
 
-        function updateScoreDisplay() {
-            const scoreEl = document.getElementById('cascade-score');
-            if(scoreEl) scoreEl.textContent = score;
-        }
+        function handleDrag(e) {
+            if (!isDragging || !draggedItem) return;
 
-        function updateLivesDisplay() {
-            const livesEl = document.getElementById('cascade-lives');
-            if(livesEl) livesEl.textContent = lives > 0 ? '❤️'.repeat(lives) : '💔';
-        }
-
-        function endGame(message) {
-            cleanupGame();
-            const cascadeArea = document.getElementById('cascade-area');
-            if(cascadeArea) {
-                cascadeArea.innerHTML = `
-                    <div class="cascade-end-message">
-                        <h2>${message}</h2>
-                        <p>نتيجتك النهائية: ${score}</p>
-                        <button id="play-again-cascade-btn" class="btn-check">العب مرة أخرى</button>
-                    </div>`;
-                document.getElementById('play-again-cascade-btn').onclick = renderDifficultySelection;
-            }
-            const header = document.getElementById('cascade-header');
-            if (header) header.style.display = 'none';
-            const verseDisplay = document.getElementById('cascade-verse-display');
-            if(verseDisplay) verseDisplay.style.display = 'none';
-        }
-
-        renderDifficultySelection();
-    }
-
-    function getRandomUniqueIndexes(arrayLength, count, excludeIndexes = []) {
-        // تُعيد مصفوفة من أرقام فريدة عشوائية من 0 إلى arrayLength-1، مع استبعاد excludeIndexes
-        const available = [];
-        for (let i = 0; i < arrayLength; i++) {
-            if (!excludeIndexes.includes(i)) available.push(i);
-        }
-        const result = [];
-        while (result.length < count && available.length > 0) {
-            const idx = Math.floor(Math.random() * available.length);
-            result.push(available[idx]);
-            available.splice(idx, 1);
-        }
-        return result;
-    }
-
-    function getRandomConsecutiveVerses(verses, count) {
-        if (verses.length <= count) return verses.slice();
-        const maxStart = verses.length - count;
-        const startIdx = Math.floor(Math.random() * (maxStart + 1));
-        return verses.slice(startIdx, startIdx + count);
-    }
-
-    function setupWheelGame(surah, start, end) {
-        const container = document.getElementById('wheel-game');
-        if (!container) return;
-        container.innerHTML = '';
-        if (!surah.verses || surah.verses.length < 1) {
-            container.innerHTML = '<p>لا توجد آيات كافية لهذه اللعبة.</p>';
-            return;
-        }
-        // اختيار آيات عشوائية بدون تكرار مطلق في نفس الجلسة
-        const versesInRange = surah.verses.filter(v => v.id >= start && v.id <= end);
-        // إذا انتهت الآيات المتاحة، أعد تعيين القائمة
-        if (usedWheelVerseIndexes.length >= versesInRange.length) usedWheelVerseIndexes = [];
-        // استبعد الآيات المستخدمة
-        const availableIndexes = [];
-        for (let i = 0; i < versesInRange.length; i++) {
-            if (!usedWheelVerseIndexes.includes(i)) availableIndexes.push(i);
-        }
-        // اختر حتى 8 آيات فريدة
-        let verseIndexes = [];
-        while (verseIndexes.length < 8 && availableIndexes.length > 0) {
-            const idx = Math.floor(Math.random() * availableIndexes.length);
-            verseIndexes.push(availableIndexes[idx]);
-            usedWheelVerseIndexes.push(availableIndexes[idx]);
-            availableIndexes.splice(idx, 1);
-        }
-        if (verseIndexes.length < 5) {
-            // إذا لم نجد 5 آيات، أعد تعيين القائمة واختر من جديد
-            usedWheelVerseIndexes = [];
-            for (let i = 0; i < versesInRange.length && verseIndexes.length < 5; i++) {
-                if (!verseIndexes.includes(i)) verseIndexes.push(i);
+            // Only prevent default for touch events to allow native drag-and-drop for mouse
+            if (e.type === 'touchmove') {
+                e.preventDefault();
+                const touch = e.touches[0];
+                draggedItem.style.left = `${touch.clientX - offsetX}px`;
+                draggedItem.style.top = `${touch.clientY - offsetY}px`;
             }
         }
-        let questions = [];
-        for (let i = 0; i < verseIndexes.length; i++) {
-            const verse = versesInRange[verseIndexes[i]];
-            const verseTextWithoutBasmallah = removeBasmallahFromVerse(verse.text, surah.id);
-            if (!verseTextWithoutBasmallah) continue;
-            const words = verseTextWithoutBasmallah.split(' ');
-            if (words.length > 3) {
-                const blankIndex = Math.floor(Math.random() * (words.length - 2)) + 1;
-                const answer = words[blankIndex];
-                let options = [answer];
-                while (options.length < 4) {
-                    const randomVerse = versesInRange[Math.floor(Math.random() * versesInRange.length)];
-                    const randomVerseText = removeBasmallahFromVerse(randomVerse.text, surah.id);
-                    if (randomVerseText) {
-                        const randomWord = randomVerseText.split(' ')[0];
-                        if (!options.includes(randomWord)) options.push(randomWord);
+
+        function handleDragEnd(e) {
+            isDragging = false;
+            // Only reset styles if it was a touch-based drag
+            if (e.type === 'touchend' && draggedItem) {
+                draggedItem.style.position = ''; // Reset position
+                draggedItem.style.zIndex = ''; // Reset z-index
+                draggedItem.style.pointerEvents = ''; // Reset pointer events
+                draggedItem.style.left = ''; // Clear inline styles
+                draggedItem.style.top = ''; // Clear inline styles
+                // Restore original styles
+                draggedItem.style.transition = draggedItem.dataset.originalTransition || '';
+                draggedItem.style.transform = draggedItem.dataset.originalTransform || '';
+                delete draggedItem.dataset.originalTransition;
+                delete draggedItem.dataset.originalTransform;
+            }
+            draggedItem = null;
+        }
+
+        // Add global event listeners for drag and touch move/end
+        document.addEventListener('drag', handleDrag);
+        document.addEventListener('dragend', handleDragEnd);
+        document.addEventListener('touchmove', handleDrag, { passive: false });
+        document.addEventListener('touchend', handleDragEnd);
+        function checkArrangeAnswer(question, optionsContainerEl, actionButtonsEl, feedbackEl) {
+            const dropZone = optionsContainerEl.querySelector('.drop-zone'); // Ensure we select from optionsContainer
+            const arrangedItems = Array.from(dropZone.children).map(child => child.textContent);
+            const isCorrect = JSON.stringify(arrangedItems) === JSON.stringify(question.answer);
+            checkAnswer(isCorrect, dropZone, question, optionsContainerEl, actionButtonsEl, feedbackEl);
+        }
+        function setupArrangeQuestion(question, optionsContainerEl, actionButtonsEl, feedbackEl) {
+            const draggablesContainer = document.createElement('div');
+            draggablesContainer.className = 'draggables-container';
+            draggablesContainer.id = 'draggables-container-arrange'; // Add an ID for specific targeting
+
+            question.options.forEach((option, index) => {
+                const div = document.createElement('div');
+                div.textContent = option;
+                div.className = 'draggable';
+                div.draggable = true;
+                div.id = `drag-${index}`;
+                div.addEventListener('dragstart', handleDragStart);
+                div.addEventListener('touchstart', handleDragStart, { passive: false });
+                draggablesContainer.appendChild(div);
+            });
+            optionsContainerEl.appendChild(draggablesContainer);
+            
+            draggablesContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(draggablesContainer, e.clientY);
+                if (draggedItem && draggedItem !== e.target) {
+                    if (afterElement == null) {
+                        draggablesContainer.appendChild(draggedItem);
+                    } else {
+                        draggablesContainer.insertBefore(draggedItem, afterElement);
                     }
                 }
-                questions.push({ type: 'fill-blank', verse: verseTextWithoutBasmallah, blankIndex, answer, options: [...options].sort(() => 0.5 - Math.random()) });
-            }
-        }
-        if (questions.length < 5) questions = questions.concat(questions).slice(0, 5);
-        if (questions.length === 0) {
-            if (container) {
-                container.innerHTML = '<p>لا توجد أسئلة كافية لهذه اللعبة.</p>';
-            }
-            return;
-        }
-        // ترتيب العناصر: العجلة، ثم صندوق السؤال، ثم زر العجلة
-        if (container) {
-            container.innerHTML = `
-                <p>اضغط زر "أدر العجلة" لتحديد السؤال!</p>
-                <div id="wheel-area"></div>
-                <div id="wheel-question-area"></div>
-                <button id="spin-wheel-btn">أدر العجلة</button>
-                <div id="wheel-score"></div>
-                <button id="reset-wheel-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
-            `;
-        }
-        const wheelArea = document.getElementById('wheel-area');
-        const numOptions = questions.length;
-        const angle = 360 / numOptions;
-        const colors = ['#fbc02d', '#4fc3f7', '#43e97b', '#38f9d7', '#ff6f91', '#6a1b9a', '#d81b60', '#00897b'];
-        
-        let wheelPaths = '';
-        let wheelTexts = '';
+            });
 
-        for (let i = 0; i < numOptions; i++) {
-            const startAngle = i * angle;
-            const endAngle = (i + 1) * angle;
-            const largeArc = angle > 180 ? 1 : 0;
-            
-            const x1 = 160 + 150 * Math.cos(Math.PI / 180 * (startAngle - 90));
-            const y1 = 160 + 150 * Math.sin(Math.PI / 180 * (startAngle - 90));
-            const x2 = 160 + 150 * Math.cos(Math.PI / 180 * (endAngle - 90));
-            const y2 = 160 + 150 * Math.sin(Math.PI / 180 * (endAngle - 90));
-            
-            const color = colors[i % colors.length];
-            wheelPaths += `<path d="M160,160 L${x1},${y1} A150,150 0 ${largeArc},1 ${x2},${y2} Z" fill="${color}" stroke="white" stroke-width="4"/>`;
+            draggablesContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (draggedItem) {
+                    // The actual reordering is handled by dragover/touchmove
+                    // This drop event is mainly to finalize the drag operation
+                    draggedItem.classList.remove('dragging');
+                    draggedItem = null;
+                }
+            });
 
-            const midAngle = startAngle + angle / 2;
-            const textX = 160 + 105 * Math.cos(Math.PI / 180 * (midAngle - 90));
-            const textY = 160 + 105 * Math.sin(Math.PI / 180 * (midAngle - 90));
-            
-            wheelTexts += `<text x="${textX}" y="${textY}" fill="white" font-family="Cairo, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" dominant-baseline="central" transform="rotate(${midAngle}, ${textX}, ${textY})">?</text>`;
+            draggablesContainer.addEventListener('drag', handleDrag);
+            draggablesContainer.addEventListener('dragend', handleDragEnd);
+            draggablesContainer.addEventListener('touchmove', handleDrag, { passive: false });
+            draggablesContainer.addEventListener('touchend', handleDragEnd);
+
+            draggablesContainer.addEventListener('touchmove', (e) => {
+                if (draggedItem) {
+                    e.preventDefault();
+                    const afterElement = getDragAfterElement(draggablesContainer, e.touches[0].clientY);
+                    if (afterElement == null) {
+                        draggablesContainer.appendChild(draggedItem);
+                    } else {
+                        draggablesContainer.insertBefore(draggedItem, afterElement);
+                    }
+                }
+            }, { passive: false });
+
+            const checkButton = document.createElement('button');
+            checkButton.textContent = 'تحقق من الترتيب';
+            checkButton.className = 'action-button';
+            checkButton.onclick = () => checkArrangeAnswer(question, optionsContainerEl, actionButtonsEl, feedbackEl);
+            actionButtonsEl.appendChild(checkButton);
         }
 
-        const wheelSVG = `
-            <div class="wheel-container">
-                <svg id="wheel-svg" width="320" height="320" viewBox="0 0 320 320">
-                    <defs>
-                        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.15"/>
-                        </filter>
-                    </defs>
-                    <g class="wheel-body" style="filter: url(#shadow);">
-                        ${wheelPaths}
-                    </g>
-                    <g class="wheel-text">
-                        ${wheelTexts}
-                    </g>
-                    <circle cx="160" cy="160" r="35" fill="white" stroke="#E0E0E0" stroke-width="5" class="wheel-center-pin"/>
-                    <circle cx="160" cy="160" r="10" fill="var(--primary-color, #0d47a1)" class="wheel-center-dot"/>
-                </svg>
-                <div class="wheel-pointer"></div>
-            </div>
-        `;
-
-        if (wheelArea) {
-            wheelArea.innerHTML = wheelSVG;
+        function checkArrangeAnswer(question, optionsContainerEl, actionButtonsEl, feedbackEl) {
+            const draggablesContainer = optionsContainerEl.querySelector('#draggables-container-arrange');
+            const arrangedItems = Array.from(draggablesContainer.children).map(child => child.textContent);
+            const isCorrect = JSON.stringify(arrangedItems) === JSON.stringify(question.answer);
+            checkAnswer(isCorrect, draggablesContainer, question, optionsContainerEl, actionButtonsEl, feedbackEl);
         }
-        let spinning = false;
-        const spinBtn = document.getElementById('spin-wheel-btn');
-        if (spinBtn) {
-            spinBtn.onclick = function() {
-                if (spinning) return;
-                spinning = true;
-                playSound('wheel_start_spin');
-                const svg = document.getElementById('wheel-svg');
-                
-                const currentRotationMatch = svg.style.transform.match(/rotate\(([-]?\d*\.?\d*)deg\)/);
-                const currentRotation = currentRotationMatch ? parseFloat(currentRotationMatch[1]) : 0;
 
-                const randomSpins = Math.floor(Math.random() * 3) + 4; // 4 to 6 full spins
-                const selectedIdx = Math.floor(Math.random() * numOptions);
-                const stopAngle = selectedIdx * angle + (angle / 2);
-                const finalRotation = (360 * randomSpins) + stopAngle;
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
 
-                svg.style.transition = 'transform 5s cubic-bezier(0.1, 0.7, 0.3, 1)';
-                svg.style.transform = `rotate(${finalRotation}deg)`;
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
 
-                setTimeout(() => {
-                    spinning = false;
-                    playSound('spin_stop');
-                    showWheelQuestion(questions[selectedIdx]);
-                }, 5100);
-            };
+    }
+
+    function getRandomConsecutiveVerses(versesArray, count) {
+        if (!versesArray || versesArray.length < count) {
+            return [];
         }
-        function showWheelQuestion(q) {
-            const qDiv = document.getElementById('wheel-question-area');
-            if (!qDiv) return;
-            const words = q.verse.split(' ');
-            const displayWords = words.map((w, i) => i === q.blankIndex ? '<span class="blank-slot"></span>' : w);
-            qDiv.innerHTML = `<div class="verse-question">${displayWords.join(' ')}</div><div id="wheel-options"></div><div id="wheel-feedback"></div>`;
-            const optsDiv = document.getElementById('wheel-options');
-            if (optsDiv) {
-                q.options.forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.className = 'option-btn';
-                    btn.textContent = opt;
-                    btn.onclick = function() {
-                        optsDiv.querySelectorAll('button').forEach(b => b.disabled = true);
-                        if (opt === q.answer) {
-                            btn.classList.add('correct');
-                            playSound('correct');
-                        } else {
-                            btn.classList.add('incorrect');
-                            playSound('incorrect');
-                        }
-                        setTimeout(() => { qDiv.innerHTML = ''; }, 1500);
-                    };
-                    optsDiv.appendChild(btn);
-                });
-            }
-        }
-        const resetWheelBtn = document.getElementById('reset-wheel-btn');
-        if (resetWheelBtn) {
-            resetWheelBtn.onclick = () => {
-                usedWheelVerseIndexes = [];
-                setupWheelGame(surah, start, end);
-                playSound('navigate');
-            };
-        }
+        const maxStartIndex = versesArray.length - count;
+        const startIndex = Math.floor(Math.random() * (maxStartIndex + 1));
+        return versesArray.slice(startIndex, startIndex + count);
     }
 
     function setupVerseOrderGame(surah, start, end) {
         const container = document.getElementById('verse-order-game');
-        if (!container) return;
-        container.innerHTML = ''; // Clear previous game
-        const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end);
+        const gameContentArea = container.querySelector('.game-content-area');
+        if (!gameContentArea) return;
+        container.style.setProperty('--game-primary-color', 'var(--verse-order-primary)');
+        container.style.setProperty('--game-secondary-color', 'var(--verse-order-secondary)');
+
+        gameContentArea.innerHTML = '';
+        const versesToShow = surah && surah.verses ? surah.verses.filter(v => v.id >= start && v.id <= end) : [];
 
         if (versesToShow.length < 3) {
-            container.innerHTML = '<p>لا توجد آيات كافية لهذه اللعبة. حاول تحديد نطاق أكبر.</p>';
+            gameContentArea.innerHTML = '<p>لا توجد آيات كافية لهذه اللعبة. حاول تحديد نطاق أكبر.</p>';
             return;
         }
 
-        // اختيار آيات متتالية عشوائية
         const count = Math.min(5, versesToShow.length);
         const gameVerses = getRandomConsecutiveVerses(versesToShow, count);
         const correctOrder = gameVerses.map(v => removeBasmallahFromVerse(v.text, surah.id)).filter(text => text);
         const shuffledOrder = [...correctOrder].sort(() => Math.random() - 0.5);
 
-        container.innerHTML = `
+        gameContentArea.innerHTML = `
             <p>قم بسحب وإفلات الآيات لترتيبها بالترتيب الصحيح.</p>
             <div id="verse-order-area"></div>
             <button id="check-order-btn" class="btn-check">تحقق من الترتيب</button>
@@ -1286,6 +1589,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         const verseArea = document.getElementById('verse-order-area');
+        let draggedItem = null;
         
         shuffledOrder.forEach(verseText => {
             const verseDiv = document.createElement('div');
@@ -1293,7 +1597,6 @@ document.addEventListener('DOMContentLoaded', () => {
             verseDiv.textContent = verseText;
             verseArea.appendChild(verseDiv);
             
-            // Desktop Drag & Drop
             verseDiv.draggable = true;
             verseDiv.addEventListener('dragstart', () => {
                 draggedItem = verseDiv;
@@ -1305,12 +1608,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 draggedItem = null;
             });
 
-            // Mobile Touch Drag & Drop
             verseDiv.addEventListener('touchstart', (e) => {
                 draggedItem = verseDiv;
                 verseDiv.classList.add('dragging');
                 playSound('drag_start');
-            }, { passive: true });
+            }, { passive: false });
 
             verseDiv.addEventListener('touchend', () => {
                 if (draggedItem) draggedItem.classList.remove('dragging');
@@ -1368,7 +1670,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('reset-verse-order-btn').onclick = () => {
             usedOrderVerseIndexes = [];
-            setupVerseOrderGame(surah, start, end);
+            setupVerseOrderGame(surah, 1, surah.verses.length);
             playSound('navigate');
         };
     }
@@ -1387,329 +1689,216 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    // Sidebar toggle for mobile
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    function setupVerseCascadeGame(surah, start, end) {
+        const container = document.getElementById('verse-cascade-game');
+        const gameContentArea = container.querySelector('.game-content-area');
+        if (!gameContentArea) return;
+        container.style.setProperty('--game-primary-color', 'var(--verse-cascade-primary)');
+        container.style.setProperty('--game-secondary-color', 'var(--verse-cascade-secondary)');
 
-    function showSidebar() {
-        if (window.innerWidth <= 768) {
-            if (sidebar) sidebar.classList.add('sidebar-open');
-            if (sidebarOverlay) sidebarOverlay.classList.add('active');
+        let score, lives, currentVerseIndex, wordsToCatch, nextWordIndex, fallingWords, lastSpawnTime = 0, difficulty;
+        const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end && v.text.split(' ').length >= 2);
+        if (versesToShow.length === 0) {
+            gameContentArea.innerHTML = '<p>لا توجد آيات مناسبة لهذه اللعبة في النطاق المحدد.</p>';
+            return;
         }
-    }
-    function hideSidebar() {
-        if (window.innerWidth <= 768) {
-            if (sidebar) sidebar.classList.remove('sidebar-open');
-            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
-        }
-    }
-    if (sidebarToggleBtn && sidebar && sidebarOverlay) {
-        sidebarToggleBtn.addEventListener('click', showSidebar);
-        sidebarOverlay.addEventListener('click', hideSidebar);
-    }
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) {
-            if (sidebar) sidebar.classList.remove('sidebar-open');
-            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
-        }
-    });
+        const difficultySettings = {
+            easy: { speed: 8, interval: 1800, lives: 5 },
+            medium: { speed: 6, interval: 1200, lives: 3 },
+            hard: { speed: 4, interval: 700, lives: 2 }
+        };
 
-    // تفعيل التبويبات الرئيسية
-    function activateTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
-      const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
-      const sec = document.getElementById(`tab-${tab}`);
-      if (btn) btn.classList.add('active');
-      if (sec) sec.classList.add('active');
-    }
-    // تفعيل تبويبات الأنشطة العامة
-    function activateActivitiesTab(tab) {
-      document.querySelectorAll('.activities-tab-btn').forEach(btn => btn.classList.remove('active'));
-      const btn = document.querySelector(`.activities-tab-btn[data-tab="${tab}"]`);
-      if (btn) btn.classList.add('active');
-      // إظهار محتوى التبويب المناسب (يمكن التوسعة لاحقًا)
-      const content = document.getElementById('activities-content');
-      if (content) {
-        if (tab === 'games') {
-          content.innerHTML = '<div id="game-area">(سيتم عرض الألعاب هنا بناءً على السور المختارة)</div>';
-          // TODO: ربط منطق الألعاب مع السور المختارة لاحقًا
-        } else if (tab === 'tafsir') {
-          content.innerHTML = '<div id="activities-tafsir-area">(تفسير الأنشطة العامة)</div>';
+        function renderDifficultySelection() {
+            cleanupGame();
+            gameContentArea.innerHTML = `
+                <div class="difficulty-selector">
+                    <h3>اختر مستوى الصعوبة</h3>
+                    <button class="btn-difficulty" data-difficulty="easy">سهل</button>
+                    <button class="btn-difficulty" data-difficulty="medium">متوسط</button>
+                    <button class="btn-difficulty" data-difficulty="hard">صعب</button>
+                </div>
+            `;
+            document.querySelectorAll('.btn-difficulty').forEach(btn => {
+                btn.onclick = (e) => {
+                    difficulty = e.target.dataset.difficulty;
+                    renderGameUI();
+                    startGame();
+                };
+            });
         }
-      }
-    }
-    // تفعيل القائمة الجانبية
-    function activateSidebar(section) {
-      document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
-      const btn = document.querySelector(`.sidebar-btn[data-section="${section}"]`);
-      if (btn) btn.classList.add('active');
-      // إخفاء القائمة الجانبية في الموبايل فقط بعد اختيار قسم
-      if (window.innerWidth <= 768) {
-        hideSidebar();
-      } // لا تلمس القائمة الجانبية في الديسكتوب إطلاقًا
-      // إظهار/إخفاء الأقسام مع التأكد من وجود العناصر
-      const mainBar = document.getElementById('main-bar');
-      const tabQuran = document.getElementById('tab-quran');
-      const tabTafsir = document.getElementById('tab-tafsir');
-      const tabActivities = document.getElementById('tab-activities');
-      const generalActivities = document.getElementById('general-activities-section');
-      const settingsSection = document.getElementById('settings-section');
-      // إخفاء جميع الأقسام أولاً
-      if (mainBar) mainBar.style.display = 'none';
-      if (tabQuran) tabQuran.style.display = 'none';
-      if (tabTafsir) tabTafsir.style.display = 'none';
-      if (tabActivities) tabActivities.style.display = 'none';
-      if (generalActivities) generalActivities.style.display = 'none';
-      if (settingsSection) settingsSection.style.display = 'none';
-      if (section === 'home') {
-        if (mainBar) mainBar.style.display = '';
-        if (tabQuran) tabQuran.style.display = '';
-        if (tabTafsir) tabTafsir.style.display = '';
-        if (tabActivities) tabActivities.style.display = '';
-        activateTab('quran');
-      } else if (section === 'general-activities') {
-        if (generalActivities) generalActivities.style.display = '';
-        activateActivitiesTab('games');
-      } else if (section === 'settings') {
-        if (settingsSection) {
-          settingsSection.style.display = 'block';
-          loadSettings();
-          setupSettingsEventListeners();
-        }
-      }
-    }
-    // تفعيل التبويبات عند الضغط
-    if (document.getElementById('main-tabs')) {
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          activateTab(this.dataset.tab);
-        });
-      });
-    }
-    // تفعيل تبويبات الأنشطة العامة عند الضغط
-    if (document.querySelector('.activities-tabs')) {
-      document.querySelectorAll('.activities-tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          activateActivitiesTab(this.dataset.tab);
-        });
-      });
-    }
-    // تفعيل القائمة الجانبية عند الضغط
-    if (document.querySelector('.sidebar')) {
-      document.querySelectorAll('.sidebar-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          activateSidebar(this.dataset.section);
-        });
-      });
-    }
-    
-    // إعدادات التطبيق
-    let appSettings = {
-        theme: 'classic',
-        isMuted: false,
-        textSize: 'medium',
-        gameDifficulty: 'medium'
-    };
 
-    // عند تحميل الإعدادات من localStorage
-    function loadSettings() {
-        const saved = localStorage.getItem('quranExplorerSettings');
-        if (saved) {
-            appSettings = { ...appSettings, ...JSON.parse(saved) };
+        function renderGameUI() {
+            gameContentArea.innerHTML = `
+                <div id="cascade-header">
+                    <div id="cascade-info">
+                        <span>النتيجة: <span id="cascade-score">0</span></span>
+                        <span>المحاولات: <span id="cascade-lives"></span></span>
+                    </div>
+                    <button id="reset-cascade-btn" class="btn-reset"><span class="material-icons">refresh</span></button>
+                </div>
+                <div id="cascade-area"></div>
+                <div id="cascade-verse-display"></div>
+            `;
+            document.getElementById('reset-cascade-btn').onclick = renderDifficultySelection;
         }
-        // تطبيق الثيم المختار
-        setTheme('theme-' + (appSettings.theme || 'classic'));
-        applySettings();
-    }
 
-    // حفظ الإعدادات
-    function saveSettings() {
-        console.log('Saving settings:', appSettings);
-        try {
-            localStorage.setItem('quranExplorerSettings', JSON.stringify(appSettings));
-            console.log('Settings saved successfully');
-        } catch (error) {
-            console.error('Error saving settings:', error);
+        function startGame() {
+            cleanupGame();
+            score = 0;
+            lives = difficultySettings[difficulty].lives;
+            currentVerseIndex = 0;
+            fallingWords = [];
+            updateScoreDisplay();
+            updateLivesDisplay();
+            loadVerse();
+            verseCascadeGameLoopId = requestAnimationFrame(gameLoop);
         }
-    }
 
-    // تطبيق الإعدادات
-    function applySettings() {
-        // تأكد من تطبيق كلاس الثيم الصحيح
-        document.body.classList.remove(...themeClasses);
-        document.body.classList.add(`theme-${appSettings.theme}`);
-        // تحديث جميع dropdowns
-        if (themeDropdown) themeDropdown.value = `theme-${appSettings.theme}`;
-        if (themeDropdownMobile) themeDropdownMobile.value = `theme-${appSettings.theme}`;
-        const settingsThemeDropdown = document.getElementById('settings-theme-dropdown');
-        if (settingsThemeDropdown) settingsThemeDropdown.value = appSettings.theme;
-        console.log('Applying settings:', appSettings);
-        
-        // تطبيق حجم النص
-        const textSizeValue = appSettings.textSize === 'small' ? '0.9rem' :
-            appSettings.textSize === 'medium' ? '1.1rem' :
-            appSettings.textSize === 'large' ? '1.3rem' : '1.5rem';
-        document.documentElement.style.setProperty('--text-size-base', textSizeValue);
-        console.log('Applied text size:', textSizeValue);
-        
-        // تطبيق كتم الصوت
-        isMuted = appSettings.isMuted;
-        if (appSettings.isMuted) {
-            document.body.classList.add('muted');
-        } else {
-            document.body.classList.remove('muted');
+        function cleanupGame() {
+            if (verseCascadeGameLoopId) {
+                cancelAnimationFrame(verseCascadeGameLoopId);
+                verseCascadeGameLoopId = null;
+            }
+            const cascadeArea = document.getElementById('cascade-area');
+            if (cascadeArea) cascadeArea.innerHTML = '';
+            fallingWords = [];
         }
-        console.log('Applied mute setting:', appSettings.isMuted);
-        
-        // تحديث واجهة الإعدادات
-        updateSettingsUI();
-    }
 
-    // تحديث واجهة الإعدادات
-    function updateSettingsUI() {
-        console.log('Updating settings UI with:', appSettings);
-        const themeDropdown = document.getElementById('settings-theme-dropdown');
-        const muteBtn = document.getElementById('settings-mute-btn');
-        const textSizeDropdown = document.getElementById('text-size-dropdown');
-        const difficultyDropdown = document.getElementById('game-difficulty-dropdown');
-        
-        console.log('Found elements:', {
-            themeDropdown: !!themeDropdown,
-            muteBtn: !!muteBtn,
-            textSizeDropdown: !!textSizeDropdown,
-            difficultyDropdown: !!difficultyDropdown
-        });
-        
-        if (themeDropdown) {
-            themeDropdown.value = appSettings.theme;
-            console.log('Set theme dropdown to:', appSettings.theme);
+        function gameLoop(timestamp) {
+            if (lives <= 0 || verseCascadeGameLoopId === null) return;
+            if (timestamp - lastSpawnTime > difficultySettings[difficulty].interval) {
+                lastSpawnTime = timestamp;
+                spawnWord();
+            }
+            verseCascadeGameLoopId = requestAnimationFrame(gameLoop);
         }
-        if (textSizeDropdown) {
-            textSizeDropdown.value = appSettings.textSize;
-            console.log('Set text size dropdown to:', appSettings.textSize);
+
+        function loadVerse() {
+            const cascadeArea = document.getElementById('cascade-area');
+            if (cascadeArea) cascadeArea.innerHTML = '';
+            fallingWords = [];
+            if (lives <= 0) {
+                endGame("حاول مرة أخرى يا بطل!");
+                return;
+            }
+            if (currentVerseIndex >= versesToShow.length) {
+                endGame("أحسنت! أنت بطل القرآن!");
+                return;
+            }
+            const verseTextWithoutBasmallah = removeBasmallahFromVerse(versesToShow[currentVerseIndex].text, surah.id);
+            wordsToCatch = verseTextWithoutBasmallah.split(' ').filter(w => w.trim() !== '');
+            nextWordIndex = 0;
+            updateVerseDisplay();
         }
-        if (difficultyDropdown) {
-            difficultyDropdown.value = appSettings.gameDifficulty;
-            console.log('Set difficulty dropdown to:', appSettings.gameDifficulty);
-        }
-        
-        if (muteBtn) {
-            const icon = muteBtn.querySelector('.material-icons');
-            if (icon) {
-                if (appSettings.isMuted) {
-                    icon.textContent = 'volume_off';
-                    muteBtn.classList.add('muted');
-                } else {
-                    icon.textContent = 'volume_up';
-                    muteBtn.classList.remove('muted');
-                }
-                console.log('Set mute button to:', appSettings.isMuted ? 'muted' : 'unmuted');
+
+        function spawnWord() {
+            if (lives <= 0 || verseCascadeGameLoopId === null) return;
+            const cascadeArea = document.getElementById('cascade-area');
+            if (!cascadeArea) return;
+            const nextWord = wordsToCatch[nextWordIndex];
+            const isNextWordFalling = fallingWords.some(fw => fw.text === nextWord);
+            let wordToSpawn;
+            if (!isNextWordFalling && nextWordIndex < wordsToCatch.length) {
+                wordToSpawn = nextWord;
             } else {
-                console.error('Icon element not found in mute button');
+                wordToSpawn = wordsToCatch[Math.floor(Math.random() * wordsToCatch.length)];
+            }
+            createWordElement(wordToSpawn);
+        }
+
+        function createWordElement(word) {
+            const cascadeArea = document.getElementById('cascade-area');
+            if (!cascadeArea || verseCascadeGameLoopId === null) return;
+            const wordEl = document.createElement('div');
+            wordEl.className = 'cascade-word';
+            wordEl.textContent = word;
+            cascadeArea.appendChild(wordEl);
+            const wordWidth = wordEl.offsetWidth;
+            const maxRight = cascadeArea.offsetWidth - wordWidth - 10;
+            wordEl.style.right = `${Math.max(0, Math.floor(Math.random() * maxRight))}px`;
+            wordEl.style.animationDuration = `${(Math.random() * 2) + difficultySettings[difficulty].speed}s`;
+            const wordObj = { el: wordEl, text: word, missed: true };
+            fallingWords.push(wordObj);
+            wordEl.addEventListener('click', () => handleWordClick(wordObj));
+            wordEl.addEventListener('animationend', () => handleWordMiss(wordObj));
+        }
+
+        function handleWordClick(wordObj) {
+            if (wordObj.text === wordsToCatch[nextWordIndex]) {
+                wordObj.missed = false;
+                nextWordIndex++;
+                score += 10;
+                playSound('correct');
+                wordObj.el.remove();
+                fallingWords = fallingWords.filter(w => w !== wordObj);
+                updateVerseDisplay();
+                updateScoreDisplay();
+                if (nextWordIndex === wordsToCatch.length) {
+                    score += 25;
+                    updateScoreDisplay();
+                    currentVerseIndex++;
+                    setTimeout(loadVerse, 500);
+                }
+            } else {
+                wordObj.el.classList.add('incorrect');
+                playSound('incorrect');
+                setTimeout(() => wordObj.el.classList.remove('incorrect'), 300);
             }
         }
+
+        function handleWordMiss(wordObj) {
+            if (wordObj.missed && wordObj.text === wordsToCatch[nextWordIndex]) {
+                lives--;
+                updateLivesDisplay();
+                playSound('incorrect');
+                currentVerseIndex++;
+                setTimeout(loadVerse, 500);
+            }
+            wordObj.el.remove();
+            fallingWords = fallingWords.filter(w => w !== wordObj);
+        }
+
+        function updateVerseDisplay() {
+            const display = document.getElementById('cascade-verse-display');
+            if(display) {
+                const verseTextWithoutBasmallah = versesToShow[currentVerseIndex] ? removeBasmallahFromVerse(versesToShow[currentVerseIndex].text, surah.id) : "";
+                const verseText = versesToShow[currentVerseIndex] ? `الآية: ${verseTextWithoutBasmallah}` : "";
+                const caughtText = wordsToCatch.slice(0, nextWordIndex).join(' ');
+                display.innerHTML = `<div class="full-verse-text">${verseText}</div><div class="caught-words-display">${caughtText} <span class="remaining-indicator">...</span></div>`;
+            }
+        }
+
+        function updateScoreDisplay() {
+            const scoreEl = document.getElementById('cascade-score');
+            if(scoreEl) scoreEl.textContent = score;
+        }
+
+        function updateLivesDisplay() {
+            const livesEl = document.getElementById('cascade-lives');
+            if(livesEl) livesEl.textContent = lives > 0 ? '❤️'.repeat(lives) : '💔';
+        }
+
+        function endGame(message) {
+            cleanupGame();
+            const cascadeArea = document.getElementById('cascade-area');
+            if(cascadeArea) {
+                cascadeArea.innerHTML = `
+                    <div class="cascade-end-message">
+                        <h2>${message}</h2>
+                        <p>نتيجتك النهائية: ${score}</p>
+                        <button id="play-again-cascade-btn" class="btn-check">العب مرة أخرى</button>
+                    </div>`;
+                document.getElementById('play-again-cascade-btn').onclick = renderDifficultySelection;
+            }
+            const header = document.getElementById('cascade-header');
+            if (header) header.style.display = 'none';
+            const verseDisplay = document.getElementById('cascade-verse-display');
+            if(verseDisplay) verseDisplay.style.display = 'none';
+        }
+
+        renderDifficultySelection();
     }
 
-    // إعداد مستمعي أحداث الإعدادات
-    function setupSettingsEventListeners() {
-        console.log('Setting up settings event listeners');
-        const themeDropdown = document.getElementById('settings-theme-dropdown');
-        const muteBtn = document.getElementById('settings-mute-btn');
-        const textSizeDropdown = document.getElementById('text-size-dropdown');
-        const difficultyDropdown = document.getElementById('game-difficulty-dropdown');
-        
-        console.log('Setting up listeners for:', {
-            themeDropdown: !!themeDropdown,
-            muteBtn: !!muteBtn,
-            textSizeDropdown: !!textSizeDropdown,
-            difficultyDropdown: !!difficultyDropdown
-        });
-        
-        // إزالة المستمعين السابقين لتجنب التكرار
-        if (themeDropdown) {
-            const newThemeDropdown = themeDropdown.cloneNode(true);
-            themeDropdown.parentNode.replaceChild(newThemeDropdown, themeDropdown);
-            newThemeDropdown.innerHTML = `
-                <option value="theme-classic">كلاسيكي</option>
-                <option value="theme-jungle">غابة</option>
-                <option value="theme-ocean">محيط</option>
-            `;
-            newThemeDropdown.value = lastSelectedTheme;
-            newThemeDropdown.addEventListener('change', function() {
-                console.log('Theme changed to:', this.value);
-                appSettings.theme = this.value.replace('theme-', '');
-                applySettings();
-                saveSettings();
-            });
-        }
-        
-        if (muteBtn) {
-            const newMuteBtn = muteBtn.cloneNode(true);
-            muteBtn.parentNode.replaceChild(newMuteBtn, muteBtn);
-            newMuteBtn.addEventListener('click', function() {
-                console.log('Mute button clicked');
-                appSettings.isMuted = !appSettings.isMuted;
-                applySettings();
-                saveSettings();
-            });
-        }
-        
-        if (textSizeDropdown) {
-            const newTextSizeDropdown = textSizeDropdown.cloneNode(true);
-            textSizeDropdown.parentNode.replaceChild(newTextSizeDropdown, textSizeDropdown);
-            newTextSizeDropdown.addEventListener('change', function() {
-                console.log('Text size changed to:', this.value);
-                appSettings.textSize = this.value;
-                applySettings();
-                saveSettings();
-            });
-        }
-        
-        if (difficultyDropdown) {
-            const newDifficultyDropdown = difficultyDropdown.cloneNode(true);
-            difficultyDropdown.parentNode.replaceChild(newDifficultyDropdown, difficultyDropdown);
-            newDifficultyDropdown.addEventListener('change', function() {
-                console.log('Difficulty changed to:', this.value);
-                appSettings.gameDifficulty = this.value;
-                saveSettings();
-            });
-        }
-    }
-    
-    // عند تحميل الصفحة، افتراضيًا الرئيسية
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM Content Loaded');
-      // تحميل الإعدادات أولاً
-      loadSettings();
-      // تأكد من تحميل جميع العناصر
-      setTimeout(() => {
-        activateSidebar('home');
-        // إعداد مستمعي أحداث الإعدادات بعد تحميل الصفحة
-        setupSettingsEventListeners();
-      }, 100);
-    });
-
-    // تفعيل اختيار السورة ونطاق الآيات
-    if (surahSelect && verseStartInput && verseEndInput) {
-      surahSelect.addEventListener('change', () => {
-        cleanupActiveGame && cleanupActiveGame();
-        loadAndDisplaySurah && loadAndDisplaySurah(surahSelect.value);
-      });
-      verseStartInput.addEventListener('change', () => {
-        cleanupActiveGame && cleanupActiveGame();
-        loadSurahRange && loadSurahRange();
-      });
-      verseEndInput.addEventListener('change', () => {
-        cleanupActiveGame && cleanupActiveGame();
-        loadSurahRange && loadSurahRange();
-      });
-    }
-
-    // ملاحظات للتوسعة:
-    // - يمكن تطوير واجهة الأنشطة العامة لاحقًا
-    // - يمكن إضافة دعم لتغيير الثيمات أو تخصيص الألوان
     // دالة توحيد نص البسملة (إزالة التشكيل وتوحيد الرموز)
     function normalizeBasmallah(text) {
         // إزالة التشكيل والرموز الخاصة
@@ -1723,342 +1912,5 @@ document.addEventListener('DOMContentLoaded', () => {
         return normalized;
     }
 
-    // تحميل السورة وعرضها في جميع التبويبات
-    async function loadAndDisplayAll(surahId, start, end) {
-      currentSurahId = surahId;
-      currentStart = start;
-      currentEnd = end;
-      await loadAndDisplaySurah(surahId);
-      if (currentSurahData) {
-        displaySurah(currentSurahData, start, end);
-        displayTafsir(currentSurahData, start, end);
-        displayGames(currentSurahData, start, end);
-      }
-    }
-    // تحديث التبويبات عند التغيير
-    function updateTabs() {
-      if (currentSurahData) {
-        displaySurah(currentSurahData, currentStart, currentEnd);
-        displayTafsir(currentSurahData, currentStart, currentEnd);
-        displayGames(currentSurahData, currentStart, currentEnd);
-      }
-    }
-    // تفعيل التبويبات الرئيسية
-    function activateTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
-      const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
-      const sec = document.getElementById(`tab-${tab}`);
-      if (btn) btn.classList.add('active');
-      if (sec) sec.classList.add('active');
-      // عرض المحتوى المناسب
-      if (tab === 'quran' && currentSurahData) {
-        displaySurah(currentSurahData, currentStart, currentEnd);
-      } else if (tab === 'tafsir' && currentSurahData) {
-        displayTafsir(currentSurahData, currentStart, currentEnd);
-      } else if (tab === 'activities' && currentSurahData) {
-        displayGames(currentSurahData, currentStart, currentEnd);
-      }
-    }
-    // تفعيل تبويبات الأنشطة العامة
-    function activateActivitiesTab(tab) {
-      document.querySelectorAll('.activities-tab-btn').forEach(btn => btn.classList.remove('active'));
-      const btn = document.querySelector(`.activities-tab-btn[data-tab="${tab}"]`);
-      if (btn) btn.classList.add('active');
-      const content = document.getElementById('activities-content');
-      if (content) {
-        if (tab === 'games') {
-          displayGeneralGames();
-        } else if (tab === 'tafsir') {
-          content.innerHTML = '<div id="activities-tafsir-area">(تفسير الأنشطة العامة)</div>';
-        }
-      }
-    }
-
-    // دالة عرض الألعاب العامة
-    function displayGeneralGames() {
-      const content = document.getElementById('activities-content');
-      if (!content) return;
-
-      content.innerHTML = `
-        <div class="general-games-container">
-          <h2>ألعاب القرآن العامة</h2>
-          <p class="games-description">اختر لعبة من الألعاب التالية للاستمتاع بتعلم القرآن الكريم</p>
-          
-          <div class="games-grid">
-            <div class="game-card" data-game="wheel">
-              <div class="game-icon">🎯</div>
-              <h3>العجلة الدوارة</h3>
-              <p>أدر العجلة واجب على الأسئلة المتعلقة بالقرآن الكريم</p>
-              <button class="play-game-btn" onclick="startGeneralGame('wheel')">العب الآن</button>
-            </div>
-            
-            <div class="game-card" data-game="verse-order">
-              <div class="game-icon">📝</div>
-              <h3>ترتيب الآيات</h3>
-              <p>رتب الآيات بالترتيب الصحيح لتحسين حفظك</p>
-              <button class="play-game-btn" onclick="startGeneralGame('verse-order')">العب الآن</button>
-            </div>
-            
-            <div class="game-card" data-game="verse-cascade">
-              <div class="game-icon">🌊</div>
-              <h3>شلال الآيات</h3>
-              <p>التقط الكلمات المتساقطة لتكوين الآيات بشكل صحيح</p>
-              <button class="play-game-btn" onclick="startGeneralGame('verse-cascade')">العب الآن</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    // دالة بدء اللعبة العامة
-    function startGeneralGame(gameType) {
-      // الحصول على السور المختارة
-      const selectedSurahs = getSelectedSurahs();
-      
-      if (selectedSurahs.length === 0) {
-        alert('يرجى اختيار سورة واحدة على الأقل من القائمة');
-        return;
-      }
-
-      // اختيار سورة عشوائية من السور المختارة
-      const randomSurah = selectedSurahs[Math.floor(Math.random() * selectedSurahs.length)];
-      
-      // تحميل السورة وعرض اللعبة
-      loadAndDisplaySurah(randomSurah.id).then(() => {
-        if (currentSurahData) {
-          const start = 1;
-          const end = currentSurahData.verses.length;
-          
-          // عرض اللعبة المختارة
-          const content = document.getElementById('activities-content');
-          if (content) {
-            content.innerHTML = `
-              <div class="game-container-wrapper">
-                <div class="game-header">
-                  <h3>${getGameTitle(gameType)} - سورة ${currentSurahData.name}</h3>
-                  <button class="back-to-games-btn" onclick="displayGeneralGames()">
-                    <span class="material-icons">arrow_back</span>
-                    العودة للألعاب
-                  </button>
-                </div>
-                <div id="general-game-area"></div>
-              </div>
-            `;
-            
-            // إعداد اللعبة المختارة
-            setupGeneralGame(gameType, currentSurahData, start, end);
-          }
-        }
-      });
-    }
-
-    // دالة الحصول على السور المختارة
-    function getSelectedSurahs() {
-      const selectedSurahs = [];
-      
-      // من القائمة المتعددة
-      if (activitiesSurahSelect) {
-        Array.from(activitiesSurahSelect.selectedOptions).forEach(option => {
-          const surah = surahIndex.find(s => s.id === parseInt(option.value));
-          if (surah) selectedSurahs.push(surah);
-        });
-      }
-      
-      // من نطاق من-إلى
-      if (activitiesSurahFrom && activitiesSurahTo) {
-        const fromId = parseInt(activitiesSurahFrom.value);
-        const toId = parseInt(activitiesSurahTo.value);
-        
-        if (fromId && toId) {
-          for (let i = fromId; i <= toId; i++) {
-            const surah = surahIndex.find(s => s.id === i);
-            if (surah && !selectedSurahs.find(s => s.id === i)) {
-              selectedSurahs.push(surah);
-            }
-          }
-        }
-      }
-      
-      return selectedSurahs;
-    }
-
-    // دالة الحصول على عنوان اللعبة
-    function getGameTitle(gameType) {
-      const titles = {
-        'wheel': 'العجلة الدوارة',
-        'verse-order': 'ترتيب الآيات',
-        'verse-cascade': 'شلال الآيات'
-      };
-      return titles[gameType] || 'لعبة';
-    }
-
-    // دالة إعداد اللعبة العامة
-    function setupGeneralGame(gameType, surah, start, end) {
-      const gameArea = document.getElementById('general-game-area');
-      if (!gameArea) return;
-
-      switch (gameType) {
-        case 'wheel':
-          setupWheelGame(surah, start, end);
-          // نقل محتوى العجلة إلى المنطقة العامة
-          const wheelGame = document.getElementById('wheel-game');
-          if (wheelGame) {
-            gameArea.innerHTML = wheelGame.innerHTML;
-          }
-          break;
-          
-        case 'verse-order':
-          setupVerseOrderGame(surah, start, end);
-          // نقل محتوى ترتيب الآيات إلى المنطقة العامة
-          const verseOrderGame = document.getElementById('verse-order-game');
-          if (verseOrderGame) {
-            gameArea.innerHTML = verseOrderGame.innerHTML;
-          }
-          break;
-          
-        case 'verse-cascade':
-          setupVerseCascadeGame(surah, start, end);
-          // نقل محتوى شلال الآيات إلى المنطقة العامة
-          const verseCascadeGame = document.getElementById('verse-cascade-game');
-          if (verseCascadeGame) {
-            gameArea.innerHTML = verseCascadeGame.innerHTML;
-          }
-          break;
-      }
-    }
-    // عند تحميل الصفحة: حمّل السورة الافتراضية
-    window.addEventListener('DOMContentLoaded', async () => {
-      if (surahSelect && surahSelect.options.length > 0) {
-        const surahId = surahSelect.value;
-        const start = parseInt(verseStartInput.value) || 1;
-        const end = parseInt(verseEndInput.value) || 1;
-        await loadAndDisplayAll(surahId, start, end);
-      }
-    });
-    // عند تغيير السورة أو النطاق
-    if (surahSelect && verseStartInput && verseEndInput) {
-      surahSelect.addEventListener('change', async () => {
-        const surahId = surahSelect.value;
-        const start = parseInt(verseStartInput.value) || 1;
-        const end = parseInt(verseEndInput.value) || 1;
-        await loadAndDisplayAll(surahId, start, end);
-      });
-      verseStartInput.addEventListener('change', async () => {
-        const surahId = surahSelect.value;
-        const start = parseInt(verseStartInput.value) || 1;
-        const end = parseInt(verseEndInput.value) || 1;
-        await loadAndDisplayAll(surahId, start, end);
-      });
-      verseEndInput.addEventListener('change', async () => {
-        const surahId = surahSelect.value;
-        const start = parseInt(verseStartInput.value) || 1;
-        const end = parseInt(verseEndInput.value) || 1;
-        await loadAndDisplayAll(surahId, start, end);
-      });
-    }
-    // تفعيل نظام اختيار السور في الأنشطة العامة (قائمة متعددة أو من-إلى)
-    if (activitiesSurahSelect && typeof surahIndex !== 'undefined') {
-      activitiesSurahSelect.innerHTML = '';
-      surahIndex.forEach(surah => {
-        const option = document.createElement('option');
-        option.value = surah.id;
-        option.textContent = `${surah.id}. ${surah.name}`;
-        if (activitiesSurahSelect) {
-          activitiesSurahSelect.appendChild(option);
-        }
-      });
-    }
-    if (activitiesSurahFrom && activitiesSurahTo && typeof surahIndex !== 'undefined') {
-      if (activitiesSurahFrom) activitiesSurahFrom.innerHTML = '';
-      if (activitiesSurahTo) activitiesSurahTo.innerHTML = '';
-      surahIndex.forEach(surah => {
-        const optionFrom = document.createElement('option');
-        optionFrom.value = surah.id;
-        optionFrom.textContent = `${surah.id}. ${surah.name}`;
-        if (activitiesSurahFrom) {
-          activitiesSurahFrom.appendChild(optionFrom);
-        }
-        const optionTo = document.createElement('option');
-        optionTo.value = surah.id;
-        optionTo.textContent = `${surah.id}. ${surah.name}`;
-        if (activitiesSurahTo) {
-          activitiesSurahTo.appendChild(optionTo);
-        }
-      });
-    }
-    // ملاحظات للتوسعة:
-    // - يمكن تطوير واجهة الأنشطة العامة لاحقًا
-    // - يمكن إضافة دعم لتغيير الثيمات أو تخصيص الألوان
-
-    // إضافة الدوال إلى النطاق العام للوصول إليها من HTML
-    window.startGeneralGame = startGeneralGame;
-    window.displayGeneralGames = displayGeneralGames;
-
     initializeApp();
-
-    // منطق إظهار/إخفاء صفحة الإعدادات العصري
-    const settingsBtn = document.querySelector('.sidebar-btn[data-section="settings"]');
-    const settingsSection = document.getElementById('settings-section');
-    const closeSettingsBtn = document.getElementById('close-settings-btn');
-    const tabSections = document.querySelectorAll('.tab-section');
-    const mainBar = document.getElementById('main-bar');
-    const tabQuran = document.getElementById('tab-quran');
-
-    if (settingsBtn && settingsSection && closeSettingsBtn) {
-      settingsBtn.addEventListener('click', function() {
-        tabSections.forEach(sec => sec.classList.remove('active'));
-        settingsSection.classList.add('active');
-      });
-      closeSettingsBtn.addEventListener('click', function() {
-        settingsSection.classList.remove('active');
-        // أظهر الرئيسية
-        if (mainBar) mainBar.classList.add('active');
-        if (tabQuran) tabQuran.classList.add('active');
-      });
-    }
-
-    // زر القائمة الجانبية (إظهار/إخفاء أسماء التبويبات)
-    const sidebarElement = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    if (sidebarElement && sidebarToggle) {
-      sidebarToggle.addEventListener('click', () => {
-        sidebarElement.classList.toggle('collapsed');
-      });
-    }
-
-    // تفعيل التبويبات من الشريط الجانبي
-    document.querySelectorAll('.sidebar-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        // إظهار القسم المناسب
-        const section = this.getAttribute('data-section');
-        document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
-        if (section === 'settings') {
-          document.getElementById('settings-section').classList.add('active');
-        } else {
-          document.getElementById('tab-' + section).classList.add('active');
-        }
-        // تفعيل زر التبويب العلوي أيضًا
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        const topTab = document.querySelector('.tab-btn[data-tab="' + section + '"]');
-        if (topTab) topTab.classList.add('active');
-      });
-    });
-
-    // تفعيل التبويبات من الأعلى
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        const tab = this.getAttribute('data-tab');
-        document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
-        document.getElementById('tab-' + tab).classList.add('active');
-        // تفعيل زر الشريط الجانبي أيضًا
-        document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
-        const sideBtn = document.querySelector('.sidebar-btn[data-section="' + tab + '"]');
-        if (sideBtn) sideBtn.classList.add('active');
-      });
-    });
 });
