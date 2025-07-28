@@ -810,12 +810,11 @@ select:focus, input[type="number"]:focus {
 
 .dark-mode .spin-button:disabled {
     background-color: #555;
-}
-    color: var(--text-color); /* Ensure icon color is visible */
-    box-shadow: none; /* Removed box-shadow */
+    color: var(--text-color); /* تأكد من وضوح لون الأيقونة */
+    box-shadow: none; /* إزالة الظل */
 }
 .back-to-games-btn .material-icons {
-    font-size: 24px; /* Larger arrow icon */
+    font-size: 24px; /* تكبير أيقونة السهم */
 }
 .back-to-games-btn:hover { background-color: rgba(142, 68, 173, 0.2); /* Slightly darker on hover */ }
 
