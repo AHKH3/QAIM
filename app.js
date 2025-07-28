@@ -1349,12 +1349,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalOverlay.className = 'game-modal-overlay';
                 modalOverlay.innerHTML = `
                     <div class="game-modal-content">
-                        <button class="game-modal-close-btn"><span class="material-icons">close</span></button>
-                        <h2 id="modal-question-title"></h2>
-                        <p id="modal-question-text" class="question-text"></p>
-                        <div id="modal-options-container" class="question-options-container"></div>
-                        <p id="modal-feedback" class="feedback-message"></p>
-                        <div id="modal-action-buttons" class="action-buttons"></div>
+                        <div class="game-modal-header">
+                            <h2 id="modal-question-title"></h2>
+                            <button class="game-modal-close-btn"><span class="material-icons">close</span></button>
+                        </div>
+                        <div class="game-modal-body">
+                            <p id="modal-question-text" class="question-text"></p>
+                            <div id="modal-options-container" class="question-options-container"></div>
+                            <p id="modal-feedback" class="feedback-message"></p>
+                            <div id="modal-action-buttons" class="action-buttons"></div>
+                        </div>
                     </div>
                 `;
                 document.body.appendChild(modalOverlay);
@@ -1719,13 +1723,12 @@ document.addEventListener('DOMContentLoaded', () => {
             playSound('click');
             const userOrder = Array.from(verseArea.children).map(child => child.textContent);
             const feedbackDiv = document.getElementById('verse-order-feedback');
-            let isCorrect = true;
-            for (let i = 0; i < correctOrder.length; i++) {
-                if (userOrder[i] !== correctOrder[i]) {
-                    isCorrect = false;
-                    break;
-                }
-            }
+            
+            // Create a sorted version of the correct order to compare against
+            const sortedCorrectOrder = [...correctOrder].sort();
+            const sortedUserOrder = [...userOrder].sort();
+
+            let isCorrect = JSON.stringify(sortedCorrectOrder) === JSON.stringify(sortedUserOrder);
 
             if (isCorrect) {
                 feedbackDiv.textContent = 'أحسنت! الترتيب صحيح.';
