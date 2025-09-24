@@ -1125,7 +1125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Question Types (can be customized)
         const questionTypes = [
-            { id: 'next_ayah', text: 'الآية التالية' },
+            { id: 'related_ayah', text: 'الآية التالية أو السابقة' },
             { id: 'arrange', text: 'رتّب الآيات' },
             { id: 'identify_surah', text: 'ما هي السورة؟' },
             { id: 'complete', text: 'أكمل الآية' },
@@ -1318,15 +1318,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     const otherWords = allVerses.flatMap(v => removeBasmallahFromVerse(v.text, v.surahId).split(' ')).filter(w => w !== answerWord && w.length > 2 && !w.includes('______')).sort(() => 0.5 - Math.random()).slice(0, 2);
                     return { id: `complete_${surah.name}_${verseToComplete.id}`, type, surah, question: questionText, options: [answerWord, ...otherWords].sort(() => 0.5 - Math.random()), answer: answerWord };
                 }
-                case 'next_ayah': {
-                    if (surahVerses.length < 2) return null;
-                    const verseIndex = Math.floor(Math.random() * (surahVerses.length - 1));
+                case 'related_ayah': {
+                    if (surahVerses.length < 3) return null;
+
+                    const isNext = Math.random() > 0.5;
+                    const verseIndex = isNext
+                        ? Math.floor(Math.random() * (surahVerses.length - 1))
+                        : Math.floor(Math.random() * (surahVerses.length - 1)) + 1;
+
                     const currentVerse = surahVerses[verseIndex];
-                    const nextVerse = surahVerses[verseIndex + 1];
-                    const currentVerseTextWithoutBasmallah = removeBasmallahFromVerse(currentVerse.text, surah.id);
-                    const nextVerseTextWithoutBasmallah = removeBasmallahFromVerse(nextVerse.text, surah.id);
-                    const otherVerses = allVerses.filter(v => v.text !== nextVerse.text && v.text !== currentVerse.text).map(v => removeBasmallahFromVerse(v.text, v.surahId)).sort(() => 0.5 - Math.random()).slice(0, 2);
-                    return { id: `next_${surah.name}_${currentVerse.id}`, type, surah, question: `ما هي الآية التي تلي: "${currentVerseTextWithoutBasmallah}"؟`, options: [nextVerseTextWithoutBasmallah, ...otherVerses].sort(() => 0.5 - Math.random()), answer: nextVerseTextWithoutBasmallah };
+                    const relatedVerse = isNext ? surahVerses[verseIndex + 1] : surahVerses[verseIndex - 1];
+
+                    const currentVerseText = removeBasmallahFromVerse(currentVerse.text, surah.id);
+                    const relatedVerseText = removeBasmallahFromVerse(relatedVerse.text, surah.id);
+
+                    const questionText = isNext
+                        ? `ما هي الآية التي تلي: "${currentVerseText}"؟`
+                        : `ما هي الآية التي تسبق: "${currentVerseText}"؟`;
+
+                    const otherVerses = surahVerses.filter(v => v.id !== currentVerse.id && v.id !== relatedVerse.id)
+                                                    .sort((a, b) => Math.abs(a.id - currentVerse.id) - Math.abs(b.id - currentVerse.id))
+                                                    .slice(0, 2)
+                                                    .map(v => removeBasmallahFromVerse(v.text, v.surahId));
+
+                    return { id: `related_${surah.name}_${currentVerse.id}`, type, surah, question: questionText, options: [relatedVerseText, ...otherVerses].sort(() => 0.5 - Math.random()), answer: relatedVerseText };
                 }
                 case 'arrange': {
                     if (surahVerses.length < 3) return null;
@@ -1725,7 +1740,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const userOrder = Array.from(verseArea.children).map(child => child.textContent);
             const feedbackDiv = document.getElementById('verse-order-feedback');
             
-            // Directly compare the user's order with the correct order.
             const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correctOrder);
 
             if (isCorrect) {
