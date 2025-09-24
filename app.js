@@ -1332,8 +1332,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (surahVerses.length < 3) return null;
                     const start = Math.floor(Math.random() * (surahVerses.length - 2));
                     const versesToArrange = surahVerses.slice(start, start + 3);
-                    const versesToArrangeWithoutBasmallah = versesToArrange.map(v => removeBasmallahFromVerse(v.text, surah.id));
-                    return { id: `arrange_${surah.name}_${versesToArrange[0].id}`, type, surah, question: `رتّب الآيات التالية من سورة ${surah.name}`, options: versesToArrangeWithoutBasmallah.sort(() => 0.5 - Math.random()), answer: versesToArrangeWithoutBasmallah };
+                    const answer = versesToArrange.map(v => removeBasmallahFromVerse(v.text, surah.id));
+                    const options = [...answer].sort(() => 0.5 - Math.random());
+                    return { id: `arrange_${surah.name}_${versesToArrange[0].id}`, type, surah, question: `رتّب الآيات التالية من سورة ${surah.name}`, options: options, answer: answer };
                 }
             }
             return null;
@@ -1724,11 +1725,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const userOrder = Array.from(verseArea.children).map(child => child.textContent);
             const feedbackDiv = document.getElementById('verse-order-feedback');
             
-            // Create a sorted version of the correct order to compare against
-            const sortedCorrectOrder = [...correctOrder].sort();
-            const sortedUserOrder = [...userOrder].sort();
-
-            let isCorrect = JSON.stringify(sortedCorrectOrder) === JSON.stringify(sortedUserOrder);
+            // Directly compare the user's order with the correct order.
+            const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correctOrder);
 
             if (isCorrect) {
                 feedbackDiv.textContent = 'أحسنت! الترتيب صحيح.';
