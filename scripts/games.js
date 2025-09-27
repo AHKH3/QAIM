@@ -366,14 +366,15 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
     const container = document.getElementById('general-wheel-game');
     const gameContentArea = container.querySelector('.game-content-area');
     if (!gameContentArea) return;
+
     const wheelColorPalettes = [
         { light: ['#FFD700', '#4CAF50', '#2196F3', '#9C27B0'], dark: ['#B8860B', '#388E3C', '#1976D2', '#7B1FA2'] },
         { light: ['#FF5722', '#00BCD4', '#8BC34A', '#E91E63'], dark: ['#D84315', '#00838F', '#689F38', '#C2185B'] },
     ];
-    let currentPalette = null;
+
     function applyRandomWheelColors() {
         const randomIndex = Math.floor(Math.random() * wheelColorPalettes.length);
-        currentPalette = wheelColorPalettes[randomIndex];
+        const currentPalette = wheelColorPalettes[randomIndex];
         const root = document.documentElement;
         const isDarkMode = document.body.classList.contains('dark-mode');
         const colors = isDarkMode ? currentPalette.dark : currentPalette.light;
@@ -382,31 +383,51 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
         root.style.setProperty('--wheel-segment-3', colors[2]);
         root.style.setProperty('--wheel-segment-4', colors[3]);
     }
+
     applyRandomWheelColors();
+
     container.style.setProperty('--game-primary-color', 'var(--wheel-primary)');
     container.style.setProperty('--game-secondary-color', 'var(--wheel-secondary)');
-    let score = 0;
-    let isSpinning = false;
-    let rotation = 0;
-    let usedQuestionIdentifiers = new Set();
-    const questionTypes = [ { id: 'related_ayah', text: 'الآية التالية أو السابقة' }, { id: 'arrange', text: 'رتّب الآيات' }, { id: 'identify_surah', text: 'ما هي السورة؟' }, { id: 'complete', text: 'أكمل الآية' }];
+
+    let score = 0, isSpinning = false, rotation = 0, usedQuestionIdentifiers = new Set();
+    const questionTypes = [
+        { id: 'related_ayah', text: 'الآية التالية أو السابقة' },
+        { id: 'arrange', text: 'رتّب الآيات' },
+        { id: 'identify_surah', text: 'ما هي السورة؟' },
+        { id: 'complete', text: 'أكمل الآية' },
+    ];
     const allVerses = surahData.verses;
     const surahIndex = surahData.surahIndex;
+
     if (allVerses.length < 10) {
-        gameContentArea.innerHTML = '<p style="color:#c00">لا توجد آيات كافية لهذه اللعبة في النطاق المحدد. يرجى اختيار نطاق أوسع.</p>';
+        gameContentArea.innerHTML = '<p>لا توجد آيات كافية لهذه اللعبة في النطاق المحدد.</p>';
         return;
     }
+
     gameContentArea.innerHTML = `
-        <h1 class="wheel-game-title">عجلة الحظ القرآنية</h1><p class="wheel-game-subtitle">راجع حفظك من سورة ${surahIndex.find(s => s.id === startSurahId)?.name || 'البداية'} إلى سورة ${surahIndex.find(s => s.id === endSurahId)?.name || 'النهاية'}</p>
+        <h1 class="wheel-game-title">عجلة الحظ القرآنية</h1>
+        <p class="wheel-game-subtitle">راجع حفظك من سورة ${surahIndex.find(s => s.id === startSurahId)?.name} إلى سورة ${surahIndex.find(s => s.id === endSurahId)?.name}</p>
         <div id="score-container" class="wheel-game-score-container">النقاط: <span id="score">0</span></div>
-        <div class="wheel-container"><div class="pointer"></div><div id="wheel" class="wheel"><div class="wheel-text-container"><div class="wheel-text text-1">${questionTypes[0].text}</div><div class="wheel-text text-2">${questionTypes[1].text}</div><div class="wheel-text text-3">${questionTypes[2].text}</div><div class="wheel-text text-4">${questionTypes[3].text}</div></div></div><button id="spin-button" class="spin-button">أدر</button></div>
-        <button id="reset-button" class="wheel-game-reset-button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg><span>إعادة اللعب</span></button>`;
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div id="wheel" class="wheel">
+                <div class="wheel-text-container">
+                    ${questionTypes.map((type, i) => `<div class="wheel-text text-${i+1}">${type.text}</div>`).join('')}
+                </div>
+            </div>
+            <button id="spin-button" class="spin-button">أدر</button>
+        </div>
+        <button id="reset-button" class="wheel-game-reset-button"><span>إعادة اللعب</span></button>
+    `;
+
     const wheelElement = gameContentArea.querySelector('#wheel');
     const spinButton = gameContentArea.querySelector('#spin-button');
     const resetButton = gameContentArea.querySelector('#reset-button');
     const scoreElement = gameContentArea.querySelector('#score');
+
     spinButton.addEventListener('click', spinWheel);
     resetButton.addEventListener('click', resetGame);
+
     function spinWheel() {
         if (isSpinning) return;
         isSpinning = true;
@@ -416,12 +437,14 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
         wheelElement.style.transform = `rotate(${rotation}deg)`;
         wheelElement.addEventListener('transitionend', handleSpinEnd, { once: true });
     }
+
     function handleSpinEnd() {
         playSound('spin_stop');
         const actualRotation = rotation % 360;
         const segmentIndex = Math.floor(actualRotation / 90);
         presentNewQuestion(questionTypes[segmentIndex].id);
     }
+
     function resetGame() {
         score = 0;
         scoreElement.textContent = score;
@@ -434,32 +457,7 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
         applyRandomWheelColors();
         setTimeout(() => { wheelElement.style.transition = 'transform 7s cubic-bezier(0.25, 1, 0.5, 1)'; }, 50);
     }
-    function presentNewQuestion(type) {
-        let question = null;
-        let attempts = 0;
-        const maxAttempts = 50;
-        while (attempts < maxAttempts) {
-            const generatedQuestion = generateQuestion(type);
-            if (!generatedQuestion) { attempts++; continue; }
-            if (!usedQuestionIdentifiers.has(generatedQuestion.id)) { question = generatedQuestion; break; }
-            attempts++;
-        }
-        if (!question) {
-            const modalOverlay = document.getElementById('game-modal-overlay');
-            if (modalOverlay) {
-                modalOverlay.querySelector('.game-modal-content').innerHTML = `<h2>لقد أجبت على جميع الأسئلة المتاحة!</h2><p>سيتم إعادة تعيين الأسئلة لتبدأ من جديد.</p><button class="action-button" id="modal-ok-btn">موافق</button>`;
-                modalOverlay.classList.add('active');
-                document.getElementById('modal-ok-btn').onclick = () => {
-                    modalOverlay.classList.remove('active');
-                    usedQuestionIdentifiers.clear();
-                    question = generateQuestion(type);
-                    if (question) { usedQuestionIdentifiers.add(question.id); displayQuestion(question); }
-                };
-            }
-            return;
-        }
-        if (question) { usedQuestionIdentifiers.add(question.id); displayQuestion(question); }
-    }
+
     function generateQuestion(type) {
         const uniqueSurahIds = [...new Set(allVerses.map(v => v.surahId))];
         if (uniqueSurahIds.length === 0) return null;
@@ -505,6 +503,33 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
         }
         return null;
     }
+
+    function presentNewQuestion(type) {
+        let question = null;
+        let attempts = 0;
+        const maxAttempts = 50;
+        while (attempts < maxAttempts) {
+            const generatedQuestion = generateQuestion(type);
+            if (!generatedQuestion) { attempts++; continue; }
+            if (!usedQuestionIdentifiers.has(generatedQuestion.id)) { question = generatedQuestion; break; }
+            attempts++;
+        }
+        if (!question) {
+            // Fallback logic if no unique question can be generated
+            console.warn("Could not generate a unique question. Resetting used questions.");
+            usedQuestionIdentifiers.clear();
+            question = generateQuestion(type);
+        }
+        if (question) {
+            usedQuestionIdentifiers.add(question.id);
+            displayQuestion(question);
+        } else {
+            console.error("Failed to generate any question.");
+            isSpinning = false;
+            spinButton.disabled = false;
+        }
+    }
+
     function displayQuestion(question) {
         let modalOverlay = document.getElementById('game-modal-overlay');
         if (!modalOverlay) {
@@ -533,6 +558,7 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
         }
         modalOverlay.classList.add('active');
     }
+
     function hideQuestionModal() {
         const modalOverlay = document.getElementById('game-modal-overlay');
         if (modalOverlay) {
@@ -541,6 +567,7 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
             spinButton.disabled = false;
         }
     }
+
     function setupChoiceQuestion(question, optionsEl, actionsEl, feedbackEl) {
         question.options.forEach(option => {
             const button = document.createElement('button');
@@ -550,6 +577,7 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
             optionsEl.appendChild(button);
         });
     }
+
     function setupArrangeQuestion(question, optionsEl, actionsEl, feedbackEl) {
         const draggablesContainer = document.createElement('div');
         draggablesContainer.className = 'draggables-container';
@@ -571,6 +599,7 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
         checkButton.onclick = () => checkArrangeAnswer(question, optionsEl, actionsEl, feedbackEl);
         actionsEl.appendChild(checkButton);
     }
+
     function checkAnswer(isCorrect, element, question, optionsEl, actionsEl, feedbackEl) {
         optionsEl.querySelectorAll('button, .draggable').forEach(opt => {
             if(opt.tagName === 'BUTTON') opt.disabled = true;
@@ -600,6 +629,7 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
             actionsEl.appendChild(continueBtn);
         }
     }
+
     function checkArrangeAnswer(question, optionsEl, actionsEl, feedbackEl) {
         const draggablesContainer = optionsEl.querySelector('#draggables-container-arrange');
         const arrangedItems = Array.from(draggablesContainer.children).map(child => child.textContent);
