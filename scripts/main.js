@@ -6,6 +6,7 @@ import { displayGames, displayGeneralGames, showGameGrid, showGeneralGameGrid, c
 document.addEventListener('DOMContentLoaded', () => {
     let currentSurahData = null;
     let surahIndex = [];
+    const surahCache = {}; // Cache to store loaded surah data
 
     // DOM Elements
     const surahSelect = document.getElementById('surah-select');
@@ -18,12 +19,23 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadAndDisplaySurah(surahId) {
         showLoading();
         try {
+            // Check cache first
+            if (surahCache[surahId]) {
+                currentSurahData = surahCache[surahId];
+                displayFullSurah(currentSurahData);
+                hideLoading(); // Hide loading indicator immediately
+                return;
+            }
+
+            // If not in cache, fetch from network
             const response = await fetch(`./quran_data/${surahId}.json`);
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
             const surahData = await response.json();
             if (!surahData || typeof surahData !== 'object') throw new Error('Parsed data is not a valid object.');
 
+            // Store in cache and display
+            surahCache[surahId] = surahData;
             currentSurahData = surahData;
             displayFullSurah(currentSurahData);
 
