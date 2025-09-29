@@ -39,8 +39,8 @@ function getRandomConsecutiveVerses(versesArray, count) {
     return versesArray.slice(startIndex, startIndex + count);
 }
 
-function getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.verse-order-item:not(.dragging)')];
+function getDragAfterElement(container, y, selector) {
+    const draggableElements = [...container.querySelectorAll(`${selector}:not(.dragging)`)];
     return draggableElements.reduce((closest, child) => {
         const box = child.getBoundingClientRect();
         const offset = y - box.top - box.height / 2;
@@ -55,7 +55,6 @@ function getDragAfterElement(container, y) {
 
 // --- Game State Variables ---
 let gameScores = { 'meaning-match': 0, 'wheel': 0, 'verse-order': 0 };
-let usedOrderVerseIndexes = [];
 let verseCascadeGameLoopId = null;
 
 // --- Game Setup Functions ---
@@ -197,8 +196,8 @@ function setupVerseOrderGame(surah, start, end) {
         verseDiv.addEventListener('touchstart', (e) => { draggedItem = verseDiv; verseDiv.classList.add('dragging'); playSound('drag_start'); }, { passive: false });
         verseDiv.addEventListener('touchend', () => { if (draggedItem) draggedItem.classList.remove('dragging'); draggedItem = null; });
     });
-    verseArea.addEventListener('dragover', (e) => { e.preventDefault(); const afterElement = getDragAfterElement(verseArea, e.clientY); if (draggedItem) { if (afterElement == null) { verseArea.appendChild(draggedItem); } else { verseArea.insertBefore(draggedItem, afterElement); } } });
-    verseArea.addEventListener('touchmove', (e) => { if (draggedItem) { e.preventDefault(); const afterElement = getDragAfterElement(verseArea, e.touches[0].clientY); if (afterElement == null) { verseArea.appendChild(draggedItem); } else { verseArea.insertBefore(draggedItem, afterElement); } } }, { passive: false });
+    verseArea.addEventListener('dragover', (e) => { e.preventDefault(); const afterElement = getDragAfterElement(verseArea, e.clientY, '.verse-order-item'); if (draggedItem) { if (afterElement == null) { verseArea.appendChild(draggedItem); } else { verseArea.insertBefore(draggedItem, afterElement); } } });
+    verseArea.addEventListener('touchmove', (e) => { if (draggedItem) { e.preventDefault(); const afterElement = getDragAfterElement(verseArea, e.touches[0].clientY, '.verse-order-item'); if (afterElement == null) { verseArea.appendChild(draggedItem); } else { verseArea.insertBefore(draggedItem, afterElement); } } }, { passive: false });
     document.getElementById('check-order-btn').addEventListener('click', () => {
         playSound('click');
         const userOrder = Array.from(verseArea.children).map(child => child.textContent);
@@ -215,7 +214,7 @@ function setupVerseOrderGame(surah, start, end) {
             playSound('incorrect');
         }
     });
-    document.getElementById('reset-verse-order-btn').onclick = () => { usedOrderVerseIndexes = []; setupVerseOrderGame(surah, 1, surah.verses.length); playSound('navigate'); };
+    document.getElementById('reset-verse-order-btn').onclick = () => { setupVerseOrderGame(surah, start, end); playSound('navigate'); };
 }
 
 function setupVerseCascadeGame(surah, start, end) {
@@ -475,12 +474,29 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
             }
             case 'complete': {
                 const verse = surahVerses[Math.floor(Math.random() * surahVerses.length)];
-                const words = removeBasmallahFromVerse(verse.text, surah.id).split(' ');
+                const words = removeBasmallahFromVerse(verse.text, surah.id).split(' ').filter(w => w.trim() !== '');
                 if (words.length < 2) return null;
+
                 const answerWord = words.pop();
                 const questionText = words.join(' ') + ' ______';
-                const otherWords = allVerses.flatMap(v => removeBasmallahFromVerse(v.text, v.surahId).split(' ')).filter(w => w !== answerWord && w.length > 2 && !w.includes('______')).sort(() => 0.5 - Math.random()).slice(0, 2);
-                return { id: `complete_${surah.name}_${verse.id}`, type, surah, question: questionText, options: [answerWord, ...otherWords].sort(() => 0.5 - Math.random()), answer: answerWord };
+
+                const otherWords = new Set();
+                let attempts = 0;
+                while (otherWords.size < 2 && attempts < 50) {
+                    const randomVerse = allVerses[Math.floor(Math.random() * allVerses.length)];
+                    const randomVerseWords = removeBasmallahFromVerse(randomVerse.text, randomVerse.surahId).split(' ').filter(w => w.trim().length > 2);
+                    if (randomVerseWords.length > 0) {
+                        const randomWord = randomVerseWords[Math.floor(Math.random() * randomVerseWords.length)];
+                        if (randomWord !== answerWord) {
+                            otherWords.add(randomWord);
+                        }
+                    }
+                    attempts++;
+                }
+                const finalOtherWords = [...otherWords];
+                while(finalOtherWords.length < 2) { finalOtherWords.push("القرآن"); }
+
+                return { id: `complete_${surah.name}_${verse.id}`, type, surah, question: questionText, options: [answerWord, ...finalOtherWords].sort(() => 0.5 - Math.random()), answer: answerWord };
             }
             case 'related_ayah': {
                 if (surahVerses.length < 3) return null;
@@ -582,16 +598,66 @@ function setupWheelGame(surahData, startSurahId, endSurahId) {
         const draggablesContainer = document.createElement('div');
         draggablesContainer.className = 'draggables-container';
         draggablesContainer.id = 'draggables-container-arrange';
+        let draggedItem = null;
+
         question.options.forEach((option, index) => {
             const div = document.createElement('div');
             div.textContent = option;
             div.className = 'draggable';
             div.draggable = true;
             div.id = `drag-${index}`;
-            // Simplified drag/touch handlers for brevity
-            div.addEventListener('dragstart', () => {});
+
+            // Desktop drag events
+            div.addEventListener('dragstart', () => {
+                draggedItem = div;
+                setTimeout(() => div.classList.add('dragging'), 0);
+                playSound('drag_start');
+            });
+            div.addEventListener('dragend', () => {
+                if (draggedItem) draggedItem.classList.remove('dragging');
+                draggedItem = null;
+            });
+
+            // Mobile touch events
+            div.addEventListener('touchstart', (e) => {
+                draggedItem = div;
+                div.classList.add('dragging');
+                playSound('drag_start');
+            }, { passive: true });
+            div.addEventListener('touchend', () => {
+                if (draggedItem) draggedItem.classList.remove('dragging');
+                draggedItem = null;
+            });
+
             draggablesContainer.appendChild(div);
         });
+
+        // Dragover/Touchmove on the container
+        draggablesContainer.addEventListener('dragover', e => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(draggablesContainer, e.clientY, '.draggable');
+            if (draggedItem) {
+                if (afterElement == null) {
+                    draggablesContainer.appendChild(draggedItem);
+                } else {
+                    draggablesContainer.insertBefore(draggedItem, afterElement);
+                }
+            }
+        });
+
+        draggablesContainer.addEventListener('touchmove', e => {
+            if (draggedItem) {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(draggablesContainer, e.touches[0].clientY, '.draggable');
+                if (afterElement == null) {
+                    draggablesContainer.appendChild(draggedItem);
+                } else {
+                    draggablesContainer.insertBefore(draggedItem, afterElement);
+                }
+            }
+        }, { passive: false });
+
+
         optionsEl.appendChild(draggablesContainer);
         const checkButton = document.createElement('button');
         checkButton.textContent = 'تحقق من الترتيب';
