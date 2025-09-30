@@ -1807,3 +1807,237 @@ select:focus, input[type="number"]:focus {
     }
 /* لا يوجد خطأ هنا، فقط إغلاق صحيح للـ media query */
 }
+
+
+/*
+========================================
+--- Card Matching Game (Memory Game) ---
+========================================
+*/
+
+#card-matching-game {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Theme-specific styles for card matching game */
+:root {
+    /* Sea Theme */
+    --sea-bg: #87CEEB;
+    --sea-card-bg: #00BFFF;
+    --sea-card-front: #1E90FF;
+    --sea-text: #ffffff;
+    --sea-shadow: rgba(0, 100, 150, 0.4);
+
+    /* Forest Theme */
+    --forest-bg: #228B22;
+    --forest-card-bg: #556B2F;
+    --forest-card-front: #8FBC8F;
+    --forest-text: #ffffff;
+    --forest-shadow: rgba(0, 50, 0, 0.4);
+
+    /* Space Theme */
+    --space-bg: #0c0a1a;
+    --space-card-bg: #2a2a4e;
+    --space-card-front: #4a4a8e;
+    --space-text: #e0e0ff;
+    --space-shadow: rgba(40, 40, 80, 0.5);
+}
+
+.sea-theme #card-matching-game { background-color: var(--sea-bg); color: var(--sea-text); }
+.forest-theme #card-matching-game { background-color: var(--forest-bg); color: var(--forest-text); }
+.space-theme #card-matching-game { background-color: var(--space-bg); color: var(--space-text); }
+
+
+#cm-setup-screen, #cm-game-board {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+#cm-game-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+#cm-game-options {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#cm-game-options .option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#cm-game-options .option-group label {
+    font-size: 1.2rem;
+}
+
+#cm-game-options .option-group select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    background-color: #fff;
+    color: #333;
+}
+
+#cm-game-info {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    font-size: 1.2rem;
+    padding: 10px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+#cm-cards-grid {
+    display: grid;
+    gap: 15px;
+    width: 100%;
+    perspective: 1000px;
+}
+
+/* Grid size variations */
+#cm-cards-grid.grid-4 { grid-template-columns: repeat(4, 1fr); }
+#cm-cards-grid.grid-5 { grid-template-columns: repeat(5, 1fr); }
+#cm-cards-grid.grid-6 { grid-template-columns: repeat(6, 1fr); }
+
+
+.cm-card {
+    background-color: transparent;
+    width: 100%;
+    aspect-ratio: 5 / 7;
+    border: none;
+    cursor: pointer;
+    transform-style: preserve-3d;
+}
+
+.cm-card.incorrect {
+    animation: shake 0.4s;
+}
+
+.cm-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 8px 0 var(--space-shadow);
+    border-radius: 10px;
+}
+
+.cm-card.flipped .cm-card-inner {
+    transform: rotateY(180deg);
+}
+
+.cm-card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: clamp(0.8rem, 4vw, 1.1rem);
+    overflow-wrap: break-word;
+}
+
+.cm-card-front {
+    color: white;
+}
+
+.sea-theme .cm-card-front { background-color: var(--sea-card-front); }
+.forest-theme .cm-card-front { background-color: var(--forest-card-front); }
+.space-theme .cm-card-front { background-color: var(--space-card-front); }
+
+
+.cm-card-back {
+    background-color: #bbb;
+    transform: rotateY(180deg);
+    line-height: 1.4;
+}
+
+.sea-theme .cm-card-back { background-color: var(--sea-card-bg); color: var(--sea-text); }
+.forest-theme .cm-card-back { background-color: var(--forest-card-bg); color: var(--forest-text); }
+.space-theme .cm-card-back { background-color: var(--space-card-bg); color: var(--space-text); }
+
+.cm-card.matched .cm-card-inner {
+    transform: scale(1); /* Keep scale normal */
+    opacity: 0.7; /* Slightly fade */
+    box-shadow: 0 0 20px 8px #2ecc71; /* Glowing effect */
+    animation: pulse-correct 0.6s;
+}
+
+/* Keyframe Animations */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px) rotate(-2deg); }
+    75% { transform: translateX(8px) rotate(2deg); }
+}
+
+@keyframes pulse-correct {
+    0% { box-shadow: 0 0 20px 8px #2ecc71; }
+    50% { box-shadow: 0 0 25px 12px #2ecc71; }
+    100% { box-shadow: 0 0 20px 8px #2ecc71; }
+}
+
+#cm-game-controls {
+    margin-top: 20px;
+}
+
+#cm-end-game-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+#cm-end-game-modal .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    color: #333;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+#cm-end-game-modal .modal-content h2 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: #4CAF50;
+}
+
+#cm-end-game-modal .modal-content p {
+    font-size: 1.2rem;
+    margin-bottom: 25px;
+}

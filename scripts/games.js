@@ -56,43 +56,245 @@ function getDragAfterElement(container, y, selector) {
 // --- Game State Variables ---
 let gameScores = { 'wheel': 0, 'verse-order': 0 };
 let verseCascadeGameLoopId = null;
+let activeCardMatchingGame = null;
 
-// --- Game Setup Functions ---
+// --- Card Matching Game Class ---
+class CardMatchingGame {
+    constructor(verses, surahName) {
+        this.verses = verses;
+        this.surahName = surahName;
+        this.gameMode = 'consecutive';
+        this.theme = 'space';
+        this.gridSize = 4; // Default grid size (4x4)
+        this.cards = [];
+        this.flippedCards = [];
+        this.matchedPairs = 0;
+        this.score = 0;
+        this.attempts = 0;
+        this.timerInterval = null;
+        this.seconds = 0;
+        this.isLocked = false;
 
-function setupMemoryGame(surah, start, end) {
-    const iframe = document.getElementById('memory-game-iframe');
-    if (!iframe) {
-        console.error("Memory game iframe not found!");
-        return;
+        this.bindDOM();
+        this.addEventListeners();
+        this.showSetupScreen();
     }
-    const verses = surah.verses.filter(v => v.id >= start && v.id <= end);
 
-    const gameData = {
-        type: 'startGame',
-        verses: verses,
-        surahName: surah.name
-    };
+    bindDOM() {
+        this.setupScreen = document.getElementById('cm-setup-screen');
+        this.gameBoard = document.getElementById('cm-game-board');
+        this.cardsGrid = document.getElementById('cm-cards-grid');
+        this.themeSelect = document.getElementById('cm-theme-select');
+        this.modeSelect = document.getElementById('cm-mode-select');
+        this.gridSelect = document.getElementById('cm-grid-size-select');
+        this.startGameBtn = document.getElementById('cm-start-game-btn');
+        this.resetGameBtn = document.getElementById('cm-reset-game-btn');
+        this.playAgainBtn = document.getElementById('cm-play-again-btn');
+        this.timerEl = document.getElementById('cm-timer');
+        this.scoreEl = document.getElementById('cm-score');
+        this.attemptsEl = document.getElementById('cm-attempts');
+        this.endGameModal = document.getElementById('cm-end-game-modal');
+        this.endGameTitle = document.getElementById('cm-end-game-title');
+        this.endGameMessage = document.getElementById('cm-end-game-message');
+        this.gameContainer = document.getElementById('card-matching-game');
+    }
 
-    const onReady = (event) => {
-        // Basic security checks
-        if (event.source !== iframe.contentWindow || event.data.type !== 'ready') {
+    addEventListeners() {
+        this.startGameBtn.onclick = () => this.initializeGame();
+        this.resetGameBtn.onclick = () => this.resetGame();
+        this.playAgainBtn.onclick = () => this.showSetupScreen();
+        this.themeSelect.onchange = (e) => this.applyTheme(e.target.value);
+    }
+
+    shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    createCards() {
+        this.cardsGrid.innerHTML = '';
+        this.cards = [];
+        this.matchedPairs = 0;
+        this.cardsGrid.className = 'cm-cards-grid'; // Reset class
+        this.cardsGrid.classList.add(`grid-${this.gridSize}`);
+
+
+        let cardData = [];
+        const availableVerses = this.verses.map(v => ({...v, text: removeBasmallahFromVerse(v.text, v.surahId)})).filter(v => v.text.trim() !== '');
+
+        if (this.gameMode === 'consecutive') {
+            for (let i = 0; i < availableVerses.length - 1; i++) {
+                cardData.push({ id: availableVerses[i].id, content: availableVerses[i].text, pairId: i });
+                cardData.push({ id: availableVerses[i+1].id, content: availableVerses[i+1].text, pairId: i });
+            }
+        } else { // split mode
+            availableVerses.forEach(verse => {
+                const words = verse.text.split(' ');
+                if (words.length >= 4) {
+                    const midPoint = Math.ceil(words.length / 2);
+                    const firstHalf = words.slice(0, midPoint).join(' ');
+                    const secondHalf = words.slice(midPoint).join(' ');
+                    cardData.push({ id: verse.id, content: firstHalf, pairId: verse.id });
+                    cardData.push({ id: verse.id, content: secondHalf, pairId: verse.id });
+                }
+            });
+        }
+
+        const numberOfPairs = (this.gridSize * this.gridSize) / 2;
+        const uniquePairIds = [...new Set(cardData.map(c => c.pairId))];
+        const selectedPairIds = this.shuffle(uniquePairIds).slice(0, numberOfPairs);
+        const finalCardData = cardData.filter(c => selectedPairIds.includes(c.pairId));
+
+        if (finalCardData.length < 4) {
+            this.cardsGrid.innerHTML = `<p class="error-message">لا توجد آيات كافية لهذا النمط في النطاق المحدد. حاول توسيع نطاق الآيات أو تغيير النمط.</p>`;
             return;
         }
 
-        console.log("Received 'ready' from memory game. Sending data.");
-        iframe.contentWindow.postMessage(gameData, '*');
+        this.shuffle(finalCardData).forEach((item) => {
+            const card = document.createElement('div');
+            card.classList.add('cm-card');
+            card.dataset.pairId = item.pairId;
 
-        // Clean up: remove the listener to avoid it firing again
-        window.removeEventListener('message', onReady);
-    };
+            card.innerHTML = `
+                <div class="cm-card-inner">
+                    <div class="cm-card-face cm-card-front"><span class="material-icons">memory</span></div>
+                    <div class="cm-card-face cm-card-back">${item.content}</div>
+                </div>
+            `;
+            card.addEventListener('click', () => this.flipCard(card));
+            this.cardsGrid.appendChild(card);
+            this.cards.push(card);
+        });
+    }
 
-    // Listen for the iframe to signal it's ready
-    window.addEventListener('message', onReady);
+    flipCard(card) {
+        if (this.isLocked || card.classList.contains('flipped') || this.flippedCards.length >= 2) {
+            return;
+        }
+        card.classList.add('flipped');
+        this.flippedCards.push(card);
+        if (this.flippedCards.length === 2) {
+            this.isLocked = true;
+            this.attempts++;
+            this.updateGameInfo();
+            this.checkForMatch();
+        }
+    }
 
-    // Reload the iframe to ensure a clean state and predictable load/message sequence
-    // This is crucial because this setup function might be called after the iframe has already loaded
-    // and sent its 'ready' message. Reloading guarantees we'll catch the 'ready' message.
-    iframe.src = iframe.src;
+    checkForMatch() {
+        const [card1, card2] = this.flippedCards;
+        const isMatch = card1.dataset.pairId === card2.dataset.pairId;
+        if (isMatch) {
+            this.score += 10;
+            this.matchedPairs++;
+            card1.classList.add('matched');
+            card2.classList.add('matched');
+            this.resetFlippedCards();
+            if (this.matchedPairs * 2 === this.cards.length) {
+                this.endGame(true);
+            }
+        } else {
+            this.score = Math.max(0, this.score - 2);
+            card1.classList.add('incorrect');
+            card2.classList.add('incorrect');
+
+            setTimeout(() => {
+                card1.classList.remove('flipped', 'incorrect');
+                card2.classList.remove('flipped', 'incorrect');
+                this.resetFlippedCards();
+            }, 1200);
+        }
+        this.updateGameInfo();
+    }
+
+    resetFlippedCards() {
+        this.flippedCards = [];
+        this.isLocked = false;
+    }
+
+    updateGameInfo() {
+        this.scoreEl.textContent = `النقاط: ${this.score}`;
+        this.attemptsEl.textContent = `المحاولات: ${this.attempts}`;
+    }
+
+    startTimer() {
+        clearInterval(this.timerInterval);
+        this.seconds = 0;
+        this.timerInterval = setInterval(() => {
+            this.seconds++;
+            const min = Math.floor(this.seconds / 60);
+            const sec = this.seconds % 60;
+            this.timerEl.textContent = `الوقت: ${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }, 1000);
+    }
+
+    applyTheme(selectedTheme) {
+        this.gameContainer.classList.remove('sea-theme', 'forest-theme', 'space-theme');
+        this.gameContainer.classList.add(`${selectedTheme}-theme`);
+    }
+
+    resetGame() {
+        clearInterval(this.timerInterval);
+        this.score = 0;
+        this.attempts = 0;
+        this.seconds = 0;
+        this.matchedPairs = 0;
+        this.isLocked = false;
+        this.flippedCards = [];
+        this.updateGameInfo();
+        this.timerEl.textContent = "الوقت: 0:00";
+        this.createCards();
+        this.startTimer();
+    }
+
+    initializeGame() {
+        this.theme = this.themeSelect.value;
+        this.gameMode = this.modeSelect.value;
+        this.gridSize = parseInt(this.gridSelect.value, 10);
+        this.applyTheme(this.theme);
+        this.setupScreen.classList.add('hidden');
+        this.gameBoard.classList.remove('hidden');
+        this.resetGame();
+    }
+
+    showSetupScreen() {
+        this.gameBoard.classList.add('hidden');
+        this.endGameModal.classList.add('hidden');
+        this.setupScreen.classList.remove('hidden');
+    }
+
+    endGame(isWin) {
+        clearInterval(this.timerInterval);
+        if (isWin) {
+            this.endGameTitle.textContent = "أحسنت!";
+            this.endGameMessage.textContent = `لقد أكملت اللعبة في ${this.timerEl.textContent} بـ ${this.attempts} محاولة. نتيجتك: ${this.score}.`;
+        } else {
+            this.endGameTitle.textContent = "حاول مرة أخرى!";
+            this.endGameMessage.textContent = "حظاً أوفر في المرة القادمة.";
+        }
+        this.endGameModal.classList.remove('hidden');
+    }
+
+    destroy() {
+        clearInterval(this.timerInterval);
+        this.startGameBtn.onclick = null;
+        this.resetGameBtn.onclick = null;
+        this.playAgainBtn.onclick = null;
+        this.themeSelect.onchange = null;
+    }
+}
+
+
+// --- Game Setup Functions ---
+
+function setupCardMatchingGame(verses, name) {
+    if (activeCardMatchingGame) {
+        activeCardMatchingGame.destroy();
+    }
+    activeCardMatchingGame = new CardMatchingGame(verses, name);
 }
 
 function setupVerseOrderGame(surah, start, end) {
@@ -650,7 +852,7 @@ export function displayGames(surah, start, end) {
     localStorage.setItem('lastEndVerse', end);
 
     const games = [
-        { key: 'memory', label: 'لعبة الذاكرة', icon: 'memory', desc: 'اختبر قوة ذاكرتك بمطابقة الآيات المتشابهة أو أجزاء الآية الواحدة.', cardGradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', iconColor: '#fff' },
+        { key: 'card-matching', label: 'لعبة مطابقة البطاقات', icon: 'style', desc: 'اختبر قوة ذاكرتك بمطابقة الآيات المتشابهة أو أجزاء الآية الواحدة.', cardGradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', iconColor: '#fff' },
         { key: 'verse-order', label: 'ترتيب الآيات', icon: 'sort', desc: 'رتب الآيات بالترتيب الصحيح وتحدى ذاكرتك القرآنية.', cardGradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)', iconColor: '#fff' },
         { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart', desc: 'التقط الكلمات الصحيحة من الشلال وأكمل الآية قبل أن تسقط الكلمات.', cardGradient: 'linear-gradient(135deg, #f77062 0%, #fe5196 100%)', iconColor: '#fff' }
     ];
@@ -689,7 +891,8 @@ export function displayGeneralGames(startSurahId, endSurahId, surahIndex) {
     generalGamesTitle.textContent = `ألعاب عامة على السور من ${startSurahName} إلى ${endSurahName}`;
 
     const generalGames = [
-        { key: 'wheel', label: 'العجلة الدوارة', icon: 'rotate_right', desc: 'أدر العجلة وأجب على الأسئلة القرآنية في جو من الحماس والتحدي.', cardGradient: 'linear-gradient(135deg, #ff8c42 0%, #ffc048 100%)', iconColor: '#fff' }
+        { key: 'wheel', label: 'العجلة الدوارة', icon: 'rotate_right', desc: 'أدر العجلة وأجب على الأسئلة القرآنية في جو من الحماس والتحدي.', cardGradient: 'linear-gradient(135deg, #ff8c42 0%, #ffc048 100%)', iconColor: '#fff' },
+        { key: 'card-matching', label: 'لعبة مطابقة البطاقات', icon: 'style', desc: 'طابق الآيات المتتالية أو أجزاء الآية من مجموعة سور مختارة.', cardGradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', iconColor: '#fff' }
     ];
 
     generalGameArea.innerHTML = `<div class="games-cards-grid">${generalGames.map(game => `
@@ -734,9 +937,19 @@ export function showGame(game, surah, start, end) {
     document.getElementById('global-back-to-games-btn').classList.add('flex');
 
     switch (game) {
-        case 'memory': setupMemoryGame(surah, start, end); break;
-        case 'verse-order': setupVerseOrderGame(surah, start, end); break;
-        case 'verse-cascade': setupVerseCascadeGame(surah, start, end); break;
+        case 'card-matching':
+            {
+                // If it's a general game, the surah name will be different, and we don't need to filter.
+                const verses = surah.name.includes('من') ? surah.verses : surah.verses.filter(v => v.id >= start && v.id <= end);
+                setupCardMatchingGame(verses, surah.name);
+                break;
+            }
+        case 'verse-order':
+            setupVerseOrderGame(surah, start, end);
+            break;
+        case 'verse-cascade':
+            setupVerseCascadeGame(surah, start, end);
+            break;
     }
 }
 
@@ -755,19 +968,42 @@ export function showGeneralGame(game, startSurahId, endSurahId, surahIndex) {
 
     Promise.all(surahsToLoad.map(id => fetch(`./quran_data/${id}.json`).then(res => res.ok ? res.json() : Promise.reject(`Failed to load surah ${id}`))))
         .then(surahDataArray => {
-            const allVerses = surahDataArray.flatMap(surahData => surahData.verses.map(v => ({ ...v, surahId: surahData.id })));
+            const allVerses = surahDataArray.flatMap(surahData => surahData.verses.map(v => ({ ...v,
+                surahId: surahData.id
+            })));
             const generalGameArea = document.getElementById('general-game-area');
             generalGameArea.querySelector('.games-cards-grid').classList.add('hidden');
             generalGameArea.querySelectorAll('.game-container').forEach(g => g.classList.add('hidden'));
-            const el = document.getElementById(`general-${game}-game`);
-            if (!el) return;
-            el.classList.remove('hidden');
-            el.classList.add('active');
-            const backButton = el.querySelector('.back-to-games-btn');
-            backButton.classList.remove('hidden');
-            backButton.classList.add('flex');
+
             if (game === 'wheel') {
-                setupWheelGame({ verses: allVerses, surahIndex: surahIndex }, startSurahId, endSurahId);
+                const el = document.getElementById(`general-wheel-game`);
+                if (!el) return;
+                el.classList.remove('hidden');
+                el.classList.add('active');
+                const backButton = el.querySelector('.back-to-games-btn');
+                backButton.classList.remove('hidden');
+                backButton.classList.add('flex');
+                setupWheelGame({
+                    verses: allVerses,
+                    surahIndex: surahIndex
+                }, startSurahId, endSurahId);
+            } else if (game === 'card-matching') {
+                const startSurahName = surahIndex.find(s => s.id === startSurahId)?.name || '';
+                const endSurahName = surahIndex.find(s => s.id === endSurahId)?.name || '';
+                const gameName = `من ${startSurahName} إلى ${endSurahName}`;
+
+                const fakeSurah = {
+                    name: gameName,
+                    verses: allVerses
+                };
+
+                document.querySelector('.tab-btn[data-section="games"]').click();
+
+                setTimeout(() => {
+                    showGame('card-matching', fakeSurah, 1, allVerses.length);
+                    const gameTitle = document.getElementById('games-title');
+                    if (gameTitle) gameTitle.textContent = `لعبة مطابقة البطاقات على سور ${gameName}`;
+                }, 100);
             }
         })
         .catch(error => console.error('Error loading surah data for general games:', error));
