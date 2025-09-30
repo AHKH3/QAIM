@@ -370,11 +370,11 @@ class CardMatchingGame {
 
     destroy() {
         clearInterval(this.timerInterval);
-        this.startGameBtn.onclick = null;
-        this.resetGameBtn.onclick = null;
-        this.playAgainBtn.onclick = null;
-        this.themeSelect.onchange = null;
-        this.container.innerHTML = '';
+        if (this.startGameBtn) this.startGameBtn.onclick = null;
+        if (this.resetGameBtn) this.resetGameBtn.onclick = null;
+        if (this.playAgainBtn) this.playAgainBtn.onclick = null;
+        if (this.themeSelect) this.themeSelect.onchange = null;
+        if (this.container) this.container.innerHTML = '';
     }
 }
 
@@ -387,13 +387,14 @@ function setupCardMatchingGame(containerId, verses, name) {
     activeCardMatchingGame = new CardMatchingGame(containerId, verses, name);
 }
 
-function setupVerseOrderGame(surah, start, end) {
-    const container = document.getElementById('verse-order-game');
+function setupVerseOrderGame(containerId, surah, start, end) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '<div class="game-content-area"></div>';
     const gameContentArea = container.querySelector('.game-content-area');
-    if (!gameContentArea) return;
     container.style.setProperty('--game-primary-color', 'var(--verse-order-primary)');
     container.style.setProperty('--game-secondary-color', 'var(--verse-order-secondary)');
-    gameContentArea.innerHTML = '';
+
     const versesToShow = surah && surah.verses ? surah.verses.filter(v => v.id >= start && v.id <= end) : [];
     if (versesToShow.length < 3) {
         gameContentArea.innerHTML = '<p>لا توجد آيات كافية لهذه اللعبة. حاول تحديد نطاق أكبر.</p>';
@@ -409,7 +410,7 @@ function setupVerseOrderGame(surah, start, end) {
         <button id="check-order-btn" class="btn-check">تحقق من الترتيب</button>
         <button id="reset-verse-order-btn" class="btn-reset"><span class="material-icons">refresh</span> إعادة اللعبة</button>
         <div id="verse-order-feedback"></div><div id="verse-order-score"></div>`;
-    const verseArea = document.getElementById('verse-order-area');
+    const verseArea = gameContentArea.querySelector('#verse-order-area');
     let draggedItem = null;
     shuffledOrder.forEach(verseText => {
         const verseDiv = document.createElement('div');
@@ -424,10 +425,10 @@ function setupVerseOrderGame(surah, start, end) {
     });
     verseArea.addEventListener('dragover', (e) => { e.preventDefault(); const afterElement = getDragAfterElement(verseArea, e.clientY, '.verse-order-item'); if (draggedItem) { if (afterElement == null) { verseArea.appendChild(draggedItem); } else { verseArea.insertBefore(draggedItem, afterElement); } } });
     verseArea.addEventListener('touchmove', (e) => { if (draggedItem) { e.preventDefault(); const afterElement = getDragAfterElement(verseArea, e.touches[0].clientY, '.verse-order-item'); if (afterElement == null) { verseArea.appendChild(draggedItem); } else { verseArea.insertBefore(draggedItem, afterElement); } } }, { passive: false });
-    document.getElementById('check-order-btn').addEventListener('click', () => {
+    gameContentArea.querySelector('#check-order-btn').addEventListener('click', () => {
         playSound('click');
         const userOrder = Array.from(verseArea.children).map(child => child.textContent);
-        const feedbackDiv = document.getElementById('verse-order-feedback');
+        const feedbackDiv = gameContentArea.querySelector('#verse-order-feedback');
         const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correctOrder);
         if (isCorrect) {
             feedbackDiv.textContent = 'أحسنت! الترتيب صحيح.';
@@ -440,13 +441,14 @@ function setupVerseOrderGame(surah, start, end) {
             playSound('incorrect');
         }
     });
-    document.getElementById('reset-verse-order-btn').onclick = () => { setupVerseOrderGame(surah, start, end); playSound('navigate'); };
+    gameContentArea.querySelector('#reset-verse-order-btn').onclick = () => { setupVerseOrderGame(containerId, surah, start, end); playSound('navigate'); };
 }
 
-function setupVerseCascadeGame(surah, start, end) {
-    const container = document.getElementById('verse-cascade-game');
+function setupVerseCascadeGame(containerId, surah, start, end) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '<div class="game-content-area"></div>';
     const gameContentArea = container.querySelector('.game-content-area');
-    if (!gameContentArea) return;
     container.style.setProperty('--game-primary-color', 'var(--verse-cascade-primary)');
     container.style.setProperty('--game-secondary-color', 'var(--verse-cascade-secondary)');
     let score, lives, currentVerseIndex, wordsToCatch, nextWordIndex, fallingWords, lastSpawnTime = 0, difficulty;
@@ -461,7 +463,7 @@ function setupVerseCascadeGame(surah, start, end) {
         gameContentArea.innerHTML = `
             <div class="game-header"><h3 class="game-title">لعبة شلال الآيات</h3></div>
             <div class="difficulty-selector"><h3>اختر مستوى الصعوبة</h3><button class="btn-difficulty" data-difficulty="easy">سهل</button><button class="btn-difficulty" data-difficulty="medium">متوسط</button><button class="btn-difficulty" data-difficulty="hard">صعب</button></div>`;
-        document.querySelectorAll('.btn-difficulty').forEach(btn => {
+        gameContentArea.querySelectorAll('.btn-difficulty').forEach(btn => {
             btn.onclick = (e) => { difficulty = e.target.dataset.difficulty; renderGameUI(); startGame(); };
         });
     }
@@ -469,7 +471,7 @@ function setupVerseCascadeGame(surah, start, end) {
         gameContentArea.innerHTML = `
             <div id="cascade-header"><div id="cascade-info"><span>النتيجة: <span id="cascade-score">0</span></span><span>المحاولات: <span id="cascade-lives"></span></span></div><button id="reset-cascade-btn" class="btn-reset"><span class="material-icons">refresh</span></button></div>
             <div id="cascade-area"></div><div id="cascade-verse-display"></div>`;
-        document.getElementById('reset-cascade-btn').onclick = renderDifficultySelection;
+        gameContentArea.querySelector('#reset-cascade-btn').onclick = renderDifficultySelection;
     }
     function startGame() {
         cleanupActiveGame();
@@ -484,7 +486,7 @@ function setupVerseCascadeGame(surah, start, end) {
     }
     function cleanupGame() {
         if (verseCascadeGameLoopId) { cancelAnimationFrame(verseCascadeGameLoopId); verseCascadeGameLoopId = null; }
-        const cascadeArea = document.getElementById('cascade-area');
+        const cascadeArea = gameContentArea.querySelector('#cascade-area');
         if (cascadeArea) cascadeArea.innerHTML = '';
         fallingWords = [];
     }
@@ -494,7 +496,7 @@ function setupVerseCascadeGame(surah, start, end) {
         verseCascadeGameLoopId = requestAnimationFrame(gameLoop);
     }
     function loadVerse() {
-        const cascadeArea = document.getElementById('cascade-area');
+        const cascadeArea = gameContentArea.querySelector('#cascade-area');
         if (cascadeArea) cascadeArea.innerHTML = '';
         fallingWords = [];
         if (lives <= 0) { endGame("حاول مرة أخرى يا بطل!"); return; }
@@ -506,7 +508,7 @@ function setupVerseCascadeGame(surah, start, end) {
     }
     function spawnWord() {
         if (lives <= 0 || verseCascadeGameLoopId === null) return;
-        const cascadeArea = document.getElementById('cascade-area');
+        const cascadeArea = gameContentArea.querySelector('#cascade-area');
         if (!cascadeArea) return;
         const nextWord = wordsToCatch[nextWordIndex];
         const isNextWordFalling = fallingWords.some(fw => fw.text === nextWord);
@@ -514,7 +516,7 @@ function setupVerseCascadeGame(surah, start, end) {
         createWordElement(wordToSpawn);
     }
     function createWordElement(word) {
-        const cascadeArea = document.getElementById('cascade-area');
+        const cascadeArea = gameContentArea.querySelector('#cascade-area');
         if (!cascadeArea || verseCascadeGameLoopId === null) return;
         const wordEl = document.createElement('div');
         wordEl.className = 'cascade-word';
@@ -563,32 +565,29 @@ function setupVerseCascadeGame(surah, start, end) {
         fallingWords = fallingWords.filter(w => w !== wordObj);
     }
     function updateVerseDisplay() {
-        const display = document.getElementById('cascade-verse-display');
+        const display = gameContentArea.querySelector('#cascade-verse-display');
         if(display) {
             const verseText = versesToShow[currentVerseIndex] ? `الآية: ${removeBasmallahFromVerse(versesToShow[currentVerseIndex].text, surah.id)}` : "";
             const caughtText = wordsToCatch.slice(0, nextWordIndex).join(' ');
             display.innerHTML = `<div class="full-verse-text">${verseText}</div><div class="caught-words-display">${caughtText} <span class="remaining-indicator">...</span></div>`;
         }
     }
-    function updateScoreDisplay() { const scoreEl = document.getElementById('cascade-score'); if(scoreEl) scoreEl.textContent = score; }
-    function updateLivesDisplay() { const livesEl = document.getElementById('cascade-lives'); if(livesEl) livesEl.textContent = lives > 0 ? '❤️'.repeat(lives) : '💔'; }
+    function updateScoreDisplay() { const scoreEl = gameContentArea.querySelector('#cascade-score'); if(scoreEl) scoreEl.textContent = score; }
+    function updateLivesDisplay() { const livesEl = gameContentArea.querySelector('#cascade-lives'); if(livesEl) livesEl.textContent = lives > 0 ? '❤️'.repeat(lives) : '💔'; }
     function endGame(message) {
         cleanupActiveGame();
-        const cascadeArea = document.getElementById('cascade-area');
-        if(cascadeArea) {
-            cascadeArea.innerHTML = `<div class="cascade-end-message"><h2>${message}</h2><p>نتيجتك النهائية: ${score}</p><button id="play-again-cascade-btn" class="btn-check">العب مرة أخرى</button></div>`;
-            document.getElementById('play-again-cascade-btn').onclick = renderDifficultySelection;
+        if(gameContentArea) {
+            gameContentArea.innerHTML = `<div class="cascade-end-message"><h2>${message}</h2><p>نتيجتك النهائية: ${score}</p><button id="play-again-cascade-btn" class="btn-check">العب مرة أخرى</button></div>`;
+            gameContentArea.querySelector('#play-again-cascade-btn').onclick = renderDifficultySelection;
         }
-        const header = document.getElementById('cascade-header');
-        if (header) header.style.display = 'none';
-        const verseDisplay = document.getElementById('cascade-verse-display');
-        if(verseDisplay) verseDisplay.style.display = 'none';
     }
     renderDifficultySelection();
 }
 
-function setupWheelGame(surahData, startSurahId, endSurahId) {
-    const container = document.getElementById('general-wheel-game');
+function setupWheelGame(containerId, surahData, startSurahId, endSurahId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '<div class="game-content-area"></div>';
     const gameContentArea = container.querySelector('.game-content-area');
     if (!gameContentArea) return;
 
@@ -943,8 +942,8 @@ export function displayGames(surah, start, end) {
 
     const games = [
         { key: 'card-matching-special', label: 'لعبة مطابقة البطاقات', icon: 'style', desc: 'اختبر قوة ذاكرتك بمطابقة الآيات المتشابهة أو أجزاء الآية الواحدة.', cardGradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', iconColor: '#fff' },
-        { key: 'verse-order', label: 'ترتيب الآيات', icon: 'sort', desc: 'رتب الآيات بالترتيب الصحيح وتحدى ذاكرتك القرآنية.', cardGradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)', iconColor: '#fff' },
-        { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart', desc: 'التقط الكلمات الصحيحة من الشلال وأكمل الآية قبل أن تسقط الكلمات.', cardGradient: 'linear-gradient(135deg, #f77062 0%, #fe5196 100%)', iconColor: '#fff' }
+        { key: 'verse-order-special', label: 'ترتيب الآيات', icon: 'sort', desc: 'رتب الآيات بالترتيب الصحيح وتحدى ذاكرتك القرآنية.', cardGradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)', iconColor: '#fff' },
+        { key: 'verse-cascade-special', label: 'شلال الآيات', icon: 'waterfall_chart', desc: 'التقط الكلمات الصحيحة من الشلال وأكمل الآية قبل أن تسقط الكلمات.', cardGradient: 'linear-gradient(135deg, #f77062 0%, #fe5196 100%)', iconColor: '#fff' }
     ];
 
     const cardsGrid = document.querySelector('#games-section .games-cards-grid');
@@ -981,7 +980,7 @@ export function displayGeneralGames(startSurahId, endSurahId, surahIndex) {
     generalGamesTitle.textContent = `ألعاب عامة على السور من ${startSurahName} إلى ${endSurahName}`;
 
     const generalGames = [
-        { key: 'wheel', label: 'العجلة الدوارة', icon: 'rotate_right', desc: 'أدر العجلة وأجب على الأسئلة القرآنية في جو من الحماس والتحدي.', cardGradient: 'linear-gradient(135deg, #ff8c42 0%, #ffc048 100%)', iconColor: '#fff' },
+        { key: 'wheel-general', label: 'العجلة الدوارة', icon: 'rotate_right', desc: 'أدر العجلة وأجب على الأسئلة القرآنية في جو من الحماس والتحدي.', cardGradient: 'linear-gradient(135deg, #ff8c42 0%, #ffc048 100%)', iconColor: '#fff' },
         { key: 'card-matching-general', label: 'لعبة مطابقة البطاقات', icon: 'style', desc: 'طابق الآيات المتتالية أو أجزاء الآية من مجموعة سور مختارة.', cardGradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', iconColor: '#fff' }
     ];
 
@@ -1011,14 +1010,14 @@ export function displayGeneralGames(startSurahId, endSurahId, surahIndex) {
     document.querySelectorAll('#general-games-section .game-container').forEach(g => g.classList.add('hidden'));
 }
 
-export function showGame(game, surah, start, end) {
+export function showGame(gameKey, surah, start, end) {
     cleanupActiveGame();
     document.querySelector('#games-section .games-cards-grid').classList.add('hidden');
     document.querySelectorAll('#games-section .game-container').forEach(g => g.classList.add('hidden'));
 
-    const el = document.getElementById(game);
+    const el = document.getElementById(gameKey);
     if (!el) {
-        console.error(`Game container with ID "${game}" not found.`);
+        console.error(`Game container with ID "${gameKey}" not found.`);
         return;
     }
     el.classList.remove('hidden');
@@ -1026,16 +1025,17 @@ export function showGame(game, surah, start, end) {
     document.getElementById('global-back-to-games-btn').classList.remove('hidden');
     document.getElementById('global-back-to-games-btn').classList.add('flex');
 
-    switch (game) {
-        case 'card-matching-special':
+    const gameId = gameKey.replace('-special', '');
+    switch (gameId) {
+        case 'card-matching':
             const verses = surah.verses.filter(v => v.id >= start && v.id <= end);
-            setupCardMatchingGame(game, verses, surah.name);
+            setupCardMatchingGame(gameKey, verses, surah.name);
             break;
         case 'verse-order':
-            setupVerseOrderGame(surah, start, end);
+            setupVerseOrderGame(gameKey, surah, start, end);
             break;
         case 'verse-cascade':
-            setupVerseCascadeGame(surah, start, end);
+            setupVerseCascadeGame(gameKey, surah, start, end);
             break;
     }
 }
@@ -1047,7 +1047,7 @@ export function showGameGrid() {
     document.getElementById('global-back-to-games-btn').classList.add('hidden');
 }
 
-export function showGeneralGame(game, startSurahId, endSurahId, surahIndex) {
+export function showGeneralGame(gameKey, startSurahId, endSurahId, surahIndex) {
     const surahsToLoad = [];
     for (let i = startSurahId; i <= endSurahId; i++) {
         surahsToLoad.push(i);
@@ -1058,41 +1058,51 @@ export function showGeneralGame(game, startSurahId, endSurahId, surahIndex) {
             const allVerses = surahDataArray.flatMap(surahData => surahData.verses.map(v => ({ ...v, surahId: surahData.id })));
             const generalGameArea = document.getElementById('general-game-area');
             const generalGamesSection = document.getElementById('general-games-section');
-            generalGameArea.querySelector('.games-cards-grid').classList.add('hidden');
+            generalGameArea.classList.add('hidden');
             generalGamesSection.querySelectorAll('.game-container').forEach(g => g.classList.add('hidden'));
 
-            const el = document.getElementById(game);
+            const el = document.getElementById(gameKey);
             if (!el) {
-                 console.error(`Game container with ID "${game}" not found.`);
+                 console.error(`Game container with ID "${gameKey}" not found.`);
                 return;
             }
             el.classList.remove('hidden');
             el.classList.add('active');
 
-            const backButton = generalGamesSection.querySelector('.back-to-games-btn');
-            if(backButton) backButton.classList.remove('hidden');
+            document.getElementById('general-back-to-games-btn').classList.remove('hidden');
 
-            if (game === 'wheel') {
-                setupWheelGame({ verses: allVerses, surahIndex: surahIndex }, startSurahId, endSurahId);
-            } else if (game === 'card-matching-general') {
+            const gameId = gameKey.replace('-general', '');
+            if (gameId === 'wheel') {
+                setupWheelGame(gameKey, { verses: allVerses, surahIndex: surahIndex }, startSurahId, endSurahId);
+            } else if (gameId === 'card-matching') {
                 const gameName = `من ${surahIndex.find(s=>s.id === startSurahId).name} إلى ${surahIndex.find(s=>s.id === endSurahId).name}`;
-                setupCardMatchingGame(game, allVerses, gameName);
+                setupCardMatchingGame(gameKey, allVerses, gameName);
             }
         })
         .catch(error => console.error('Error loading surah data for general games:', error));
 }
 
 export function showGeneralGameGrid() {
-    const generalGameArea = document.getElementById('general-game-area');
-    generalGameArea.querySelector('.games-cards-grid').classList.remove('hidden');
-    generalGameArea.querySelectorAll('.game-container').forEach(g => g.classList.add('hidden'));
+    cleanupActiveGame();
+    document.getElementById('general-game-area').classList.remove('hidden');
+    document.querySelectorAll('#general-games-section .game-container').forEach(g => g.classList.add('hidden'));
+    document.getElementById('general-back-to-games-btn').classList.add('hidden');
 }
 
 export function cleanupActiveGame() {
+    if (activeCardMatchingGame) {
+        activeCardMatchingGame.destroy();
+        activeCardMatchingGame = null;
+    }
     if (verseCascadeGameLoopId) {
         cancelAnimationFrame(verseCascadeGameLoopId);
         verseCascadeGameLoopId = null;
-        const cascadeArea = document.getElementById('cascade-area');
-        if (cascadeArea) cascadeArea.innerHTML = '';
+        const cascadeContainer = document.getElementById('verse-cascade-special');
+        if (cascadeContainer) cascadeContainer.innerHTML = '';
     }
+    const wheelContainer = document.getElementById('wheel-general');
+    if (wheelContainer) wheelContainer.innerHTML = '';
+
+    const verseOrderContainer = document.getElementById('verse-order-special');
+    if(verseOrderContainer) verseOrderContainer.innerHTML = '';
 }
