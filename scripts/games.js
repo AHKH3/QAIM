@@ -59,108 +59,6 @@ let verseCascadeGameLoopId = null;
 
 // --- Game Setup Functions ---
 
-function setupMeaningMatchGame(surah, start, end) {
-    const container = document.getElementById('meaning-match-game');
-    const gameContentArea = container.querySelector('.game-content-area');
-    if (!gameContentArea) return;
-    container.style.setProperty('--game-primary-color', '#8e44ad');
-    container.style.setProperty('--game-secondary-color', '#9b59b6');
-    if (!surah || !surah.vocabulary || surah.vocabulary.length < 2) {
-        gameContentArea.innerHTML = '<p class="game-notice">لا توجد بيانات كافية لهذه اللعبة في السورة المحددة.</p>';
-        return;
-    }
-    gameContentArea.innerHTML = `
-        <div class="game-header"><h3 class="game-title">لعبة توصيل المعاني</h3><p class="game-instructions">اسحب الكلمة من القائمة اليمنى وضعها على معناها الصحيح في القائمة اليسرى.</p></div>
-        <div id="meaning-game-area" class="meaning-game-area"><div id="words-container" class="words-container"></div><div id="meanings-container" class="meanings-container"></div></div>
-        <div class="game-footer"><div id="meaning-match-score" class="game-score">النتيجة: 0</div><button id="reset-game-btn" class="btn-reset-game"><span class="material-icons">refresh</span></button></div>`;
-    const wordsContainer = document.getElementById('words-container');
-    const meaningsContainer = document.getElementById('meanings-container');
-    const scoreElement = document.getElementById('meaning-match-score');
-    let score = 0;
-    const pairs = [...surah.vocabulary].sort(() => 0.5 - Math.random()).slice(0, 5);
-    if (pairs.length < 2) {
-        gameContentArea.innerHTML = '<p class="game-notice">لا توجد بيانات كافية لهذه اللعبة في السورة المحددة.</p>';
-        return;
-    }
-    const words = pairs.map(p => p.word);
-    const meanings = pairs.map(p => p.meaning);
-    const shuffledWords = [...words].sort(() => 0.5 - Math.random());
-    const shuffledMeanings = [...meanings].sort(() => 0.5 - Math.random());
-    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-    let selectedWordDiv = null;
-    const handleMatchAttempt = (word, meaning, meaningBox) => {
-        const correctPair = pairs.find(p => p.word === word && p.meaning === meaning);
-        if (correctPair) {
-            const wordItem = Array.from(wordsContainer.children).find(w => w.textContent === word);
-            meaningBox.classList.add('correct');
-            meaningBox.innerHTML = `<span>${word}</span> <span class="material-icons">check_circle</span>`;
-            if (wordItem) wordItem.classList.add('matched');
-            score++;
-            scoreElement.textContent = `النتيجة: ${score}`;
-            playSound('correct');
-            if (score === pairs.length) playSound('win');
-            return true;
-        } else {
-            meaningBox.classList.add('incorrect');
-            setTimeout(() => meaningBox.classList.remove('incorrect'), 700);
-            playSound('incorrect');
-            return false;
-        }
-    };
-    shuffledWords.forEach(word => {
-        const div = document.createElement('div');
-        div.className = 'word-item';
-        div.textContent = word;
-        wordsContainer.appendChild(div);
-        if (isTouchDevice) {
-            div.addEventListener('click', () => {
-                if (div.classList.contains('matched')) return;
-                if (selectedWordDiv) selectedWordDiv.classList.remove('dragging');
-                div.classList.add('dragging');
-                selectedWordDiv = div;
-                playSound('drag_start');
-            });
-        } else {
-            div.draggable = true;
-            div.addEventListener('dragstart', e => {
-                if (div.classList.contains('matched')) { e.preventDefault(); return; }
-                e.dataTransfer.setData('text/plain', word);
-                e.target.classList.add('dragging');
-                playSound('drag_start');
-            });
-            div.addEventListener('dragend', e => e.target.classList.remove('dragging'));
-        }
-    });
-    shuffledMeanings.forEach(meaning => {
-        const box = document.createElement('div');
-        box.className = 'meaning-box';
-        box.textContent = meaning;
-        box.dataset.meaning = meaning;
-        meaningsContainer.appendChild(box);
-        if (isTouchDevice) {
-            box.addEventListener('click', () => {
-                if (!selectedWordDiv || box.classList.contains('correct')) return;
-                handleMatchAttempt(selectedWordDiv.textContent, meaning, box);
-                selectedWordDiv.classList.remove('dragging');
-                selectedWordDiv = null;
-            });
-        } else {
-            box.addEventListener('dragover', e => { e.preventDefault(); if (!box.classList.contains('correct')) box.classList.add('over'); });
-            box.addEventListener('dragleave', () => box.classList.remove('over'));
-            box.addEventListener('drop', e => {
-                e.preventDefault();
-                if (box.classList.contains('correct')) return;
-                box.classList.remove('over');
-                const droppedWord = e.dataTransfer.getData('text/plain');
-                const wordItem = Array.from(wordsContainer.children).find(w => w.textContent === droppedWord);
-                if (!wordItem || wordItem.classList.contains('matched')) return;
-                handleMatchAttempt(droppedWord, meaning, box);
-            });
-        }
-    });
-    document.getElementById('reset-game-btn').onclick = () => { playSound('navigate'); setupMeaningMatchGame(surah, start, end); };
-}
-
 function setupVerseOrderGame(surah, start, end) {
     const container = document.getElementById('verse-order-game');
     const gameContentArea = container.querySelector('.game-content-area');
@@ -716,7 +614,6 @@ export function displayGames(surah, start, end) {
     localStorage.setItem('lastEndVerse', end);
 
     const games = [
-        { key: 'meaning-match', label: 'لعبة توصيل المعاني', icon: 'sync_alt', desc: 'اختبر معرفتك بمعاني كلمات القرآن من خلال توصيل الكلمة بمعناها الصحيح.' , cardGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', iconColor: '#fff' },
         { key: 'verse-order', label: 'ترتيب الآيات', icon: 'sort', desc: 'رتب الآيات بالترتيب الصحيح وتحدى ذاكرتك القرآنية.', cardGradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)', iconColor: '#fff' },
         { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart', desc: 'التقط الكلمات الصحيحة من الشلال وأكمل الآية قبل أن تسقط الكلمات.', cardGradient: 'linear-gradient(135deg, #f77062 0%, #fe5196 100%)', iconColor: '#fff' }
     ];
@@ -800,7 +697,6 @@ export function showGame(game, surah, start, end) {
     document.getElementById('global-back-to-games-btn').classList.add('flex');
 
     switch (game) {
-        case 'meaning-match': setupMeaningMatchGame(surah, start, end); break;
         case 'verse-order': setupVerseOrderGame(surah, start, end); break;
         case 'verse-cascade': setupVerseCascadeGame(surah, start, end); break;
     }
