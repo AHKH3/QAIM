@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QAIM</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="games/games-cards.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&family=Material+Icons&display=swap" rel="stylesheet">
@@ -87,29 +86,20 @@
                     <h3 id="games-title" class="section-title">الألعاب المخصصة</h3>
                     <div id="game-area">
                         <div class="games-cards-grid"></div>
-                        <div id="wheel-game" class="game-container hidden">
-                            <div class="game-content-area"></div>
-                        </div>
-                        <div id="verse-order-game" class="game-container hidden">
-                            <div class="game-content-area"></div>
-                        </div>
-                        <div id="verse-cascade-game" class="game-container hidden">
-                            <div class="game-content-area"></div>
-                        </div>
-                        <div id="card-matching-game-special" class="game-container hidden">
-                           {/* Special game content will be loaded here by games.js */}
-                        </div>
+                        <div id="verse-order-special" class="game-container hidden"></div>
+                        <div id="verse-cascade-special" class="game-container hidden"></div>
+                        <div id="card-matching-special" class="game-container hidden"></div>
                     </div>
                 </section>
 
                 <section id="general-games-section" class="content-section">
+                    <button id="general-back-to-games-btn" class="back-to-games-btn hidden"><span class="material-icons">arrow_back</span></button>
                     <h3 id="general-games-title" class="section-title">ألعاب عامة</h3>
                     <div id="general-game-area">
                          {/* General games cards will be loaded here by games.js */}
                     </div>
-                    <div id="card-matching-game-general" class="game-container hidden">
-                        {/* General game content will be loaded here by games.js */}
-                    </div>
+                    <div id="wheel-general" class="game-container hidden"></div>
+                    <div id="card-matching-general" class="game-container hidden"></div>
                 </section>
             </div>
         </main>

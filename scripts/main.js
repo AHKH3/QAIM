@@ -214,19 +214,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 cleanupActiveGame();
                 const sectionId = this.getAttribute('data-section');
                 switchTab(sectionId, (newSectionId) => {
-                    if (newSectionId === 'general-games') loadGeneralGames();
+                    if (newSectionId === 'general-games') {
+                        loadGeneralGames();
+                        showGeneralGameGrid();
+                    }
                     else if (newSectionId === 'games') showGameGrid();
                 });
             });
         });
 
         document.getElementById('global-back-to-games-btn').addEventListener('click', () => { playSound('navigate'); showGameGrid(); });
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('#general-game-area .back-to-games-btn')) {
-                playSound('navigate');
-                showGeneralGameGrid();
-            }
-        });
+        document.getElementById('general-back-to-games-btn').addEventListener('click', () => { playSound('navigate'); showGeneralGameGrid(); });
+
     }
 
     // --- Initialization ---
