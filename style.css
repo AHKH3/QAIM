@@ -1808,119 +1808,143 @@ select:focus, input[type="number"]:focus {
 /* لا يوجد خطأ هنا، فقط إغلاق صحيح للـ media query */
 }
 
-
 /*
 ========================================
---- Card Matching Game (Memory Game) ---
+--- Card Matching Game ---
 ========================================
 */
 
-#card-matching-game {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
-    border-radius: 15px;
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+/* --- Container and Theming --- */
+.cm-game-container {
+    padding: 1.5rem;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    background: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%);
+    color: white;
 }
 
-/* Theme-specific styles for card matching game */
-:root {
-    /* Sea Theme */
-    --sea-bg: #87CEEB;
-    --sea-card-bg: #00BFFF;
-    --sea-card-front: #1E90FF;
-    --sea-text: #ffffff;
-    --sea-shadow: rgba(0, 100, 150, 0.4);
-
-    /* Forest Theme */
-    --forest-bg: #228B22;
-    --forest-card-bg: #556B2F;
-    --forest-card-front: #8FBC8F;
-    --forest-text: #ffffff;
-    --forest-shadow: rgba(0, 50, 0, 0.4);
-
-    /* Space Theme */
-    --space-bg: #0c0a1a;
-    --space-card-bg: #2a2a4e;
-    --space-card-front: #4a4a8e;
-    --space-text: #e0e0ff;
-    --space-shadow: rgba(40, 40, 80, 0.5);
+.cm-game-container h1, .cm-game-container label {
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 }
 
-.sea-theme #card-matching-game { background-color: var(--sea-bg); color: var(--sea-text); }
-.forest-theme #card-matching-game { background-color: var(--forest-bg); color: var(--forest-text); }
-.space-theme #card-matching-game { background-color: var(--space-bg); color: var(--space-text); }
+/* --- Themed Backgrounds --- */
+.cm-game-container.theme-space {
+    background: #0c0a1a;
+}
+.cm-game-container.theme-forest {
+    background: linear-gradient(145deg, #1A4314, #2E8B57);
+}
+.cm-game-container.theme-sea {
+    background: linear-gradient(145deg, #0077BE, #87CEEB);
+}
 
+/* --- Animated Backgrounds --- */
+.stars-container {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+.star {
+    position: absolute;
+    background-color: white;
+    border-radius: 50%;
+    animation: stars-fall linear infinite;
+}
+@keyframes stars-fall {
+    from { transform: translateY(-10vh) scale(1); }
+    to { transform: translateY(110vh) scale(0); }
+}
 
-#cm-setup-screen, #cm-game-board {
+/* --- Setup Screen UI Improvements --- */
+.cm-setup-screen {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 1.5rem;
+    background: rgba(0,0,0,0.2);
+    padding: 2rem;
+    border-radius: 15px;
 }
-
-#cm-game-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-}
-
-#cm-game-options {
+.cm-game-options {
     display: flex;
-    gap: 30px;
-    margin-bottom: 20px;
+    gap: 1.5rem;
     flex-wrap: wrap;
     justify-content: center;
 }
+.cm-game-container .option-group select {
+    background-color: rgba(255,255,255,0.9);
+    color: #333;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 0.8rem;
+    font-family: var(--font-body);
+    transition: all 0.3s ease;
+}
+.cm-game-container .option-group select:hover {
+    border-color: #f8cdda;
+}
+.cm-game-container .option-group select:focus {
+    outline: none;
+    border-color: #d57eeb;
+    box-shadow: 0 0 10px #d57eeb;
+}
 
-#cm-game-options .option-group {
+/* Improved Button Style */
+.cm-game-container .btn {
+    background: linear-gradient(145deg, #d57eeb, #fccb90);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.8rem;
+    border-radius: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.cm-game-container .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+
+/* --- Game Board & Info --- */
+.cm-game-board {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    align-items: center;
+    gap: 1rem;
 }
-
-#cm-game-options .option-group label {
-    font-size: 1.2rem;
-}
-
-#cm-game-options .option-group select {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-family: var(--font-body);
-    font-size: 1rem;
-    background-color: #fff;
-    color: #333;
-}
-
-#cm-game-info {
+.cm-game-info {
     display: flex;
     justify-content: space-around;
     width: 100%;
     font-size: 1.2rem;
-    padding: 10px;
-    background: rgba(0,0,0,0.1);
-    border-radius: 8px;
-    margin-bottom: 20px;
+    padding: 0.8rem;
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+    font-weight: bold;
 }
 
-#cm-cards-grid {
+/* --- Cards Grid & Sizing --- */
+.cm-cards-grid {
     display: grid;
-    gap: 15px;
+    gap: 1rem;
     width: 100%;
-    perspective: 1000px;
+    perspective: 1200px;
 }
+.cm-cards-grid.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.cm-cards-grid.grid-5 { grid-template-columns: repeat(5, 1fr); }
+.cm-cards-grid.grid-6 { grid-template-columns: repeat(6, 1fr); }
 
-/* Grid size variations */
-#cm-cards-grid.grid-4 { grid-template-columns: repeat(4, 1fr); }
-#cm-cards-grid.grid-5 { grid-template-columns: repeat(5, 1fr); }
-#cm-cards-grid.grid-6 { grid-template-columns: repeat(6, 1fr); }
-
-
+/* --- Card Styling & Animations --- */
 .cm-card {
     background-color: transparent;
     width: 100%;
@@ -1929,31 +1953,24 @@ select:focus, input[type="number"]:focus {
     cursor: pointer;
     transform-style: preserve-3d;
 }
-
-.cm-card.incorrect {
-    animation: shake 0.4s;
-}
-
 .cm-card-inner {
     position: relative;
     width: 100%;
     height: 100%;
     transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform-style: preserve-3d;
-    box-shadow: 0 4px 8px 0 var(--space-shadow);
     border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
-
 .cm-card.flipped .cm-card-inner {
     transform: rotateY(180deg);
 }
-
 .cm-card-face {
     position: absolute;
     width: 100%;
     height: 100%;
-    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     border-radius: 10px;
     display: flex;
     justify-content: center;
@@ -1964,80 +1981,53 @@ select:focus, input[type="number"]:focus {
     font-size: clamp(0.8rem, 4vw, 1.1rem);
     overflow-wrap: break-word;
 }
-
 .cm-card-front {
-    color: white;
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
 }
-
-.sea-theme .cm-card-front { background-color: var(--sea-card-front); }
-.forest-theme .cm-card-front { background-color: var(--forest-card-front); }
-.space-theme .cm-card-front { background-color: var(--space-card-front); }
-
-
 .cm-card-back {
-    background-color: #bbb;
     transform: rotateY(180deg);
     line-height: 1.4;
+    font-size: 1.2rem;
+    font-family: var(--font-quran);
 }
 
-.sea-theme .cm-card-back { background-color: var(--sea-card-bg); color: var(--sea-text); }
-.forest-theme .cm-card-back { background-color: var(--forest-card-bg); color: var(--forest-text); }
-.space-theme .cm-card-back { background-color: var(--space-card-bg); color: var(--space-text); }
+/* --- Themed Card Fronts & Backs --- */
+.theme-space .cm-card-front { background-image: url('../assets/images/planet.svg'); background-color: #2a2a4e; }
+.theme-space .cm-card-back { background-color: #4a4a8e; color: #e0e0ff; }
 
+.theme-forest .cm-card-front { background-image: url('../assets/images/leaf.svg'); background-color: #556B2F; }
+.theme-forest .cm-card-back { background-color: #8FBC8F; color: #1A4314; }
+
+.theme-sea .cm-card-front { background-image: url('../assets/images/shell.svg'); background-color: #1E90FF; }
+.theme-sea .cm-card-back { background-color: #00BFFF; color: #ffffff; }
+
+/* --- Card State Animations --- */
 .cm-card.matched .cm-card-inner {
-    transform: scale(1); /* Keep scale normal */
-    opacity: 0.7; /* Slightly fade */
-    box-shadow: 0 0 20px 8px #2ecc71; /* Glowing effect */
+    opacity: 0.7;
     animation: pulse-correct 0.6s;
 }
+.cm-card.incorrect {
+    animation: shake 0.5s;
+}
 
-/* Keyframe Animations */
+/* --- Keyframes --- */
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-8px) rotate(-2deg); }
-    75% { transform: translateX(8px) rotate(2deg); }
+    25% { transform: translateX(-10px) rotate(-3deg); }
+    75% { transform: translateX(10px) rotate(3deg); }
 }
-
 @keyframes pulse-correct {
-    0% { box-shadow: 0 0 20px 8px #2ecc71; }
-    50% { box-shadow: 0 0 25px 12px #2ecc71; }
-    100% { box-shadow: 0 0 20px 8px #2ecc71; }
+    0% { box-shadow: 0 0 15px 5px #2ecc71; }
+    50% { box-shadow: 0 0 25px 15px #2eff71; }
+    100% { box-shadow: 0 0 15px 5px #2ecc71; }
 }
 
-#cm-game-controls {
-    margin-top: 20px;
-}
-
-#cm-end-game-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-#cm-end-game-modal .modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    color: #333;
-    max-width: 400px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-#cm-end-game-modal .modal-content h2 {
-    font-size: 2rem;
-    margin-bottom: 15px;
-    color: #4CAF50;
-}
-
-#cm-end-game-modal .modal-content p {
-    font-size: 1.2rem;
-    margin-bottom: 25px;
+/* --- Modal Styling --- */
+.cm-end-game-modal .modal-content {
+    background: linear-gradient(135deg, #66bb6a, #43a047);
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
 }
