@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QAIM</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="games/games-cards.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&family=Material+Icons&display=swap" rel="stylesheet">
@@ -96,8 +95,56 @@
                         <div id="verse-cascade-game" class="game-container hidden">
                             <div class="game-content-area"></div>
                         </div>
-                        <div id="memory-game" class="game-container hidden">
-                           <iframe id="memory-game-iframe" src="games/memory_game.html" style="width: 100%; height: 100%; border: none;"></iframe>
+                        <div id="card-matching-game" class="game-container hidden">
+                            <div id="cm-setup-screen">
+                                <h1 id="cm-game-title">لعبة مطابقة البطاقات</h1>
+                                <div id="cm-game-options">
+                                    <div class="option-group">
+                                        <label for="cm-theme-select">اختر المظهر:</label>
+                                        <select id="cm-theme-select">
+                                            <option value="space">الفضاء</option>
+                                            <option value="sea">البحر</option>
+                                            <option value="forest">الغابة</option>
+                                        </select>
+                                    </div>
+                                    <div class="option-group">
+                                        <label for="cm-mode-select">اختر نمط اللعب:</label>
+                                        <select id="cm-mode-select">
+                                            <option value="consecutive">آيات متتالية</option>
+                                            <option value="split">تقسيم الآية</option>
+                                        </select>
+                                    </div>
+                                     <div class="option-group">
+                                        <label for="cm-grid-size-select">حجم اللوحة:</label>
+                                        <select id="cm-grid-size-select">
+                                            <option value="4">4x4</option>
+                                            <option value="5">5x4</option>
+                                            <option value="6">6x4</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button id="cm-start-game-btn" class="btn">ابدأ اللعب</button>
+                            </div>
+
+                            <div id="cm-game-board" class="hidden">
+                                <div id="cm-game-info">
+                                    <span id="cm-timer">الوقت: 0:00</span>
+                                    <span id="cm-score">النقاط: 0</span>
+                                    <span id="cm-attempts">المحاولات: 0</span>
+                                </div>
+                                <div id="cm-cards-grid"></div>
+                                 <div id="cm-game-controls">
+                                    <button id="cm-reset-game-btn" class="btn">إعادة اللعبة</button>
+                                </div>
+                            </div>
+
+                            <div id="cm-end-game-modal" class="modal-overlay hidden">
+                                <div class="modal-content">
+                                    <h2 id="cm-end-game-title">أحسنت!</h2>
+                                    <p id="cm-end-game-message"></p>
+                                    <button id="cm-play-again-btn" class="btn">العب مرة أخرى</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
