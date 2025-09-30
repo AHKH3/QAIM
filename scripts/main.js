@@ -6,7 +6,7 @@ import { displayGames, displayGeneralGames, showGameGrid, showGeneralGameGrid, c
 document.addEventListener('DOMContentLoaded', () => {
     let currentSurahData = null;
     let surahIndex = [];
-    const surahCache = {}; // Cache to store loaded surah data
+    const quranWorker = new Worker('./scripts/quran-worker.js'); // The worker will handle caching.
 
     // DOM Elements
     const surahSelect = document.getElementById('surah-select');
@@ -15,38 +15,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-    // --- Data Loading ---
-    async function loadAndDisplaySurah(surahId) {
-        showLoading();
-        try {
-            // Check cache first
-            if (surahCache[surahId]) {
-                currentSurahData = surahCache[surahId];
-                displayFullSurah(currentSurahData);
-                hideLoading(); // Hide loading indicator immediately
-                return;
-            }
+    // --- Worker Message Handling ---
+    quranWorker.onmessage = (event) => {
+        const { status, surahId, data, error } = event.data;
 
-            // If not in cache, fetch from network
-            const response = await fetch(`./quran_data/${surahId}.json`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        hideLoading(); // Hide loading indicator once worker responds
 
-            const surahData = await response.json();
-            if (!surahData || typeof surahData !== 'object') throw new Error('Parsed data is not a valid object.');
-
-            // Store in cache and display
-            surahCache[surahId] = surahData;
-            currentSurahData = surahData;
+        if (status === 'success') {
+            currentSurahData = data;
             displayFullSurah(currentSurahData);
-
-        } catch (error) {
-            console.error(`Error loading surah ${surahId}:`, error);
+        } else {
+            console.error(`Worker error loading surah ${surahId}:`, error);
             currentSurahData = null;
             const container = document.getElementById('surah-container');
-            if(container) container.innerHTML = `<p style="text-align: center; color: red;">فشل تحميل بيانات السورة. يرجى المحاولة مرة أخرى.</p>`;
-        } finally {
-            hideLoading();
+            if (container) container.innerHTML = `<p style="text-align: center; color: red;">فشل تحميل بيانات السورة. يرجى المحاولة مرة أخرى.</p>`;
         }
+    };
+
+    // --- Data Loading ---
+    function loadAndDisplaySurah(surahId) {
+        showLoading();
+        // Post message to the worker to load the data
+        quranWorker.postMessage({ type: 'loadSurah', surahId });
     }
 
     // --- Display Functions ---
@@ -73,8 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('surah-container');
         const title = document.getElementById('read-title');
         title.textContent = `سورة ${surah.name} (الآيات ${start}-${end})`;
-        container.innerHTML = '';
 
+        const fragment = document.createDocumentFragment();
         const versesToShow = surah.verses.filter(v => v.id >= start && v.id <= end);
         let skipFirstVerse = false;
 
@@ -85,7 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const normalizedBasmallah = normalizeBasmallah(basmallahStandard);
 
             if (normalizedFirstVerse === normalizedBasmallah) {
-                container.innerHTML += `<div class="basmallah">${firstVerse.text.trim()}</div>`;
+                const basmallahDiv = document.createElement('div');
+                basmallahDiv.className = 'basmallah';
+                basmallahDiv.textContent = firstVerse.text.trim();
+                fragment.appendChild(basmallahDiv);
                 skipFirstVerse = true;
             } else if (normalizedFirstVerse.startsWith(normalizedBasmallah) && surah.id !== 1) {
                 let original = firstVerse.text.trim();
@@ -100,10 +93,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     basmallahEndIndex = i + 1;
                 }
-                container.innerHTML += `<div class="basmallah">${original.slice(0, basmallahEndIndex)}</div>`;
+                const basmallahDiv = document.createElement('div');
+                basmallahDiv.className = 'basmallah';
+                basmallahDiv.textContent = original.slice(0, basmallahEndIndex);
+                fragment.appendChild(basmallahDiv);
+
                 let remainingText = original.slice(basmallahEndIndex).trim();
                 if (remainingText) {
-                    container.innerHTML += `<span class="verse-block">${remainingText} <span class="verse-number">﴿${firstVerse.id}﴾</span></span>`;
+                    const verseSpan = document.createElement('span');
+                    verseSpan.className = 'verse-block';
+                    verseSpan.innerHTML = `${remainingText} <span class="verse-number">﴿${firstVerse.id}﴾</span>`;
+                    fragment.appendChild(verseSpan);
                 }
                 skipFirstVerse = true;
             }
@@ -111,31 +111,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let i = skipFirstVerse ? 1 : 0; i < versesToShow.length; i++) {
             const verse = versesToShow[i];
-            container.innerHTML += `<span class="verse-block">${verse.text} <span class="verse-number">﴿${verse.id}﴾</span></span>`;
+            const verseSpan = document.createElement('span');
+            verseSpan.className = 'verse-block';
+            verseSpan.innerHTML = `${verse.text} <span class="verse-number">﴿${verse.id}﴾</span>`;
+            fragment.appendChild(verseSpan);
         }
+
+        container.innerHTML = ''; // Clear existing content
+        container.appendChild(fragment);
     }
 
     function displayTafsir(surah, start, end) {
         const container = document.getElementById('tafsir-container');
         const title = document.getElementById('tafsir-title');
         title.textContent = `تفسير سورة ${surah.name} (الآيات ${start}-${end})`;
-        container.innerHTML = '';
+
+        const fragment = document.createDocumentFragment();
+
         if (!surah.tafsir || surah.tafsir.length === 0) {
-            container.innerHTML = '<p>لا يتوفر تفسير لهذه السورة حاليًا.</p>';
+            const p = document.createElement('p');
+            p.textContent = 'لا يتوفر تفسير لهذه السورة حاليًا.';
+            fragment.appendChild(p);
+            container.innerHTML = '';
+            container.appendChild(fragment);
             return;
         }
+
         const tafsirToShow = surah.tafsir.filter(t => {
             if (!t.verses) return false;
             const verseRange = t.verses.split('-').map(Number);
             return Math.max(start, verseRange[0]) <= Math.min(end, verseRange[1] || verseRange[0]);
         });
+
         if (tafsirToShow.length === 0) {
-            container.innerHTML = '<p>لا يتوفر تفسير للآيات المحددة حاليًا.</p>';
+            const p = document.createElement('p');
+            p.textContent = 'لا يتوفر تفسير للآيات المحددة حاليًا.';
+            fragment.appendChild(p);
+            container.innerHTML = '';
+            container.appendChild(fragment);
             return;
         }
+
         tafsirToShow.forEach(item => {
-            container.innerHTML += `<div class="tafsir-item"><h4>الآيات (${item.verses})</h4><p>${item.explanation}</p></div>`;
+            const div = document.createElement('div');
+            div.className = 'tafsir-item';
+            div.innerHTML = `<h4>الآيات (${item.verses})</h4><p>${item.explanation}</p>`;
+            fragment.appendChild(div);
         });
+
+        container.innerHTML = ''; // Clear existing content
+        container.appendChild(fragment);
     }
 
     function loadSurahRange() {
@@ -162,10 +187,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupEventListeners() {
         document.body.addEventListener('click', initAudio, { once: true });
 
-        surahSelect.addEventListener('change', async () => {
+        surahSelect.addEventListener('change', () => {
             playSound('navigate');
             cleanupActiveGame();
-            await loadAndDisplaySurah(surahSelect.value);
+            loadAndDisplaySurah(surahSelect.value);
         });
         verseStartInput.addEventListener('change', () => { playSound('click'); cleanupActiveGame(); loadSurahRange(); });
         verseEndInput.addEventListener('change', () => { playSound('click'); cleanupActiveGame(); loadSurahRange(); });
@@ -223,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
             switchTab('read'); // Set initial tab
 
             if (surahSelect.options.length > 0) {
-                await loadAndDisplaySurah(surahSelect.value);
+                loadAndDisplaySurah(surahSelect.value);
             }
         } catch (error) {
             console.error("Failed to initialize app:", error);
