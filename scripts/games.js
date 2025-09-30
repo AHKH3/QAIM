@@ -60,12 +60,17 @@ let activeCardMatchingGame = null;
 
 // --- Card Matching Game Class ---
 class CardMatchingGame {
-    constructor(verses, surahName) {
+    constructor(containerId, verses, surahName) {
+        this.container = document.getElementById(containerId);
+        if (!this.container) {
+            console.error(`Container with id "${containerId}" not found.`);
+            return;
+        }
         this.verses = verses;
         this.surahName = surahName;
         this.gameMode = 'consecutive';
         this.theme = 'space';
-        this.gridSize = 4; // Default grid size (4x4)
+        this.gridSize = 4;
         this.cards = [];
         this.flippedCards = [];
         this.matchedPairs = 0;
@@ -75,34 +80,91 @@ class CardMatchingGame {
         this.seconds = 0;
         this.isLocked = false;
 
+        this.renderBaseHTML();
         this.bindDOM();
         this.addEventListeners();
         this.showSetupScreen();
     }
 
+    renderBaseHTML() {
+        // This function injects the necessary HTML into the container
+        this.container.innerHTML = `
+            <div class="cm-game-container">
+                <div class="cm-setup-screen">
+                    <h1 class="cm-game-title">لعبة مطابقة البطاقات</h1>
+                    <div class="cm-game-options">
+                        <div class="option-group">
+                            <label for="cm-theme-select-${this.container.id}">اختر المظهر:</label>
+                            <select id="cm-theme-select-${this.container.id}">
+                                <option value="space">الفضاء</option>
+                                <option value="sea">البحر</option>
+                                <option value="forest">الغابة</option>
+                            </select>
+                        </div>
+                        <div class="option-group">
+                            <label for="cm-mode-select-${this.container.id}">اختر نمط اللعب:</label>
+                            <select id="cm-mode-select-${this.container.id}">
+                                <option value="consecutive">آيات متتالية</option>
+                                <option value="split">تقسيم الآية</option>
+                            </select>
+                        </div>
+                         <div class="option-group">
+                            <label for="cm-grid-size-select-${this.container.id}">حجم اللوحة:</label>
+                            <select id="cm-grid-size-select-${this.container.id}">
+                                <option value="4">4x4</option>
+                                <option value="5">5x4</option>
+                                <option value="6">6x4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="cm-start-game-btn btn">ابدأ اللعب</button>
+                </div>
+
+                <div class="cm-game-board hidden">
+                    <div class="cm-game-info">
+                        <span class="cm-timer">الوقت: 0:00</span>
+                        <span class="cm-score">النقاط: 0</span>
+                        <span class="cm-attempts">المحاولات: 0</span>
+                    </div>
+                    <div class="cm-cards-grid"></div>
+                     <div class="cm-game-controls">
+                        <button class="cm-reset-game-btn btn">إعادة اللعبة</button>
+                    </div>
+                </div>
+
+                <div class="cm-end-game-modal modal-overlay hidden">
+                    <div class="modal-content">
+                        <h2 class="cm-end-game-title">أحسنت!</h2>
+                        <p class="cm-end-game-message"></p>
+                        <button class="cm-play-again-btn btn">العب مرة أخرى</button>
+                    </div>
+                </div>
+            </div>`;
+    }
+
     bindDOM() {
-        this.setupScreen = document.getElementById('cm-setup-screen');
-        this.gameBoard = document.getElementById('cm-game-board');
-        this.cardsGrid = document.getElementById('cm-cards-grid');
-        this.themeSelect = document.getElementById('cm-theme-select');
-        this.modeSelect = document.getElementById('cm-mode-select');
-        this.gridSelect = document.getElementById('cm-grid-size-select');
-        this.startGameBtn = document.getElementById('cm-start-game-btn');
-        this.resetGameBtn = document.getElementById('cm-reset-game-btn');
-        this.playAgainBtn = document.getElementById('cm-play-again-btn');
-        this.timerEl = document.getElementById('cm-timer');
-        this.scoreEl = document.getElementById('cm-score');
-        this.attemptsEl = document.getElementById('cm-attempts');
-        this.endGameModal = document.getElementById('cm-end-game-modal');
-        this.endGameTitle = document.getElementById('cm-end-game-title');
-        this.endGameMessage = document.getElementById('cm-end-game-message');
-        this.gameContainer = document.getElementById('card-matching-game');
+        this.setupScreen = this.container.querySelector('.cm-setup-screen');
+        this.gameBoard = this.container.querySelector('.cm-game-board');
+        this.cardsGrid = this.container.querySelector('.cm-cards-grid');
+        this.themeSelect = this.container.querySelector(`#cm-theme-select-${this.container.id}`);
+        this.modeSelect = this.container.querySelector(`#cm-mode-select-${this.container.id}`);
+        this.gridSelect = this.container.querySelector(`#cm-grid-size-select-${this.container.id}`);
+        this.startGameBtn = this.container.querySelector('.cm-start-game-btn');
+        this.resetGameBtn = this.container.querySelector('.cm-reset-game-btn');
+        this.playAgainBtn = this.container.querySelector('.cm-play-again-btn');
+        this.timerEl = this.container.querySelector('.cm-timer');
+        this.scoreEl = this.container.querySelector('.cm-score');
+        this.attemptsEl = this.container.querySelector('.cm-attempts');
+        this.endGameModal = this.container.querySelector('.cm-end-game-modal');
+        this.endGameTitle = this.container.querySelector('.cm-end-game-title');
+        this.endGameMessage = this.container.querySelector('.cm-end-game-message');
+        this.gameContainer = this.container.querySelector('.cm-game-container');
     }
 
     addEventListeners() {
-        this.startGameBtn.onclick = () => this.initializeGame();
-        this.resetGameBtn.onclick = () => this.resetGame();
-        this.playAgainBtn.onclick = () => this.showSetupScreen();
+        this.startGameBtn.onclick = () => { playSound('click'); this.initializeGame(); };
+        this.resetGameBtn.onclick = () => { playSound('click'); this.resetGame(); };
+        this.playAgainBtn.onclick = () => { playSound('click'); this.showSetupScreen(); };
         this.themeSelect.onchange = (e) => this.applyTheme(e.target.value);
     }
 
@@ -118,9 +180,8 @@ class CardMatchingGame {
         this.cardsGrid.innerHTML = '';
         this.cards = [];
         this.matchedPairs = 0;
-        this.cardsGrid.className = 'cm-cards-grid'; // Reset class
+        this.cardsGrid.className = 'cm-cards-grid';
         this.cardsGrid.classList.add(`grid-${this.gridSize}`);
-
 
         let cardData = [];
         const availableVerses = this.verses.map(v => ({...v, text: removeBasmallahFromVerse(v.text, v.surahId)})).filter(v => v.text.trim() !== '');
@@ -146,24 +207,24 @@ class CardMatchingGame {
         const numberOfPairs = (this.gridSize * this.gridSize) / 2;
         const uniquePairIds = [...new Set(cardData.map(c => c.pairId))];
         const selectedPairIds = this.shuffle(uniquePairIds).slice(0, numberOfPairs);
-        const finalCardData = cardData.filter(c => selectedPairIds.includes(c.pairId));
+        let finalCardData = cardData.filter(c => selectedPairIds.includes(c.pairId));
+        finalCardData = this.shuffle(finalCardData);
 
         if (finalCardData.length < 4) {
-            this.cardsGrid.innerHTML = `<p class="error-message">لا توجد آيات كافية لهذا النمط في النطاق المحدد. حاول توسيع نطاق الآيات أو تغيير النمط.</p>`;
+            this.cardsGrid.innerHTML = `<p class="error-message">لا توجد آيات كافية لهذا النمط في النطاق المحدد.</p>`;
             return;
         }
 
-        this.shuffle(finalCardData).forEach((item) => {
+        finalCardData.forEach((item) => {
             const card = document.createElement('div');
             card.classList.add('cm-card');
             card.dataset.pairId = item.pairId;
 
             card.innerHTML = `
                 <div class="cm-card-inner">
-                    <div class="cm-card-face cm-card-front"><span class="material-icons">memory</span></div>
+                    <div class="cm-card-face cm-card-front"></div>
                     <div class="cm-card-face cm-card-back">${item.content}</div>
-                </div>
-            `;
+                </div>`;
             card.addEventListener('click', () => this.flipCard(card));
             this.cardsGrid.appendChild(card);
             this.cards.push(card);
@@ -171,11 +232,12 @@ class CardMatchingGame {
     }
 
     flipCard(card) {
-        if (this.isLocked || card.classList.contains('flipped') || this.flippedCards.length >= 2) {
-            return;
-        }
+        if (this.isLocked || card.classList.contains('flipped') || this.flippedCards.length >= 2) return;
+
+        playSound('flip');
         card.classList.add('flipped');
         this.flippedCards.push(card);
+
         if (this.flippedCards.length === 2) {
             this.isLocked = true;
             this.attempts++;
@@ -188,15 +250,18 @@ class CardMatchingGame {
         const [card1, card2] = this.flippedCards;
         const isMatch = card1.dataset.pairId === card2.dataset.pairId;
         if (isMatch) {
+            playSound('correct');
             this.score += 10;
             this.matchedPairs++;
             card1.classList.add('matched');
             card2.classList.add('matched');
             this.resetFlippedCards();
             if (this.matchedPairs * 2 === this.cards.length) {
+                playSound('win');
                 this.endGame(true);
             }
         } else {
+            playSound('incorrect');
             this.score = Math.max(0, this.score - 2);
             card1.classList.add('incorrect');
             card2.classList.add('incorrect');
@@ -232,8 +297,33 @@ class CardMatchingGame {
     }
 
     applyTheme(selectedTheme) {
-        this.gameContainer.classList.remove('sea-theme', 'forest-theme', 'space-theme');
-        this.gameContainer.classList.add(`${selectedTheme}-theme`);
+        this.gameContainer.classList.remove('theme-space', 'theme-sea', 'theme-forest');
+        this.gameContainer.classList.add(`theme-${selectedTheme}`);
+
+        // Handle animated background for space theme
+        const existingStars = this.gameContainer.querySelector('.stars-container');
+        if (existingStars) {
+            existingStars.remove();
+        }
+
+        if (selectedTheme === 'space') {
+            const starsContainer = document.createElement('div');
+            starsContainer.className = 'stars-container';
+            const numberOfStars = 50;
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                star.style.animationDelay = `${Math.random() * 3}s`;
+                starsContainer.appendChild(star);
+            }
+            this.gameContainer.prepend(starsContainer);
+        }
     }
 
     resetGame() {
@@ -284,17 +374,17 @@ class CardMatchingGame {
         this.resetGameBtn.onclick = null;
         this.playAgainBtn.onclick = null;
         this.themeSelect.onchange = null;
+        this.container.innerHTML = '';
     }
 }
 
-
 // --- Game Setup Functions ---
 
-function setupCardMatchingGame(verses, name) {
+function setupCardMatchingGame(containerId, verses, name) {
     if (activeCardMatchingGame) {
         activeCardMatchingGame.destroy();
     }
-    activeCardMatchingGame = new CardMatchingGame(verses, name);
+    activeCardMatchingGame = new CardMatchingGame(containerId, verses, name);
 }
 
 function setupVerseOrderGame(surah, start, end) {
@@ -852,7 +942,7 @@ export function displayGames(surah, start, end) {
     localStorage.setItem('lastEndVerse', end);
 
     const games = [
-        { key: 'card-matching', label: 'لعبة مطابقة البطاقات', icon: 'style', desc: 'اختبر قوة ذاكرتك بمطابقة الآيات المتشابهة أو أجزاء الآية الواحدة.', cardGradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', iconColor: '#fff' },
+        { key: 'card-matching-special', label: 'لعبة مطابقة البطاقات', icon: 'style', desc: 'اختبر قوة ذاكرتك بمطابقة الآيات المتشابهة أو أجزاء الآية الواحدة.', cardGradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', iconColor: '#fff' },
         { key: 'verse-order', label: 'ترتيب الآيات', icon: 'sort', desc: 'رتب الآيات بالترتيب الصحيح وتحدى ذاكرتك القرآنية.', cardGradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)', iconColor: '#fff' },
         { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart', desc: 'التقط الكلمات الصحيحة من الشلال وأكمل الآية قبل أن تسقط الكلمات.', cardGradient: 'linear-gradient(135deg, #f77062 0%, #fe5196 100%)', iconColor: '#fff' }
     ];
@@ -892,7 +982,7 @@ export function displayGeneralGames(startSurahId, endSurahId, surahIndex) {
 
     const generalGames = [
         { key: 'wheel', label: 'العجلة الدوارة', icon: 'rotate_right', desc: 'أدر العجلة وأجب على الأسئلة القرآنية في جو من الحماس والتحدي.', cardGradient: 'linear-gradient(135deg, #ff8c42 0%, #ffc048 100%)', iconColor: '#fff' },
-        { key: 'card-matching', label: 'لعبة مطابقة البطاقات', icon: 'style', desc: 'طابق الآيات المتتالية أو أجزاء الآية من مجموعة سور مختارة.', cardGradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', iconColor: '#fff' }
+        { key: 'card-matching-general', label: 'لعبة مطابقة البطاقات', icon: 'style', desc: 'طابق الآيات المتتالية أو أجزاء الآية من مجموعة سور مختارة.', cardGradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', iconColor: '#fff' }
     ];
 
     generalGameArea.innerHTML = `<div class="games-cards-grid">${generalGames.map(game => `
@@ -903,11 +993,7 @@ export function displayGeneralGames(startSurahId, endSurahId, surahIndex) {
                 <div class="desc">${game.desc}</div>
                 <button class="go-btn">ابدأ اللعبة</button>
             </div>
-        </div>`).join('')}</div>
-    <div id="general-wheel-game" class="game-container hidden">
-        <button class="back-to-games-btn"><span class="material-icons">arrow_back</span></button>
-        <div class="game-content-area"></div>
-    </div>`;
+        </div>`).join('')}</div>`;
 
     const cardsGrid = generalGameArea.querySelector('.games-cards-grid');
     cardsGrid.classList.remove('hidden');
@@ -922,28 +1008,29 @@ export function displayGeneralGames(startSurahId, endSurahId, surahIndex) {
         card.querySelector('.go-btn').addEventListener('click', (e) => { e.stopPropagation(); showGeneralGame(gameKey, startSurahId, endSurahId, surahIndex); });
     });
 
-    generalGameArea.querySelectorAll('.game-container').forEach(g => g.classList.add('hidden'));
+    document.querySelectorAll('#general-games-section .game-container').forEach(g => g.classList.add('hidden'));
 }
 
 export function showGame(game, surah, start, end) {
     cleanupActiveGame();
     document.querySelector('#games-section .games-cards-grid').classList.add('hidden');
     document.querySelectorAll('#games-section .game-container').forEach(g => g.classList.add('hidden'));
-    const el = document.getElementById(`${game}-game`);
-    if (!el) return;
+
+    const el = document.getElementById(game);
+    if (!el) {
+        console.error(`Game container with ID "${game}" not found.`);
+        return;
+    }
     el.classList.remove('hidden');
     el.classList.add('active');
     document.getElementById('global-back-to-games-btn').classList.remove('hidden');
     document.getElementById('global-back-to-games-btn').classList.add('flex');
 
     switch (game) {
-        case 'card-matching':
-            {
-                // If it's a general game, the surah name will be different, and we don't need to filter.
-                const verses = surah.name.includes('من') ? surah.verses : surah.verses.filter(v => v.id >= start && v.id <= end);
-                setupCardMatchingGame(verses, surah.name);
-                break;
-            }
+        case 'card-matching-special':
+            const verses = surah.verses.filter(v => v.id >= start && v.id <= end);
+            setupCardMatchingGame(game, verses, surah.name);
+            break;
         case 'verse-order':
             setupVerseOrderGame(surah, start, end);
             break;
@@ -968,42 +1055,28 @@ export function showGeneralGame(game, startSurahId, endSurahId, surahIndex) {
 
     Promise.all(surahsToLoad.map(id => fetch(`./quran_data/${id}.json`).then(res => res.ok ? res.json() : Promise.reject(`Failed to load surah ${id}`))))
         .then(surahDataArray => {
-            const allVerses = surahDataArray.flatMap(surahData => surahData.verses.map(v => ({ ...v,
-                surahId: surahData.id
-            })));
+            const allVerses = surahDataArray.flatMap(surahData => surahData.verses.map(v => ({ ...v, surahId: surahData.id })));
             const generalGameArea = document.getElementById('general-game-area');
+            const generalGamesSection = document.getElementById('general-games-section');
             generalGameArea.querySelector('.games-cards-grid').classList.add('hidden');
-            generalGameArea.querySelectorAll('.game-container').forEach(g => g.classList.add('hidden'));
+            generalGamesSection.querySelectorAll('.game-container').forEach(g => g.classList.add('hidden'));
+
+            const el = document.getElementById(game);
+            if (!el) {
+                 console.error(`Game container with ID "${game}" not found.`);
+                return;
+            }
+            el.classList.remove('hidden');
+            el.classList.add('active');
+
+            const backButton = generalGamesSection.querySelector('.back-to-games-btn');
+            if(backButton) backButton.classList.remove('hidden');
 
             if (game === 'wheel') {
-                const el = document.getElementById(`general-wheel-game`);
-                if (!el) return;
-                el.classList.remove('hidden');
-                el.classList.add('active');
-                const backButton = el.querySelector('.back-to-games-btn');
-                backButton.classList.remove('hidden');
-                backButton.classList.add('flex');
-                setupWheelGame({
-                    verses: allVerses,
-                    surahIndex: surahIndex
-                }, startSurahId, endSurahId);
-            } else if (game === 'card-matching') {
-                const startSurahName = surahIndex.find(s => s.id === startSurahId)?.name || '';
-                const endSurahName = surahIndex.find(s => s.id === endSurahId)?.name || '';
-                const gameName = `من ${startSurahName} إلى ${endSurahName}`;
-
-                const fakeSurah = {
-                    name: gameName,
-                    verses: allVerses
-                };
-
-                document.querySelector('.tab-btn[data-section="games"]').click();
-
-                setTimeout(() => {
-                    showGame('card-matching', fakeSurah, 1, allVerses.length);
-                    const gameTitle = document.getElementById('games-title');
-                    if (gameTitle) gameTitle.textContent = `لعبة مطابقة البطاقات على سور ${gameName}`;
-                }, 100);
+                setupWheelGame({ verses: allVerses, surahIndex: surahIndex }, startSurahId, endSurahId);
+            } else if (game === 'card-matching-general') {
+                const gameName = `من ${surahIndex.find(s=>s.id === startSurahId).name} إلى ${surahIndex.find(s=>s.id === endSurahId).name}`;
+                setupCardMatchingGame(game, allVerses, gameName);
             }
         })
         .catch(error => console.error('Error loading surah data for general games:', error));
