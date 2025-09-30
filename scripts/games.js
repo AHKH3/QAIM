@@ -54,10 +54,46 @@ function getDragAfterElement(container, y, selector) {
 
 
 // --- Game State Variables ---
-let gameScores = { 'meaning-match': 0, 'wheel': 0, 'verse-order': 0 };
+let gameScores = { 'wheel': 0, 'verse-order': 0 };
 let verseCascadeGameLoopId = null;
 
 // --- Game Setup Functions ---
+
+function setupMemoryGame(surah, start, end) {
+    const iframe = document.getElementById('memory-game-iframe');
+    if (!iframe) {
+        console.error("Memory game iframe not found!");
+        return;
+    }
+    const verses = surah.verses.filter(v => v.id >= start && v.id <= end);
+
+    const gameData = {
+        type: 'startGame',
+        verses: verses,
+        surahName: surah.name
+    };
+
+    const onReady = (event) => {
+        // Basic security checks
+        if (event.source !== iframe.contentWindow || event.data.type !== 'ready') {
+            return;
+        }
+
+        console.log("Received 'ready' from memory game. Sending data.");
+        iframe.contentWindow.postMessage(gameData, '*');
+
+        // Clean up: remove the listener to avoid it firing again
+        window.removeEventListener('message', onReady);
+    };
+
+    // Listen for the iframe to signal it's ready
+    window.addEventListener('message', onReady);
+
+    // Reload the iframe to ensure a clean state and predictable load/message sequence
+    // This is crucial because this setup function might be called after the iframe has already loaded
+    // and sent its 'ready' message. Reloading guarantees we'll catch the 'ready' message.
+    iframe.src = iframe.src;
+}
 
 function setupVerseOrderGame(surah, start, end) {
     const container = document.getElementById('verse-order-game');
@@ -614,6 +650,7 @@ export function displayGames(surah, start, end) {
     localStorage.setItem('lastEndVerse', end);
 
     const games = [
+        { key: 'memory', label: 'لعبة الذاكرة', icon: 'memory', desc: 'اختبر قوة ذاكرتك بمطابقة الآيات المتشابهة أو أجزاء الآية الواحدة.', cardGradient: 'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)', iconColor: '#fff' },
         { key: 'verse-order', label: 'ترتيب الآيات', icon: 'sort', desc: 'رتب الآيات بالترتيب الصحيح وتحدى ذاكرتك القرآنية.', cardGradient: 'linear-gradient(135deg, #2af598 0%, #009efd 100%)', iconColor: '#fff' },
         { key: 'verse-cascade', label: 'شلال الآيات', icon: 'waterfall_chart', desc: 'التقط الكلمات الصحيحة من الشلال وأكمل الآية قبل أن تسقط الكلمات.', cardGradient: 'linear-gradient(135deg, #f77062 0%, #fe5196 100%)', iconColor: '#fff' }
     ];
@@ -697,6 +734,7 @@ export function showGame(game, surah, start, end) {
     document.getElementById('global-back-to-games-btn').classList.add('flex');
 
     switch (game) {
+        case 'memory': setupMemoryGame(surah, start, end); break;
         case 'verse-order': setupVerseOrderGame(surah, start, end); break;
         case 'verse-cascade': setupVerseCascadeGame(surah, start, end); break;
     }
