@@ -49,6 +49,7 @@ function loadAudio(key) {
 
 
 export function playSound(type) {
+    initAudio(); // Ensure audio context is initialized on any sound playback attempt
     if (isMuted) return;
 
     const soundPath = soundMap[type];

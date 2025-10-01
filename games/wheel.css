@@ -1,0 +1,179 @@
+/* games/wheel.css */
+/* This file contains the 'legendary' styling for the Quranic Wheel of Fortune game. */
+
+/* --- Main Game Container --- */
+.wheel-game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--background-color-light);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.dark-mode .wheel-game-container {
+    background: var(--background-color-dark-deep);
+}
+
+.wheel-game-title {
+    font-family: 'Amiri', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.wheel-game-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-color-secondary);
+    margin-bottom: 1.5rem;
+    max-width: 600px;
+}
+
+.wheel-game-score-container {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    background-color: var(--background-color-main);
+    padding: 0.5rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+
+/* --- Wheel and Pointer --- */
+.wheel-container {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.pointer {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 50px solid #D4AF37; /* Gold color */
+    top: -20px;
+    z-index: 10;
+    transform-origin: bottom center;
+    transition: transform 0.3s ease-in-out;
+    filter: drop-shadow(0px -5px 5px rgba(0,0,0,0.2));
+}
+
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-image: conic-gradient(
+        var(--wheel-segment-1) 0deg 90deg,
+        var(--wheel-segment-2) 90deg 180deg,
+        var(--wheel-segment-3) 180deg 270deg,
+        var(--wheel-segment-4) 270deg 360deg
+    );
+    border: 10px solid #C0C0C0; /* Silver */
+    box-shadow: 0 0 20px rgba(0,0,0,0.2), inset 0 0 15px rgba(0,0,0,0.3);
+    position: relative;
+    transition: transform 7s cubic-bezier(0.25, 1, 0.5, 1); /* Slower, more dramatic spin */
+    transform: rotate(0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wheel::before { /* Inner shadow for 3D effect */
+    content: '';
+    position: absolute;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    box-shadow: inset 0 0 25px rgba(0,0,0,0.4);
+    z-index: 1;
+}
+
+.wheel-text-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.wheel-text {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    top: 25%;
+    left: 25%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    font-size: 1.2rem;
+    padding-left: 25%;
+    box-sizing: border-box;
+}
+
+.wheel-text.text-1 { transform: rotate(45deg); }
+.wheel-text.text-2 { transform: rotate(135deg); }
+.wheel-text.text-3 { transform: rotate(225deg); }
+.wheel-text.text-4 { transform: rotate(315deg); }
+
+
+/* --- Buttons --- */
+.spin-button {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #D4AF37; /* Gold */
+    color: #fff;
+    border: 5px solid #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    z-index: 5;
+    transition: all 0.2s ease;
+}
+
+.spin-button:hover:not(:disabled) {
+    transform: scale(1.1);
+    background-color: #e6c35c;
+}
+
+.spin-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.wheel-game-reset-button {
+    background: none;
+    border: 2px solid var(--border-color);
+    color: var(--text-color-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.wheel-game-reset-button:hover {
+    background-color: var(--border-color);
+    color: var(--text-color-main);
+}
