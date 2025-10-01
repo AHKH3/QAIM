@@ -1,244 +1,156 @@
-:root {
-    --font-family-arabic: 'Amiri', 'Scheherazade New', serif;
-    --primary-text-light: #333;
-    --primary-text-dark: #f0f0f0;
+/* games/memory_game.css */
+/* This file contains the 'legendary' styling for the Card Matching game themes. */
 
-    /* Sea Theme */
-    --sea-bg: #87CEEB;
-    --sea-card-bg: #00BFFF;
-    --sea-card-front: #1E90FF;
-    --sea-text: #ffffff;
-    --sea-shadow: rgba(0, 100, 150, 0.4);
-
-    /* Forest Theme */
-    --forest-bg: #228B22;
-    --forest-card-bg: #556B2F;
-    --forest-card-front: #8FBC8F;
-    --forest-text: #ffffff;
-    --forest-shadow: rgba(0, 50, 0, 0.4);
-
-    /* Space Theme */
-    --space-bg: #0c0a1a;
-    --space-card-bg: #2a2a4e;
-    --space-card-front: #4a4a8e;
-    --space-text: #e0e0ff;
-    --space-shadow: rgba(40, 40, 80, 0.5);
-}
-
-body {
-    font-family: var(--font-family-arabic);
-    margin: 0;
-    padding: 1rem;
-    box-sizing: border-box;
-    transition: background-color 0.5s, color 0.5s;
-    text-align: center;
-    color: var(--primary-text-light); /* Default color */
-}
-
-#game-container {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
-    border-radius: 15px;
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-/* Theme-specific styles */
-body.sea-theme { background-color: var(--sea-bg); color: var(--sea-text); }
-body.forest-theme { background-color: var(--forest-bg); color: var(--forest-text); }
-body.space-theme { background-color: var(--space-bg); color: var(--space-text); }
-
-.sea-theme #game-container { background-color: rgba(0, 191, 255, 0.2); }
-.forest-theme #game-container { background-color: rgba(85, 107, 47, 0.2); }
-.space-theme #game-container { background-color: rgba(42, 42, 78, 0.3); }
-
-
-#setup-screen, #game-board {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-
-#game-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-}
-
-#game-options {
-    display: flex;
-    gap: 30px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.option-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.option-group label {
-    font-size: 1.2rem;
-}
-
-.option-group select {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-family: var(--font-family-arabic);
-    font-size: 1rem;
-    background-color: #fff;
-    color: #333;
-}
-
-.btn {
-    padding: 12px 25px;
-    font-size: 1.2rem;
-    font-family: var(--font-family-arabic);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background-color: #4CAF50;
-    color: white;
-    transition: background-color 0.3s, transform 0.2s;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.btn:hover {
-    background-color: #45a049;
-    transform: translateY(-2px);
-}
-
-#game-info {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    font-size: 1.2rem;
-    padding: 10px;
-    background: rgba(0,0,0,0.1);
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-#cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
-    width: 100%;
-    perspective: 1000px;
-}
-
-.card {
-    background-color: transparent;
-    width: 100%;
-    aspect-ratio: 5 / 7;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.6s;
+/* --- Base Card Animations --- */
+.cm-card .cm-card-inner {
+    transition: transform 0.6s, box-shadow 0.3s;
     transform-style: preserve-3d;
 }
 
-.card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-    box-shadow: 0 4px 8px 0 var(--space-shadow);
-    border-radius: 10px;
-}
-
-.card.flipped .card-inner {
+.cm-card.flipped .cm-card-inner {
     transform: rotateY(180deg);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-.card-face {
+/* Base shake animation for incorrect match */
+@keyframes shake {
+    0%, 100% { transform: translateX(0) rotateY(180deg); }
+    20%, 60% { transform: translateX(-8px) rotateY(180deg); }
+    40%, 80% { transform: translateX(8px) rotateY(180deg); }
+}
+
+.cm-card.incorrect .cm-card-inner {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Base glow animation for correct match */
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 15px 5px var(--glow-color, #fff3); }
+    50% { box-shadow: 0 0 30px 12px var(--glow-color, #fff3); }
+}
+
+.cm-card.matched .cm-card-inner {
+    animation: glow 1s ease-in-out forwards;
+    opacity: 0.5; /* Fade out slightly */
+}
+
+
+/* --- Space Theme --- */
+.cm-game-container.theme-space {
+    background: #00001a radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    overflow: hidden;
+}
+
+.stars-container { /* This will be created by JS */
     position: absolute;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    box-sizing: border-box;
-    text-align: center;
-    font-size: clamp(0.8rem, 4vw, 1.1rem);
-    overflow-wrap: break-word;
-}
-
-.card-front {
-    color: white;
-}
-
-.sea-theme .card-front { background-color: var(--sea-card-front); }
-.forest-theme .card-front { background-color: var(--forest-card-front); }
-.space-theme .card-front { background-color: var(--space-card-front); }
-
-
-.card-back {
-    background-color: #bbb;
-    transform: rotateY(180deg);
-    line-height: 1.4;
-}
-
-.sea-theme .card-back { background-color: var(--sea-card-bg); color: var(--sea-text); }
-.forest-theme .card-back { background-color: var(--forest-card-bg); color: var(--forest-text); }
-.space-theme .card-back { background-color: var(--space-card-bg); color: var(--space-text); }
-
-.card.matched .card-inner {
-    transform: scale(0.95);
-    opacity: 0.6;
-    box-shadow: 0 0 15px 5px #4CAF50;
-}
-
-#game-controls {
-    margin-top: 20px;
-}
-
-.modal-overlay {
-    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    pointer-events: none;
 }
 
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    color: #333;
-    max-width: 400px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+.star {
+    position: absolute;
+    background-color: white;
+    border-radius: 50%;
+    animation: twinkle linear infinite;
 }
 
-.modal-content h2 {
-    font-size: 2rem;
-    margin-bottom: 15px;
-    color: #4CAF50;
+@keyframes twinkle {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 
-.modal-content p {
-    font-size: 1.2rem;
-    margin-bottom: 25px;
+.theme-space .cm-card-front {
+    background: url('../assets/images/planet.svg') center/cover;
+    border: 2px solid #5a6a9c;
+}
+.theme-space .cm-card-back {
+    background-color: #0c142c;
+    border: 2px solid #89a5e8;
+    color: #e0e8ff;
+    font-family: 'Scheherazade New', serif;
+    box-shadow: inset 0 0 15px rgba(137, 165, 232, 0.5);
+}
+.theme-space .cm-card.matched .cm-card-inner {
+    --glow-color: #89a5e8;
 }
 
-.hidden {
-    display: none !important;
+
+/* --- Sea Theme --- */
+.cm-game-container.theme-sea {
+    background: #004e63 linear-gradient(to top, #003344, #007799);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Bubbles will be created by JS */
+.bubble {
+    position: absolute;
+    bottom: -50px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    animation: rise linear infinite;
+}
+
+@keyframes rise {
+    to {
+        transform: translateY(-110vh) translateX(var(--x-end));
+        opacity: 0;
+    }
+}
+
+.theme-sea .cm-card-front {
+    background: url('../assets/images/shell.svg') center/cover;
+    border: 2px solid #66b2b2;
+}
+.theme-sea .cm-card-back {
+    background-color: #005f73;
+    border: 2px solid #94d2bd;
+    color: #e9f5f2;
+    box-shadow: inset 0 0 15px rgba(148, 210, 189, 0.5);
+}
+.theme-sea .cm-card.matched .cm-card-inner {
+    --glow-color: #94d2bd;
+}
+
+
+/* --- Forest Theme --- */
+.cm-game-container.theme-forest {
+    background: #1e3a1e linear-gradient(to bottom, #2a522a, #142814);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Falling leaves will be created by JS */
+.leaf {
+    position: absolute;
+    top: -50px;
+    background-color: var(--leaf-color);
+    width: 20px;
+    height: 20px;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+.theme-forest .cm-card-front {
+    background: url('../assets/images/leaf.svg') center/cover;
+    border: 2px solid #8a5a44;
+}
+.theme-forest .cm-card-back {
+    background-color: #4a3728;
+    border: 2px solid #a87e68;
+    color: #f7f0e8;
+    box-shadow: inset 0 0 15px rgba(168, 126, 104, 0.5);
+}
+.theme-forest .cm-card.matched .cm-card-inner {
+    --glow-color: #a87e68;
 }

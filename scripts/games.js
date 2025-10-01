@@ -300,15 +300,16 @@ class CardMatchingGame {
         this.gameContainer.classList.remove('theme-space', 'theme-sea', 'theme-forest');
         this.gameContainer.classList.add(`theme-${selectedTheme}`);
 
-        // Handle animated background for space theme
-        const existingStars = this.gameContainer.querySelector('.stars-container');
-        if (existingStars) {
-            existingStars.remove();
+        // Cleanup previous theme's animated elements
+        const existingAnimations = this.gameContainer.querySelector('.animation-container');
+        if (existingAnimations) {
+            existingAnimations.remove();
         }
 
+        const animationContainer = document.createElement('div');
+        animationContainer.className = 'animation-container';
+
         if (selectedTheme === 'space') {
-            const starsContainer = document.createElement('div');
-            starsContainer.className = 'stars-container';
             const numberOfStars = 50;
             for (let i = 0; i < numberOfStars; i++) {
                 const star = document.createElement('div');
@@ -320,9 +321,38 @@ class CardMatchingGame {
                 star.style.height = `${size}px`;
                 star.style.animationDuration = `${Math.random() * 3 + 2}s`;
                 star.style.animationDelay = `${Math.random() * 3}s`;
-                starsContainer.appendChild(star);
+                animationContainer.appendChild(star);
             }
-            this.gameContainer.prepend(starsContainer);
+        } else if (selectedTheme === 'sea') {
+            const numberOfBubbles = 20;
+            for (let i = 0; i < numberOfBubbles; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 20 + 10;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.animationDuration = `${Math.random() * 10 + 8}s`;
+                bubble.style.animationDelay = `${Math.random() * 5}s`;
+                bubble.style.setProperty('--x-end', `${Math.random() * 20 - 10}vw`);
+                animationContainer.appendChild(bubble);
+            }
+        } else if (selectedTheme === 'forest') {
+            const numberOfLeaves = 25;
+            const leafColors = ['#6a994e', '#a7c957', '#f2e8cf', '#bc4749'];
+            for (let i = 0; i < numberOfLeaves; i++) {
+                const leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                leaf.style.left = `${Math.random() * 100}%`;
+                leaf.style.setProperty('--leaf-color', leafColors[Math.floor(Math.random() * leafColors.length)]);
+                leaf.style.animationDuration = `${Math.random() * 8 + 6}s`;
+                leaf.style.animationDelay = `${Math.random() * 6}s`;
+                animationContainer.appendChild(leaf);
+            }
+        }
+
+        if (animationContainer.hasChildNodes()) {
+            this.gameContainer.prepend(animationContainer);
         }
     }
 
@@ -586,10 +616,14 @@ function setupVerseCascadeGame(containerId, surah, start, end) {
 
 function setupWheelGame(containerId, surahData, startSurahId, endSurahId) {
     const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '<div class="game-content-area"></div>';
-    const gameContentArea = container.querySelector('.game-content-area');
-    if (!gameContentArea) return;
+    if (!container) {
+        console.error(`Wheel game container #${containerId} not found.`);
+        return;
+    }
+
+    // Clear container and add the main styling class.
+    container.innerHTML = '';
+    container.classList.add('wheel-game-container');
 
     const wheelColorPalettes = [
         { light: ['#FFD700', '#4CAF50', '#2196F3', '#9C27B0'], dark: ['#B8860B', '#388E3C', '#1976D2', '#7B1FA2'] },
@@ -610,9 +644,6 @@ function setupWheelGame(containerId, surahData, startSurahId, endSurahId) {
 
     applyRandomWheelColors();
 
-    container.style.setProperty('--game-primary-color', 'var(--wheel-primary)');
-    container.style.setProperty('--game-secondary-color', 'var(--wheel-secondary)');
-
     let score = 0, isSpinning = false, rotation = 0, usedQuestionIdentifiers = new Set();
     const questionTypes = [
         { id: 'related_ayah', text: 'الآية التالية أو السابقة' },
@@ -624,14 +655,17 @@ function setupWheelGame(containerId, surahData, startSurahId, endSurahId) {
     const surahIndex = surahData.surahIndex;
 
     if (allVerses.length < 10) {
-        gameContentArea.innerHTML = '<p>لا توجد آيات كافية لهذه اللعبة في النطاق المحدد.</p>';
+        container.innerHTML = '<p class="error-message">لا توجد آيات كافية لهذه اللعبة في النطاق المحدد.</p>';
         return;
     }
 
-    gameContentArea.innerHTML = `
+    // Populate the container with the new structure
+    const startSurahName = surahIndex.find(s => s.id === startSurahId)?.name || '';
+    const endSurahName = surahIndex.find(s => s.id === endSurahId)?.name || '';
+    container.innerHTML = `
         <h1 class="wheel-game-title">عجلة الحظ القرآنية</h1>
-        <p class="wheel-game-subtitle">راجع حفظك من سورة ${surahIndex.find(s => s.id === startSurahId)?.name} إلى سورة ${surahIndex.find(s => s.id === endSurahId)?.name}</p>
-        <div id="score-container" class="wheel-game-score-container">النقاط: <span id="score">0</span></div>
+        <p class="wheel-game-subtitle">راجع حفظك من سورة ${startSurahName} إلى سورة ${endSurahName}</p>
+        <div class="wheel-game-score-container">النقاط: <span id="score">0</span></div>
         <div class="wheel-container">
             <div class="pointer"></div>
             <div id="wheel" class="wheel">
@@ -641,13 +675,16 @@ function setupWheelGame(containerId, surahData, startSurahId, endSurahId) {
             </div>
             <button id="spin-button" class="spin-button">أدر</button>
         </div>
-        <button id="reset-button" class="wheel-game-reset-button"><span>إعادة اللعب</span></button>
+        <button id="reset-button" class="wheel-game-reset-button">
+            <span class="material-icons">refresh</span>
+            <span>إعادة اللعب</span>
+        </button>
     `;
 
-    const wheelElement = gameContentArea.querySelector('#wheel');
-    const spinButton = gameContentArea.querySelector('#spin-button');
-    const resetButton = gameContentArea.querySelector('#reset-button');
-    const scoreElement = gameContentArea.querySelector('#score');
+    const wheelElement = container.querySelector('#wheel');
+    const spinButton = container.querySelector('#spin-button');
+    const resetButton = container.querySelector('#reset-button');
+    const scoreElement = container.querySelector('#score');
 
     spinButton.addEventListener('click', spinWheel);
     resetButton.addEventListener('click', resetGame);
@@ -657,19 +694,38 @@ function setupWheelGame(containerId, surahData, startSurahId, endSurahId) {
         isSpinning = true;
         spinButton.disabled = true;
         playSound('spin_start');
-        rotation += Math.ceil(Math.random() * 2000) + 2500;
+        // More dramatic spin
+        const spinCycles = Math.random() * 5 + 8; // 8 to 13 cycles
+        const randomAngle = Math.random() * 360;
+        rotation = spinCycles * 360 + randomAngle;
+
         wheelElement.style.transform = `rotate(${rotation}deg)`;
         wheelElement.addEventListener('transitionend', handleSpinEnd, { once: true });
     }
 
     function handleSpinEnd() {
-        playSound('spin_stop');
+        playSound('spin_stop'); // Using new sound
+        // Make the pointer "kick"
+        const pointer = container.querySelector('.pointer');
+        if(pointer) {
+            pointer.style.transform = 'scale(1.2)';
+            setTimeout(() => { pointer.style.transform = 'scale(1)'; }, 200);
+        }
+
         const actualRotation = rotation % 360;
-        const segmentIndex = Math.floor(actualRotation / 90);
-        presentNewQuestion(questionTypes[segmentIndex].id);
+        const segmentAngle = 360 / questionTypes.length;
+        const segmentIndex = Math.floor(actualRotation / segmentAngle);
+        // We need to adjust because the wheel's 0 is at 3 o'clock, but our segments are laid out from the top.
+        // Let's adjust the segment calculation based on the visual layout.
+        // The text is rotated 45, 135, 225, 315. The segments are 0-90, 90-180...
+        // Let's assume the pointer points up. Then segment 0 is 270-360, 1 is 180-270, etc.
+        const finalIndex = Math.floor((360 - (actualRotation % 360)) / segmentAngle) % questionTypes.length;
+
+        presentNewQuestion(questionTypes[finalIndex].id);
     }
 
     function resetGame() {
+        playSound('navigate');
         score = 0;
         scoreElement.textContent = score;
         isSpinning = false;
@@ -679,7 +735,9 @@ function setupWheelGame(containerId, surahData, startSurahId, endSurahId) {
         rotation = 0;
         wheelElement.style.transform = `rotate(0deg)`;
         applyRandomWheelColors();
-        setTimeout(() => { wheelElement.style.transition = 'transform 7s cubic-bezier(0.25, 1, 0.5, 1)'; }, 50);
+        // Force reflow before re-enabling transition
+        void wheelElement.offsetWidth;
+        wheelElement.style.transition = 'transform 7s cubic-bezier(0.25, 1, 0.5, 1)';
     }
 
     function generateQuestion(type) {

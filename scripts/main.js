@@ -217,8 +217,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (newSectionId === 'general-games') {
                         loadGeneralGames();
                         showGeneralGameGrid();
+                    } else if (newSectionId === 'games') {
+                        if (currentSurahData) {
+                            const startVerse = parseInt(verseStartInput.value) || 1;
+                            const endVerse = parseInt(verseEndInput.value) || currentSurahData.verses.length;
+                            displayGames(currentSurahData, startVerse, endVerse);
+                        }
+                        showGameGrid();
                     }
-                    else if (newSectionId === 'games') showGameGrid();
                 });
             });
         });
