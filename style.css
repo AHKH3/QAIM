@@ -4,8 +4,8 @@
 ========================================
 */
 :root {
-    --font-body: 'Amiri', serif;
-    --font-quran: 'Scheherazade New', serif;
+    --font-body: 'Cairo', sans-serif;
+    --font-quran: 'Amiri', serif;
     --border-radius-inner: 8px;
     --border-radius-main: 12px;
     --shadow-light: 0 2px 5px rgba(0, 0, 0, 0.05);
@@ -94,8 +94,8 @@
 }
 
 .dark-mode {
-    --font-body: 'Amiri', serif;
-    --font-quran: 'Scheherazade New', serif;
+    --font-body: 'Cairo', sans-serif;
+    --font-quran: 'Amiri', serif;
     --border-radius-inner: 8px;
     --border-radius-main: 12px;
     --shadow-light: 0 2px 5px rgba(255, 255, 255, 0.05);
