@@ -297,33 +297,44 @@ class CardMatchingGame {
     }
 
     applyTheme(selectedTheme) {
+        this.theme = selectedTheme; // Make sure the theme is updated on the instance
         this.gameContainer.classList.remove('theme-space', 'theme-sea', 'theme-forest');
-        this.gameContainer.classList.add(`theme-${selectedTheme}`);
+        this.gameContainer.classList.add(`theme-${this.theme}`);
 
         // Cleanup previous theme's animated elements
-        const existingAnimations = this.gameContainer.querySelector('.animation-container');
+        const existingAnimations = this.gameContainer.querySelector('.animation-wrapper');
         if (existingAnimations) {
             existingAnimations.remove();
         }
 
-        const animationContainer = document.createElement('div');
-        animationContainer.className = 'animation-container';
+        // Remove previous parallax listeners to prevent stacking them
+        if (this.parallaxListener) {
+            this.gameContainer.removeEventListener('mousemove', this.parallaxListener);
+            this.parallaxListener = null;
+        }
 
-        if (selectedTheme === 'space') {
-            const numberOfStars = 50;
-            for (let i = 0; i < numberOfStars; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.top = `${Math.random() * 100}%`;
-                star.style.left = `${Math.random() * 100}%`;
-                const size = Math.random() * 2 + 1;
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-                star.style.animationDuration = `${Math.random() * 3 + 2}s`;
-                star.style.animationDelay = `${Math.random() * 3}s`;
-                animationContainer.appendChild(star);
-            }
-        } else if (selectedTheme === 'sea') {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'animation-wrapper';
+
+        if (this.theme === 'space') {
+            // Future implementation for space parallax
+            const stars = document.createElement('div');
+            stars.className = 'stars';
+            wrapper.appendChild(stars);
+            const twinklingStars = document.createElement('div');
+            twinklingStars.className = 'twinkling';
+            wrapper.appendChild(twinklingStars);
+
+        } else if (this.theme === 'sea') {
+            // Build the layered parallax environment
+            const layers = ['sea-back', 'sea-mid', 'sea-front', 'caustics-overlay'];
+            layers.forEach(layerClass => {
+                const layerDiv = document.createElement('div');
+                layerDiv.className = `parallax-layer ${layerClass}`;
+                wrapper.appendChild(layerDiv);
+            });
+
+            // Add bubbles
             const numberOfBubbles = 20;
             for (let i = 0; i < numberOfBubbles; i++) {
                 const bubble = document.createElement('div');
@@ -335,24 +346,32 @@ class CardMatchingGame {
                 bubble.style.animationDuration = `${Math.random() * 10 + 8}s`;
                 bubble.style.animationDelay = `${Math.random() * 5}s`;
                 bubble.style.setProperty('--x-end', `${Math.random() * 20 - 10}vw`);
-                animationContainer.appendChild(bubble);
+                wrapper.appendChild(bubble);
             }
-        } else if (selectedTheme === 'forest') {
-            const numberOfLeaves = 25;
-            const leafColors = ['#6a994e', '#a7c957', '#f2e8cf', '#bc4749'];
-            for (let i = 0; i < numberOfLeaves; i++) {
-                const leaf = document.createElement('div');
-                leaf.className = 'leaf';
-                leaf.style.left = `${Math.random() * 100}%`;
-                leaf.style.setProperty('--leaf-color', leafColors[Math.floor(Math.random() * leafColors.length)]);
-                leaf.style.animationDuration = `${Math.random() * 8 + 6}s`;
-                leaf.style.animationDelay = `${Math.random() * 6}s`;
-                animationContainer.appendChild(leaf);
-            }
+
+            // Define and attach the parallax listener
+            this.parallaxListener = (e) => {
+                const { clientX, clientY } = e;
+                const { offsetWidth, offsetHeight } = this.gameContainer;
+                const xPercent = (clientX / offsetWidth - 0.5) * 2;
+                const yPercent = (clientY / offsetHeight - 0.5) * 2;
+
+                this.gameContainer.querySelectorAll('.parallax-layer').forEach(layer => {
+                    const speed = parseFloat(getComputedStyle(layer).getPropertyValue('--parallax-speed'));
+                    const x = xPercent * speed;
+                    const y = yPercent * speed;
+                    layer.style.transform = `translate(${x}px, ${y}px)`;
+                });
+            };
+            this.gameContainer.addEventListener('mousemove', this.parallaxListener);
+
+
+        } else if (this.theme === 'forest') {
+            // Future implementation for forest parallax
         }
 
-        if (animationContainer.hasChildNodes()) {
-            this.gameContainer.prepend(animationContainer);
+        if (wrapper.hasChildNodes()) {
+            this.gameContainer.prepend(wrapper);
         }
     }
 
