@@ -2031,3 +2031,467 @@ select:focus, input[type="number"]:focus {
     color: white;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
 }
+
+/*
+========================================
+--- Wheel Game Styles ---
+========================================
+*/
+.wheel-container {
+    position: relative;
+    width: 380px;
+    max-width: 85vw;
+    aspect-ratio: 1 / 1;
+    margin: 2rem auto;
+}
+
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-image: conic-gradient(
+        var(--wheel-segment-1) 0deg 90deg,
+        var(--wheel-segment-2) 90deg 180deg,
+        var(--wheel-segment-3) 180deg 270deg,
+        var(--wheel-segment-4) 270deg 360deg
+    );
+    border: 10px solid var(--wheel-primary);
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    transition: transform 7s cubic-bezier(0.25, 1, 0.5, 1);
+    position: relative;
+}
+
+.wheel-text-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+.wheel-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.text-1 { transform: translate(-50%, -50%) rotate(45deg) translate(105px) rotate(-45deg); }
+.text-2 { transform: translate(-50%, -50%) rotate(135deg) translate(105px) rotate(-135deg); }
+.text-3 { transform: translate(-50%, -50%) rotate(225deg) translate(105px) rotate(-225deg); }
+.text-4 { transform: translate(-50%, -50%) rotate(315deg) translate(105px) rotate(-315deg); }
+
+.pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-top: 40px solid var(--wheel-primary);
+    z-index: 10;
+}
+
+.spin-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px;
+    height: 90px;
+    background: var(--wheel-secondary);
+    border-radius: 50%;
+    border: 5px solid white;
+    z-index: 10;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.spin-button:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+}
+.spin-button:disabled {
+    cursor: not-allowed;
+    background: var(--border-color);
+}
+
+.wheel-game-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.wheel-game-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-color-light);
+    margin-bottom: 1rem;
+}
+
+.wheel-game-score-container {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--wheel-primary);
+    margin-bottom: 1.5rem;
+}
+
+.wheel-game-reset-button {
+    margin-top: 2.5rem;
+    padding: 0.75rem 2rem;
+    background-color: var(--general-games-primary);
+    color: white;
+    font-weight: 700;
+    font-size: 1.125rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+}
+.wheel-game-reset-button:hover {
+    background-color: var(--general-games-secondary);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-0.25rem);
+}
+
+/*
+========================================
+--- Wheel Game Styles ---
+========================================
+*/
+.wheel-container {
+    position: relative;
+    width: 380px;
+    max-width: 85vw;
+    aspect-ratio: 1 / 1;
+    margin: 2rem auto;
+}
+
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-image: conic-gradient(
+        var(--wheel-segment-1) 0deg 90deg,
+        var(--wheel-segment-2) 90deg 180deg,
+        var(--wheel-segment-3) 180deg 270deg,
+        var(--wheel-segment-4) 270deg 360deg
+    );
+    border: 10px solid var(--wheel-primary);
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    transition: transform 7s cubic-bezier(0.25, 1, 0.5, 1);
+    position: relative;
+}
+
+.wheel-text-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+.wheel-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.text-1 { transform: translate(-50%, -50%) rotate(45deg) translate(105px) rotate(-45deg); }
+.text-2 { transform: translate(-50%, -50%) rotate(135deg) translate(105px) rotate(-135deg); }
+.text-3 { transform: translate(-50%, -50%) rotate(225deg) translate(105px) rotate(-225deg); }
+.text-4 { transform: translate(-50%, -50%) rotate(315deg) translate(105px) rotate(-315deg); }
+
+.pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-top: 40px solid var(--wheel-primary);
+    z-index: 10;
+}
+
+.spin-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px;
+    height: 90px;
+    background: var(--wheel-secondary);
+    border-radius: 50%;
+    border: 5px solid white;
+    z-index: 10;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+}
+
+.spin-button:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+}
+.spin-button:disabled {
+    cursor: not-allowed;
+    background: var(--border-color);
+}
+
+/*
+========================================
+--- Card Matching Game ---
+========================================
+*/
+
+/* --- Container and Theming --- */
+.cm-game-container {
+    padding: 1.5rem;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    background: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%);
+    color: white;
+}
+
+.cm-game-container h1, .cm-game-container label {
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+/* --- Themed Backgrounds --- */
+.cm-game-container.theme-space {
+    background: #0c0a1a;
+}
+.cm-game-container.theme-forest {
+    background: linear-gradient(145deg, #1A4314, #2E8B57);
+}
+.cm-game-container.theme-sea {
+    background: linear-gradient(145deg, #0077BE, #87CEEB);
+}
+
+/* --- Animated Backgrounds --- */
+.stars-container {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+.star {
+    position: absolute;
+    background-color: white;
+    border-radius: 50%;
+    animation: stars-fall linear infinite;
+}
+@keyframes stars-fall {
+    from { transform: translateY(-10vh) scale(1); }
+    to { transform: translateY(110vh) scale(0); }
+}
+
+/* --- Setup Screen UI Improvements --- */
+.cm-setup-screen {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    background: rgba(0,0,0,0.2);
+    padding: 2rem;
+    border-radius: 15px;
+}
+.cm-game-options {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.cm-game-container .option-group select {
+    background-color: rgba(255,255,255,0.9);
+    color: #333;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 0.8rem;
+    font-family: var(--font-body);
+    transition: all 0.3s ease;
+}
+.cm-game-container .option-group select:hover {
+    border-color: #f8cdda;
+}
+.cm-game-container .option-group select:focus {
+    outline: none;
+    border-color: #d57eeb;
+    box-shadow: 0 0 10px #d57eeb;
+}
+
+/* Improved Button Style */
+.cm-game-container .btn {
+    background: linear-gradient(145deg, #d57eeb, #fccb90);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.8rem;
+    border-radius: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.cm-game-container .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+
+/* --- Game Board & Info --- */
+.cm-game-board {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+.cm-game-info {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    font-size: 1.2rem;
+    padding: 0.8rem;
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+/* --- Cards Grid & Sizing --- */
+.cm-cards-grid {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    perspective: 1200px;
+}
+.cm-cards-grid.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.cm-cards-grid.grid-5 { grid-template-columns: repeat(5, 1fr); }
+.cm-cards-grid.grid-6 { grid-template-columns: repeat(6, 1fr); }
+
+/* --- Card Styling & Animations --- */
+.cm-card {
+    background-color: transparent;
+    width: 100%;
+    aspect-ratio: 5 / 7;
+    border: none;
+    cursor: pointer;
+    transform-style: preserve-3d;
+}
+.cm-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+.cm-card.flipped .cm-card-inner {
+    transform: rotateY(180deg);
+}
+.cm-card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: clamp(0.8rem, 4vw, 1.1rem);
+    overflow-wrap: break-word;
+}
+.cm-card-front {
+    background-size: 60%;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+}
+.cm-card-back {
+    transform: rotateY(180deg);
+    line-height: 1.4;
+    font-size: 1.2rem;
+    font-family: var(--font-quran);
+}
+
+/* --- Themed Card Fronts & Backs --- */
+.theme-space .cm-card-front { background-image: url('../assets/images/planet.svg'); background-color: #2a2a4e; }
+.theme-space .cm-card-back { background-color: #4a4a8e; color: #e0e0ff; }
+
+.theme-forest .cm-card-front { background-image: url('../assets/images/leaf.svg'); background-color: #556B2F; }
+.theme-forest .cm-card-back { background-color: #8FBC8F; color: #1A4314; }
+
+.theme-sea .cm-card-front { background-image: url('../assets/images/shell.svg'); background-color: #1E90FF; }
+.theme-sea .cm-card-back { background-color: #00BFFF; color: #ffffff; }
+
+/* --- Card State Animations --- */
+.cm-card.matched .cm-card-inner {
+    opacity: 0.7;
+    animation: pulse-correct 0.6s;
+}
+.cm-card.incorrect {
+    animation: shake 0.5s;
+}
+
+/* --- Keyframes --- */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px) rotate(-3deg); }
+    75% { transform: translateX(10px) rotate(3deg); }
+}
+@keyframes pulse-correct {
+    0% { box-shadow: 0 0 15px 5px #2ecc71; }
+    50% { box-shadow: 0 0 25px 15px #2eff71; }
+    100% { box-shadow: 0 0 15px 5px #2ecc71; }
+}
+
+/* --- Modal Styling --- */
+.cm-end-game-modal .modal-content {
+    background: linear-gradient(135deg, #66bb6a, #43a047);
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}

@@ -707,13 +707,25 @@ function setupWheelGame(containerId, surahData, startSurahId, endSurahId) {
 
                 const otherWords = new Set();
                 let attempts = 0;
+                // Try to find distractor words from the same surah first
+                const sameSurahWords = surahVerses
+                    .flatMap(v => removeBasmallahFromVerse(v.text, v.surahId).split(' '))
+                    .filter(w => w.trim().length > 2 && w !== answerWord);
+
                 while (otherWords.size < 2 && attempts < 50) {
-                    const randomVerse = allVerses[Math.floor(Math.random() * allVerses.length)];
-                    const randomVerseWords = removeBasmallahFromVerse(randomVerse.text, randomVerse.surahId).split(' ').filter(w => w.trim().length > 2);
-                    if (randomVerseWords.length > 0) {
-                        const randomWord = randomVerseWords[Math.floor(Math.random() * randomVerseWords.length)];
+                    if (sameSurahWords.length > otherWords.size) {
+                        const randomWord = sameSurahWords[Math.floor(Math.random() * sameSurahWords.length)];
                         if (randomWord !== answerWord) {
-                            otherWords.add(randomWord);
+                           otherWords.add(randomWord);
+                        }
+                    } else { // Fallback to any verse if not enough words in the same surah
+                        const randomVerse = allVerses[Math.floor(Math.random() * allVerses.length)];
+                        const randomVerseWords = removeBasmallahFromVerse(randomVerse.text, randomVerse.surahId).split(' ').filter(w => w.trim().length > 2);
+                        if (randomVerseWords.length > 0) {
+                            const randomWord = randomVerseWords[Math.floor(Math.random() * randomVerseWords.length)];
+                            if (randomWord !== answerWord) {
+                                otherWords.add(randomWord);
+                            }
                         }
                     }
                     attempts++;
